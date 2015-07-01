@@ -27,7 +27,7 @@ cp -r examples/* $REDCAP_HOOKS/library/
 rm -rf $MYTEMP
 
 # Make required directories for hook deployment
-awk -F"," '{ OFS = "/" } ; NR!=1{print $1,$2}' $INPUT | xargs -I % mkdir -p $REDCAP_HOOKS/%
+awk -F"," 'NR!=1{printf "mkdir -p %s/%s/%s/\n",ENVIRON["REDCAP_HOOKS"],$1,$2}' $INPUT | sh
 
 # Create sym links for hooks to be executed
 awk -F"," 'NR!=1{printf "ln -s %s/%s %s/%s/%s/\n",ENVIRON["REDCAP_HOOKS"],$3,ENVIRON["REDCAP_HOOKS"],$1,$2}' $INPUT | sh
