@@ -13,6 +13,11 @@ fi
 MYTEMP=`mktemp -d`
 cd $MYTEMP
 git clone https://github.com/ctsit/redcap-extras.git
+if [ ! -e redcap-extras ]; then
+    echo "Error: redcap-extras repo could not be cloned. Exiting."
+    exit
+fi
+
 cd redcap-extras/hooks
 # checkout develop because we have not yet released the code we need
 git checkout develop
