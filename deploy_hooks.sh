@@ -4,6 +4,11 @@ export REDCAP_ROOT=/var/www/redcap
 export REDCAP_HOOKS=$REDCAP_ROOT/hooks
 export INPUT=$1
 
+if [ ! -e $REDCAP_ROOT ]; then
+    echo "Error: REDCAP_ROOT, $REDCAP_ROOT, does not exist.  Exiting."
+    exit
+fi
+
 # Pull repo and copy scripts into library folder
 MYTEMP=`mktemp -d`
 cd $MYTEMP
@@ -19,4 +24,4 @@ awk -F"," '{ OFS = "/" } ; NR!=1{print $1,$2}' $INPUT | xargs -I % mkdir -p $RED
 # Create sym links for hooks to be executed
 awk -F"," 'NR!=1{printf "ln -s %s/%s %s/%s/%s/\n",ENVIRON["REDCAP_HOOKS"],$3,ENVIRON["REDCAP_HOOKS"],$1,$2}' $INPUT | sh
 
-# 
+#
