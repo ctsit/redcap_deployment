@@ -14,6 +14,8 @@ MYTEMP=`mktemp -d`
 cd $MYTEMP
 git clone https://github.com/ctsit/redcap-extras.git
 cd redcap-extras/hooks
+# checkout develop because we have not yet released the code we need
+git checkout develop
 cp redcap_hooks.php $REDCAP_HOOKS/
 mkdir $REDCAP_HOOKS/library
 cp -r examples/* $REDCAP_HOOKS/library/
