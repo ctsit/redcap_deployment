@@ -3,6 +3,7 @@
 export REDCAP_ROOT=/var/https/redcap
 export REDCAP_HOOKS=$REDCAP_ROOT/hooks
 export INPUT=$1
+export OLD_DIR=`pwd`
 
 if [ ! -e $REDCAP_ROOT ]; then
     echo "Error: REDCAP_ROOT, $REDCAP_ROOT, does not exist.  Exiting."
@@ -26,9 +27,12 @@ cd redcap-extras/hooks
 # checkout develop because we have not yet released the code we need
 git checkout develop
 cp redcap_hooks.php $REDCAP_HOOKS/
-mkdir $REDCAP_HOOKS/library
+if [ ! -e $REDCAP_HOOKS/library ]; then
+    mkdir $REDCAP_HOOKS/library
+    echo "REDCap Hooks Library Directory Created."
+fi
 cp -r examples/* $REDCAP_HOOKS/library/
-cd /
+cd $OLD_DIR
 rm -rf $MYTEMP
 
 # Make required directories for hook deployment
