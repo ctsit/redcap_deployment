@@ -28,6 +28,7 @@ git checkout develop
 cp redcap_hooks.php $REDCAP_HOOKS/
 mkdir $REDCAP_HOOKS/library
 cp -r examples/* $REDCAP_HOOKS/library/
+cd /
 rm -rf $MYTEMP
 
 # Make required directories for hook deployment
