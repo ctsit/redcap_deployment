@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export REDCAP_ROOT=/var/www/redcap
+export REDCAP_ROOT=/var/https/redcap
 export REDCAP_HOOKS=$REDCAP_ROOT/hooks
 export INPUT=$1
 
