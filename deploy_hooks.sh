@@ -11,7 +11,6 @@ fi
 if [ ! -e $REDCAP_HOOKS ]; then
     mkdir $REDCAP_ROOT/hooks
     echo "REDCap Hooks Directory Created."
-    exit
 fi
 
 # Pull repo and copy scripts into library folder
