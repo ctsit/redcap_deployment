@@ -55,3 +55,13 @@ function deploy_hooks() {
     echo "Creating symbolic links for hooks to be executed based on content from $SCRIPT_DIR/hooks/$HOOKS_CONFIGURATION..."
     awk -F"," 'NR!=1{printf "ln -sf %s/%s %s/%s/%s/\n",ENVIRON["REDCAP_HOOKS"],$3,ENVIRON["REDCAP_HOOKS"],$1,$2}' $SCRIPT_DIR/hooks/$HOOKS_CONFIGURATION/data.csv | sh
 }
+
+function deploy_plugins() {
+    export REDCAP_PLUGINS=$REDCAP_ROOT/plugins
+    if [ ! -e $REDCAP_PLUGINS ]; then
+        mkdir -p $REDCAP_PLUGINS
+        echo "REDCap plugins directory, $REDCAP_PLUGINS, created."
+    fi
+
+}
+

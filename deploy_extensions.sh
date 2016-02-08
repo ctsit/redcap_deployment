@@ -38,3 +38,4 @@ fi
 . ./deployment_functions.sh
 
 deploy_hooks
+deploy_plugins
