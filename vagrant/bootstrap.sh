@@ -34,3 +34,7 @@ install_redcap
 install_utils
 check_redcap_status
 
+# deploy extensions with developer settings
+export REDCAP_ROOT=/var/www/redcap
+export HOOKS_CONFIGURATION=redcap.dev
+/redcap_deployment/deploy_extensions.sh
