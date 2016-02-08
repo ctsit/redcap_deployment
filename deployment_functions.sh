@@ -63,5 +63,31 @@ function deploy_plugins() {
         echo "REDCap plugins directory, $REDCAP_PLUGINS, created."
     fi
 
-}
+    # copy each plugin to the target, deploy, and test
+    cd $SCRIPT_DIR/plugins/
+    for PLUGIN in `find . -maxdepth 1 -type d | grep /`
+    do
+        cd $SCRIPT_DIR/plugins/
+        echo "Deploying $PLUGIN plugin to $REDCAP_PLUGINS/$PLUGIN/..."
+        if [ ! -e $REDCAP_PLUGINS/$PLUGIN ]; then
+            echo "Creating directory $REDCAP_PLUGINS/$PLUGIN..."
+            mkdir -p $REDCAP_PLUGINS/$PLUGIN
+        fi
+        echo "Rsyncing files for $PLUGIN"
+        rsync -arc $PLUGIN/ $REDCAP_PLUGINS/$PLUGIN/
 
+        # Run deployment script if any
+        cd $SCRIPT_DIR/plugins/
+        if [ -e $PLUGIN/deploy.sh ]; then
+            echo "Deploying via $PLUGIN/deploy.sh..."
+            sh $PLUGIN/deploy.sh
+        fi
+
+        # Run test script if any
+        cd $SCRIPT_DIR/plugins/
+        if [ -e $PLUGIN/test.sh ]; then
+            echo "Testing via $PLUGIN/test.sh..."
+            sh $PLUGIN/test.sh
+        fi
+    done
+}
