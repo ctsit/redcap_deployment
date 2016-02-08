@@ -8,7 +8,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "puppetlabs/debian-7.8-64-nocm"
   config.vm.hostname = "redcap-deployment"
   config.vm.network "forwarded_port", guest: 80, host: 8080
-  config.vm.synced_folder "../", "/redcap_deployment", owner: "vagrant", group: "root"
   config.vm.provision "shell" do |s|
     s.path = "bootstrap.sh"
   end

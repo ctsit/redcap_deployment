@@ -15,7 +15,6 @@ set -e
 
 # make a note of where this script lives so we can use relative paths later
 export SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-echo $SCRIPT_DIR
 
 # Set defaults for required variables where they do not exist
 if [ -z "$REDCAP_ROOT" ]; then
@@ -35,7 +34,7 @@ if [ ! -e $REDCAP_ROOT ]; then
     exit
 fi
 
-. ./deployment_functions.sh
+. $SCRIPT_DIR/deployment_functions.sh
 
 deploy_hooks
 deploy_plugins
