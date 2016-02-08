@@ -42,7 +42,7 @@ deployment we _want_, not the deployment we have.
 
 ## Hook deployment
 
-CTSI REDCap Hooks are deployed using the script redcap_hooks.sh from this
+CTSI REDCap Hooks are deployed using the script redcap_extensions.sh from this
 repo, ssh://git@ctsit-forge.ctsi.ufl.edu/redcap_deployment.git.  This repo
 also contains data files for CTSI REDCap Instance.  See [Hook Deployment
 ](README-hooks.md) for usage instructions and details.
