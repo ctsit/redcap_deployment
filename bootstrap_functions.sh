@@ -25,7 +25,7 @@ function install_prereqs() {
         apache2 \
         mysql-server \
         php5 php-pear php5-mysql php5-curl \
-        unzip git
+        unzip git php5-mcrypt
 
     # configure MySQL to start every time
     update-rc.d mysql defaults
