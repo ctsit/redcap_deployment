@@ -15,6 +15,13 @@
 # Distributed under the BSD 3-Clause License
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
 
+export DATABASE_HOST=localhost
+export DATABASE_NAME=redcap
+export DATABASE_USER=redcap
+export DATABASE_PASSWORD=password
+export DATABASE_ROOT_PASS=123
+export redcap_base_url=http://redcap.dev/redcap/
+
 function install_prereqs() {
     # Install the REDCap prerequisites:
     #   https://iwg.devguard.com/trac/redcap/wiki/3rdPartySoftware
@@ -52,11 +59,13 @@ function install_redcap() {
     create_redcap_database
     # STEP 2: Add MySQL connection values to 'database.php'
     update_redcap_connection_settings
-    # STEP 3: Customize values
-    #   do nothing
+    # STEP 3: simplify mysql connections with a .my.cnf file
+    write_dot_mysql_dot_cnf
     # STEP 4: Create the REDCap database tables
     create_redcap_tables
-    # STEP 5: Configuration Check
+    # STEP 5: Configure REDCap
+    configure_redcap
+    # STEP 6: Configuration Check
 }
 
 function create_redcap_database() {
@@ -85,6 +94,22 @@ function update_redcap_connection_settings() {
     echo '$salt   = "abc";'  >> /var/www/redcap/database.php
 }
 
+function write_dot_mysql_dot_cnf() {
+    # Write a .my.cnf file into the vagrant user's home dir
+    cat << EOF > /home/vagrant/.my.cnf
+[mysql]
+password=$DATABASE_PASSWORD
+user=$DATABASE_USER
+database=$DATABASE_NAME
+
+[mysqldump]
+password=$DATABASE_PASSWORD
+user=$DATABASE_USER
+EOF
+    chown vagrant.vagrant /home/vagrant/.my.cnf
+}
+
+
 # Create tables from sql files distributed with redcap under
 #  redcap_vA.B.C/Resources/sql/
 #
@@ -100,6 +125,13 @@ function create_redcap_tables() {
         echo "Executing sql file $i"
         mysql -uredcap -ppassword redcap < $i
     done
+}
+
+# Set REDCap settings for this dev instance of REDCap
+function configure_redcap() {
+    echo redcap.dev
+    echo "update redcap_config set value='$redcap_base_url' where field_name = 'redcap_base_url';" | mysql
+
 }
 
 # Check if the Apache server is actually serving the REDCap files
