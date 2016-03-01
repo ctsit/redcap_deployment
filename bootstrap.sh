@@ -32,6 +32,7 @@ REDCAP_ZIP=`ls $SHARED_FOLDER/redcap*.zip | grep "redcap[0-9]\{1,2\}\.[0-9]\{1,2
 install_prereqs
 install_redcap
 install_utils
+configure_exim4
 check_redcap_status
 
 # deploy extensions with developer settings

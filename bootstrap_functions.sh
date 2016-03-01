@@ -20,7 +20,9 @@ export DATABASE_NAME=redcap
 export DATABASE_USER=redcap
 export DATABASE_PASSWORD=password
 export DATABASE_ROOT_PASS=123
-export redcap_base_url=http://redcap.dev/redcap/
+export development_hostname=redcap.dev
+export redcap_base_url=http://$development_hostname/redcap/
+export smtp_smarthost=smtp.ufl.edu
 
 function install_prereqs() {
     # Install the REDCap prerequisites:
@@ -158,5 +160,54 @@ function check_redcap_status() {
 }
 
 function install_utils() {
+    echo "Installing utilities..."
     cp $SHARED_FOLDER/aliases /home/vagrant/.bash_aliases
+}
+
+function configure_exim4() {
+    echo "Configuring exim4..."
+cat << EOF > /etc/exim4/update-exim4.conf.conf
+dc_eximconfig_configtype='satellite'
+dc_other_hostnames='localhost'
+dc_local_interfaces='127.0.0.1 ; ::1'
+dc_readhost='$development_hostname'
+dc_relay_domains=''
+dc_minimaldns='false'
+dc_relay_nets=''
+dc_smarthost='$smtp_smarthost'
+CFILEMODE='644'
+dc_use_split_config='false'
+dc_hide_mailname='true'
+dc_mailname_in_oh='true'
+dc_localdelivery='mail_spool'
+EOF
+
+cat << EOF > /etc/aliases
+mailer-daemon: postmaster
+postmaster: root
+nobody: root
+hostmaster: root
+usenet: root
+news: root
+webmaster: root
+www: root
+ftp: root
+abuse: root
+noc: root
+security: root
+root: vagrant
+EOF
+
+cat << EOF > /etc/mailname
+$development_hostname
+EOF
+
+service exim4 restart
+
+}
+
+function configure_php_mail() {
+    echo "Configuring php mail..."
+    sed -e "sX.*sendmail_path.*Xsendmail_path = /usr/sbin/sendmail -t -iX;" -i /etc/php5/apache2/php.ini
+    sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php5/apache2/php.ini
 }
