@@ -69,6 +69,7 @@ function install_redcap() {
 }
 
 function create_redcap_database() {
+    echo "Creating database..."
     mysql -uroot <<SQL
 DROP DATABASE IF EXISTS redcap;
 CREATE DATABASE redcap;
@@ -129,6 +130,7 @@ EOF
 #
 # @see install.php for details
 function create_redcap_tables() {
+    echo "Creating REDCap tables..."
     SQL_DIR=/var/www/redcap/redcap_v$REDCAP_VERSION_DETECTED/Resources/sql
     mysql -uredcap -ppassword redcap < $SQL_DIR/install.sql
     mysql -uredcap -ppassword redcap < $SQL_DIR/install_data.sql
@@ -143,7 +145,7 @@ function create_redcap_tables() {
 
 # Set REDCap settings for this dev instance of REDCap
 function configure_redcap() {
-    echo redcap.dev
+    echo "Setting redcap_base_url to $redcap_base_url..."
     echo "update redcap_config set value='$redcap_base_url' where field_name = 'redcap_base_url';" | mysql
 
 }
