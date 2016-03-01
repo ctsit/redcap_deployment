@@ -10,10 +10,13 @@
 
 **/
 
-error_reporting(E_ALL);
 // File path and prefix for log file - make sure web user has write permissions
-$log_prefix = "/var/log/redcap/autonotify";
 //$log_prefix = "/Users/andy123/Documents/local REDCap server/redcap/temp/autonotify";
+$log_prefix = "/var/log/redcap/autonotify";
+
+
+
+error_reporting(E_ALL);
 
 $action = '';	// Script action
 

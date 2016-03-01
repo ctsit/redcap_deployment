@@ -1,7 +1,12 @@
 <?php
 
-error_reporting(E_ALL);
+/**
 
+	Autonotify plugin by Andy Martin, Stanford University
+
+**/
+
+error_reporting(E_ALL);
 
 class AutoNotify {
 	
@@ -465,7 +470,10 @@ class AutoNotify {
 		if (strpos($base, 'stanford.edu') !== false) $base = str_replace('https','http',$base);
 		$parse_url = parse_url($_SERVER['PHP_SELF']);
 		$path = dirname($parse_url['path']);
-		$data_entry_trigger_url = str_replace('//','/', $base . $path) . '/?an=' . $an;
+		// Clean up double-slashes
+		$data_entry_trigger_url = preg_replace('/(?:(?<!http:|https:))(\/\/)/','/', $base . $path);
+		// Add an variable
+		$data_entry_trigger_url .= '/?an=' . $an;
 		$sql = "update redcap_projects set data_entry_trigger_url = '".prep($data_entry_trigger_url)."' where project_id = " . PROJECT_ID . " LIMIT 1;";
 		$q = db_query($sql);
 //		echo "$sql";
