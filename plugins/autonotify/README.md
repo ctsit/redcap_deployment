@@ -1,7 +1,7 @@
 # AutoNotify Plugin
 
-* Source: https://stanford.app.box.com/s/3lboork2nbz995osyba3/0/1241234685
+* Source: git@github.com:pbchase/redcap-plugin-autonotify.git
 * Author: Andy Martin
-* Last updated: 2015-11-06
+* Last updated: 2016-02-28
 * Version: Unknown
-* License: Unknown
+* License: GPL

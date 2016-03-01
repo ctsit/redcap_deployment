@@ -464,19 +464,21 @@ class AutoNotify {
 	}
 
 	public function updateDetUrl($an) {
-		global $data_entry_trigger_url, $redcap_base_url;
-		$base = $redcap_base_url;
+		global $data_entry_trigger_url;
+		// Build the complete URL of the page that called us
+		$url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
+
 		// At stanford, we use http inside of the load balancer
-		if (strpos($base, 'stanford.edu') !== false) $base = str_replace('https','http',$base);
-		$parse_url = parse_url($_SERVER['PHP_SELF']);
-		$path = dirname($parse_url['path']);
-		// Clean up double-slashes
-		$data_entry_trigger_url = preg_replace('/(?:(?<!http:|https:))(\/\/)/','/', $base . $path);
+		if (strpos($url, 'stanford.edu') !== false) $url = str_replace('https','http',$url);
+
+		// Trim the non-path portion off the end of the URL
+		$data_entry_trigger_url = join('/',array_slice(mb_split('/', $url), 0, -1));
+
 		// Add an variable
 		$data_entry_trigger_url .= '/?an=' . $an;
 		$sql = "update redcap_projects set data_entry_trigger_url = '".prep($data_entry_trigger_url)."' where project_id = " . PROJECT_ID . " LIMIT 1;";
 		$q = db_query($sql);
-//		echo "$sql";
+		//echo "$sql";
 	}
 
 	public function renderHelpDivs() {
