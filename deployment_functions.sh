@@ -73,21 +73,23 @@ function deploy_plugins() {
             echo "Creating directory $REDCAP_PLUGINS/$PLUGIN..."
             mkdir -p $REDCAP_PLUGINS/$PLUGIN
         fi
-        echo "Rsyncing files for $PLUGIN"
-        rsync -arc $PLUGIN/ $REDCAP_PLUGINS/$PLUGIN/
 
         # Run deployment script if any
         cd $SCRIPT_DIR/plugins/
         if [ -e $PLUGIN/deploy.sh ]; then
             echo "Deploying via $PLUGIN/deploy.sh..."
-            sh $PLUGIN/deploy.sh
+            bash $PLUGIN/deploy.sh $REDCAP_PLUGINS/$PLUGIN/
+        else
+            # just copy all the files if there is no deployment script
+            echo "Rsyncing files for $PLUGIN"
+            rsync -arc $PLUGIN/ $REDCAP_PLUGINS/$PLUGIN/
         fi
 
         # Run test script if any
         cd $SCRIPT_DIR/plugins/
         if [ -e $PLUGIN/test.sh ]; then
             echo "Testing via $PLUGIN/test.sh..."
-            sh $PLUGIN/test.sh
+            bash $PLUGIN/test.sh $REDCAP_PLUGINS/$PLUGIN/
         fi
     done
 }
