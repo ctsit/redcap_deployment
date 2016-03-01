@@ -96,6 +96,7 @@ function update_redcap_connection_settings() {
 
 function write_dot_mysql_dot_cnf() {
     # Write a .my.cnf file into the vagrant user's home dir
+    echo "Writing ~/.my.cnf for vagrant user..."
     cat << EOF > /home/vagrant/.my.cnf
 [mysql]
 password=$DATABASE_PASSWORD
@@ -107,6 +108,19 @@ password=$DATABASE_PASSWORD
 user=$DATABASE_USER
 EOF
     chown vagrant.vagrant /home/vagrant/.my.cnf
+
+    echo "Writing ~/.my.cnf for root..."
+    cat << EOF > ~/.my.cnf
+[mysql]
+password=$DATABASE_PASSWORD
+user=$DATABASE_USER
+database=$DATABASE_NAME
+
+[mysqldump]
+password=$DATABASE_PASSWORD
+user=$DATABASE_USER
+EOF
+
 }
 
 
