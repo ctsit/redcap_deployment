@@ -17,6 +17,9 @@
 
 export DEBIAN_FRONTEND=noninteractive
 
+# Exit on first error
+set -e
+
 # Indicate where the vagrant folder is mounted in the guest file system
 SHARED_FOLDER=/vagrant
 
@@ -29,5 +32,10 @@ REDCAP_ZIP=`ls $SHARED_FOLDER/redcap*.zip | grep "redcap[0-9]\{1,2\}\.[0-9]\{1,2
 install_prereqs
 install_redcap
 install_utils
+configure_exim4
 check_redcap_status
 
+# deploy extensions with developer settings
+export REDCAP_ROOT=/var/www/redcap
+export HOOKS_CONFIGURATION=redcap.dev
+/vagrant/deploy_extensions.sh

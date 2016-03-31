@@ -15,6 +15,15 @@
 # Distributed under the BSD 3-Clause License
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
 
+export DATABASE_HOST=localhost
+export DATABASE_NAME=redcap
+export DATABASE_USER=redcap
+export DATABASE_PASSWORD=password
+export DATABASE_ROOT_PASS=123
+export development_hostname=redcap.dev
+export redcap_base_url=http://$development_hostname/redcap/
+export smtp_smarthost=smtp.ufl.edu
+
 function install_prereqs() {
     # Install the REDCap prerequisites:
     #   https://iwg.devguard.com/trac/redcap/wiki/3rdPartySoftware
@@ -24,7 +33,8 @@ function install_prereqs() {
     apt-get install -y \
         apache2 \
         mysql-server \
-        php5 php-pear php5-mysql php5-curl
+        php5 php-pear php5-mysql php5-curl \
+        unzip git php5-mcrypt
 
     # configure MySQL to start every time
     update-rc.d mysql defaults
@@ -44,15 +54,6 @@ function install_redcap() {
     chown -R www-data.root /var/www/redcap/edocs/
     chown -R www-data.root /var/www/redcap/temp/
 
-    # remove the hooks and plugins directory from the zip folder
-    rm -rf /var/www/redcap/plugins
-    rm -rf /var/www/redcap/hooks
-
-    # create sym links
-    ln -s /redcap_data/hooks/ /var/www/redcap/ 
-    ln -s /redcap_data/plugins/ /var/www/redcap/
-
-
     REDCAP_VERSION_DETECTED=`ls /var/www/redcap | grep redcap_v | cut -d 'v' -f2 | sort -n | tail -n 1`
     echo "$REDCAP_ZIP content indicates REDCap version: $REDCAP_VERSION_DETECTED"
 
@@ -60,14 +61,17 @@ function install_redcap() {
     create_redcap_database
     # STEP 2: Add MySQL connection values to 'database.php'
     update_redcap_connection_settings
-    # STEP 3: Customize values
-    #   do nothing
+    # STEP 3: simplify mysql connections with a .my.cnf file
+    write_dot_mysql_dot_cnf
     # STEP 4: Create the REDCap database tables
     create_redcap_tables
-    # STEP 5: Configuration Check
+    # STEP 5: Configure REDCap
+    configure_redcap
+    # STEP 6: Configuration Check
 }
 
 function create_redcap_database() {
+    echo "Creating database..."
     mysql -uroot <<SQL
 DROP DATABASE IF EXISTS redcap;
 CREATE DATABASE redcap;
@@ -93,11 +97,42 @@ function update_redcap_connection_settings() {
     echo '$salt   = "abc";'  >> /var/www/redcap/database.php
 }
 
+function write_dot_mysql_dot_cnf() {
+    # Write a .my.cnf file into the vagrant user's home dir
+    echo "Writing ~/.my.cnf for vagrant user..."
+    cat << EOF > /home/vagrant/.my.cnf
+[mysql]
+password=$DATABASE_PASSWORD
+user=$DATABASE_USER
+database=$DATABASE_NAME
+
+[mysqldump]
+password=$DATABASE_PASSWORD
+user=$DATABASE_USER
+EOF
+    chown vagrant.vagrant /home/vagrant/.my.cnf
+
+    echo "Writing ~/.my.cnf for root..."
+    cat << EOF > ~/.my.cnf
+[mysql]
+password=$DATABASE_PASSWORD
+user=$DATABASE_USER
+database=$DATABASE_NAME
+
+[mysqldump]
+password=$DATABASE_PASSWORD
+user=$DATABASE_USER
+EOF
+
+}
+
+
 # Create tables from sql files distributed with redcap under
 #  redcap_vA.B.C/Resources/sql/
 #
 # @see install.php for details
 function create_redcap_tables() {
+    echo "Creating REDCap tables..."
     SQL_DIR=/var/www/redcap/redcap_v$REDCAP_VERSION_DETECTED/Resources/sql
     mysql -uredcap -ppassword redcap < $SQL_DIR/install.sql
     mysql -uredcap -ppassword redcap < $SQL_DIR/install_data.sql
@@ -110,6 +145,13 @@ function create_redcap_tables() {
     done
 }
 
+# Set REDCap settings for this dev instance of REDCap
+function configure_redcap() {
+    echo "Setting redcap_base_url to $redcap_base_url..."
+    echo "update redcap_config set value='$redcap_base_url' where field_name = 'redcap_base_url';" | mysql
+
+}
+
 # Check if the Apache server is actually serving the REDCap files
 function check_redcap_status() {
     echo "Checking if redcap application is running..."
@@ -118,5 +160,54 @@ function check_redcap_status() {
 }
 
 function install_utils() {
+    echo "Installing utilities..."
     cp $SHARED_FOLDER/aliases /home/vagrant/.bash_aliases
+}
+
+function configure_exim4() {
+    echo "Configuring exim4..."
+cat << EOF > /etc/exim4/update-exim4.conf.conf
+dc_eximconfig_configtype='satellite'
+dc_other_hostnames='localhost'
+dc_local_interfaces='127.0.0.1 ; ::1'
+dc_readhost='$development_hostname'
+dc_relay_domains=''
+dc_minimaldns='false'
+dc_relay_nets=''
+dc_smarthost='$smtp_smarthost'
+CFILEMODE='644'
+dc_use_split_config='false'
+dc_hide_mailname='true'
+dc_mailname_in_oh='true'
+dc_localdelivery='mail_spool'
+EOF
+
+cat << EOF > /etc/aliases
+mailer-daemon: postmaster
+postmaster: root
+nobody: root
+hostmaster: root
+usenet: root
+news: root
+webmaster: root
+www: root
+ftp: root
+abuse: root
+noc: root
+security: root
+root: vagrant
+EOF
+
+cat << EOF > /etc/mailname
+$development_hostname
+EOF
+
+service exim4 restart
+
+}
+
+function configure_php_mail() {
+    echo "Configuring php mail..."
+    sed -e "sX.*sendmail_path.*Xsendmail_path = /usr/sbin/sendmail -t -iX;" -i /etc/php5/apache2/php.ini
+    sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php5/apache2/php.ini
 }

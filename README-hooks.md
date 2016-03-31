@@ -12,7 +12,7 @@ activated. Activations can be global or project specific.
 
 ## Deployment
 
-Hooks are deployed with the script ./deploy_hooks.sh from the repo ssh://git
+Hooks are deployed with the script ./deploy_extensions.sh from the repo ssh://git
 @ctsit-forge.ctsi.ufl.edu/redcap\_deployment.git.
 
 deploy_hooks.php requires a data file as input to indicate the scope of the
@@ -32,7 +32,7 @@ deploy_hooks.sh will copy all the needed files from the redcap-extras repo to
 the hooks folder of the REDCap instance given the path to the appropriate data
 file.  On the CTSI Prod instance, you could deploy with this command:
 
-    sudo ./deploy_hooks.sh hooks/redcap.ctsi.ufl.edu/data.csv
+    sudo ./deploy_extensions.sh hooks/redcap.ctsi.ufl.edu/data.csv
 
 
 ## Activate the hooking mechanism
