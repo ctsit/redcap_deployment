@@ -10,6 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 mkdir -p $MYTARGETDIR
 cp $DIR/index.php $MYTARGETDIR
 cp $DIR/common.php $MYTARGETDIR
+cp $DIR/det.php $MYTARGETDIR
 
 # Make the required log directory and give the web server write access
 mkdir -p /var/log/redcap
@@ -28,3 +29,13 @@ cat << EOF > /etc/logrotate.d/redcap-autonotify
     sharedscripts
 }
 EOF
+
+# patch the apache SSL host config file and restart apache if this patch has never been applied
+cd /etc/apache2/sites-available/
+if [ `grep -c "/redcap/plugins/autonotify/det.php" default-ssl` == 0 ] ; then
+  patch -p1 < $DIR/default-ssl.patch
+  service apache2 restart
+fi
+
+# Alert the admin to turn on DET for the REDCAP system
+echo "$DIR: Please turn on DET for this REDCap instance"
