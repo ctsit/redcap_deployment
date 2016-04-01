@@ -33,7 +33,7 @@ EOF
 # patch the apache SSL host config file and restart apache if this patch has never been applied
 cd /etc/apache2/sites-available/
 if [ `grep -c "/redcap/plugins/autonotify/det.php" default-ssl` == 0 ] ; then
-  patch -p1 < $DIR/default-ssl.patch
+  patch -p3 < $DIR/default-ssl.patch
   service apache2 restart
 fi
 
