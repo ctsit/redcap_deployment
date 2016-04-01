@@ -10,6 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 mkdir -p $MYTARGETDIR
 cp $DIR/index.php $MYTARGETDIR
 cp $DIR/common.php $MYTARGETDIR
+cp $DIR/det.php $MYTARGETDIR
 
 # Make the required log directory and give the web server write access
 mkdir -p /var/log/redcap

@@ -475,7 +475,7 @@ class AutoNotify {
 		$data_entry_trigger_url = join('/',array_slice(mb_split('/', $url), 0, -1));
 
 		// Add an variable
-		$data_entry_trigger_url .= '/?an=' . $an;
+		$data_entry_trigger_url .= '/det.php?an=' . $an;
 		$sql = "update redcap_projects set data_entry_trigger_url = '".prep($data_entry_trigger_url)."' where project_id = " . PROJECT_ID . " LIMIT 1;";
 		$q = db_query($sql);
 		//echo "$sql";
