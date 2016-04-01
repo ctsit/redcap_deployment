@@ -3,8 +3,13 @@ All notable changes to the REDCap Deployment project will be documented in this 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.3.0] - 2016-04-01
+### Changed
+- Update autonotify plugin with security improvements (Philip Chase)
+
+
 ## [0.2.0] - 2016-03-31
-###Added
+### Added
 - Add a Changelog with retrospective releases (Philip Chase)
 - Add scripts for deploying REDCAP Plugins from this Repo (Philip Chase)
 - Add Autonotify_Plugin_End_User_Instructions.docx (Philip Chase)
