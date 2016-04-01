@@ -36,3 +36,6 @@ if [ `grep -c "/redcap/plugins/autonotify/det.php" default-ssl` == 0 ] ; then
   patch -p1 < $DIR/default-ssl.patch
   service apache2 restart
 fi
+
+# Alert the admin to turn on DET for the REDCAP system
+echo "$DIR: Please turn on DET for this REDCap instance"
