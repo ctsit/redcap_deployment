@@ -76,6 +76,7 @@ function install_redcap() {
     configure_php_for_redcap
     configure_redcap_cron
     move_edocs_folder
+    set_hook_functions_file
 }
 
 function create_redcap_database() {
@@ -193,6 +194,12 @@ function move_edocs_folder() {
         find $edoc_path -type f | xargs -i chmod 664 {}
     fi
     mysql -e "UPDATE redcap.redcap_config SET value = '$edoc_path' WHERE field_name = 'edoc_path';"
+}
+
+function set_hook_functions_file() {
+    echo "Setting hook_functions_file..."
+    hook_functions_file="/var/www/redcap/hooks/redcap_hooks.php"
+    mysql -e "UPDATE redcap.redcap_config SET value = '$hook_functions_file' WHERE field_name = 'hook_functions_file';"
 }
 
 # Check if the Apache server is actually serving the REDCap files
