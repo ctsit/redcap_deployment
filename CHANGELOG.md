@@ -3,6 +3,19 @@ All notable changes to the REDCap Deployment project will be documented in this 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.4.0] - 2016-04-25
+### Added
+- Enable ssl in apache config (Philip Chase)
+- Add an alias, dump_redcap_db, to do a standardized dump of the REDCap MySQL DB (Philip Chase)
+- Add set_redcap_config for updating the redcap_config table (Philip Chase)
+
+### Changed
+- Disable stream edits of the SHIB configuration in a test environment (Philip Chase)
+- Set hook_functions_file to the path used in deployment_functions.sh (Philip Chase)
+- Configure REDCap VM according to recommendations: install php-gd, activate redcap cron, adjust php ini vars, and move edocs folder (Philip Chase)
+- Fix patching of default-ssl in autonotify plugin deploy script. (Philip Chase)
+
+
 ## [0.3.0] - 2016-04-01
 ### Changed
 - Update autonotify plugin with security improvements (Philip Chase)
