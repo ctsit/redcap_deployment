@@ -12,10 +12,11 @@ activated. Activations can be global or project specific.
 
 ## Deployment
 
-Hooks are deployed with the script ./deploy_extensions.sh from the repo ssh://git
-@ctsit-forge.ctsi.ufl.edu/redcap\_deployment.git.
+Hooks are deployed with the script ./deploy_extensions.sh.  More specifically,
+the function _deploy\_hooks_ in deployment_functions.sh does the hook
+deployment.
 
-deploy_hooks.php requires a data file as input to indicate the scope of the
+deploy_hooks requires a data file as input to indicate the scope of the
 script, which hook will trigger it and the relative path to the script. A
 sample input file would look like this:
 
@@ -28,19 +29,27 @@ The activated hook list for the CTSI REDCap servers are in ./hooks/\<INSTANCE_NA
     redcap.ctsi.ufl.edu
     redcapstage.ctsi.ufl.edu
 
-deploy_hooks.sh will copy all the needed files from the redcap-extras repo to
-the hooks folder of the REDCap instance given the path to the appropriate data
-file.  On the CTSI Prod instance, you could deploy with this command:
+Deploy_hooks will copy all the needed files from the redcap-extras repo to
+the hooks/library folder of the REDCap instance. It will then activate hooks based on contents of the file ./hooks/\<INSTANCE_NAME\>data.csv.
 
-    sudo ./deploy_extensions.sh hooks/redcap.ctsi.ufl.edu/data.csv
+By default, it uses the UF CTSI production data for hook activation. To change this, specify an alternative configuration by exporting these 3 variables:
+
+    REDCAP_ROOT - the full path to the Apache document root of your redcap server
+    REDCAP_HOOKS - the full path the to hooks folder under $REDCAP_ROOT
+    HOOKS_CONFIGURATION - the name of the directory ./hooks/\<INSTANCE_NAME\> that has the correct data.csv
+
+e.g.
+
+    export REDCAP_ROOT=/var/https/redcap
+    export REDCAP_HOOKS=$REDCAP_ROOT/hooks
+    export HOOKS_CONFIGURATION=redcap.ctsi.ufl.edu
 
 
 ## Activate the hooking mechanism
 
 REDCap requires the hooking mechanism be activated in the Control Center.
 This is a system-wide setting.  The REDCap hooking mechanism must be activated
-by setting the Control Center -> General Configuration -> REDCap Hooks to
-'/var/https/redcap/hooks/redcap_hooks.php'
+by setting the Control Center -> General Configuration -> REDCap Hooks to the path to the redcap\_hooks.php file deployed by this repo.  For UF CTSI, this path is _/var/https/redcap/hooks/redcap\_hooks.php_
 
 
 ### Details
