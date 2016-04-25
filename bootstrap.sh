@@ -38,4 +38,5 @@ check_redcap_status
 # deploy extensions with developer settings
 export REDCAP_ROOT=/var/www/redcap
 export HOOKS_CONFIGURATION=redcap.dev
+export SHIB=0
 /vagrant/deploy_extensions.sh

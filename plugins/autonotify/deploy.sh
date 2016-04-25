@@ -31,10 +31,12 @@ cat << EOF > /etc/logrotate.d/redcap-autonotify
 EOF
 
 # patch the apache SSL host config file and restart apache if this patch has never been applied
-cd /etc/apache2/sites-available/
-if [ `grep -c "/redcap/plugins/autonotify/det.php" default-ssl` == 0 ] ; then
-  patch -p3 < $DIR/default-ssl.patch
-  service apache2 restart
+if [ ! $SHIB == "0" ]; then
+    cd /etc/apache2/sites-available/
+    if [ `grep -c "/redcap/plugins/autonotify/det.php" default-ssl` == 0 ] ; then
+      patch -p3 < $DIR/default-ssl.patch
+      service apache2 restart
+    fi
 fi
 
 # Alert the admin to turn on DET for the REDCAP system
