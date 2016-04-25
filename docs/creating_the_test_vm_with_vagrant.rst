@@ -6,7 +6,7 @@ Purpose
 
 The "vagrant" folder was created with the goal of making testing `REDCap <http
 ://project-redcap.org/>`__ and REDCap extensions as easy as possible.  The
-"vagrant" folder contains the `Vagrantfile <../vagrant/Vagrantfile>`__ which
+root folder contains the `Vagrantfile <Vagrantfile>`__ which
 allows you to start a virtual machine capable of running the `REDCap software
 <http://http://www.project-redcap.org>`__.  This virtual machine will install
 Apache and MySQL software without any user intervention.  If provided with a
@@ -19,6 +19,7 @@ RED-I to import data into a sample REDCap project:
 -  You have to obtain the REDCap software from http://project-redcap.org/
 -  You have to install the **Vagrant** software
 -  You have to install the **Virtual Box** software or another virtual machine provider.  For this discussion we will assume Virtual Box is the virtual machine provider for Vagrant.
+-  You have to install the Vagrant hostsupdater plugin
 
 Steps
 -----
@@ -43,22 +44,31 @@ On Mac OSX users using brew can install these packages using brew cask:
 - brew cask install virtualbox
 - brew cask install vagrant
 
+
+2. Install Hosts updater plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Vagrant will need one plugin for this VM.  On any platform:
+
+-  vagrant plugin install vagrant-hostsupdater
+
 For more details about Vagrant software you can go to
 `why-vagrant <https://docs.vagrantup.com/v2/why-vagrant/>`__ page.
 
-2. Get your REDCap zip file
-~~~~~~~~~~~~~~~~~~~
+
+3. Get your REDCap zip file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As mentioned above you have to obtain a copy of the REDCap software from http
 ://project-redcap.org/.  Save the file with its default name to ./vagrant
 folder.  This ensures that in the provisioning script `bootstrap.sh
-<../vagrant/bootstrap.sh>`__ script can extract the files to the virtual
+<bootstrap.sh>`__ script can extract the files to the virtual
 machine path "**/var/www/redcap**\ ".
 
 If you put multiple redcap*.zip files in the vagrant folder, the provisioning
 script will use the one with the highest version number.
 
-3. Start the VM
+4. Start the VM
 ~~~~~~~~~~~~~~~
 
 Follow this procedure to start the REDCap VM:
@@ -66,8 +76,7 @@ Follow this procedure to start the REDCap VM:
 .. raw:: html
 
    <pre>
-   # must be in the redi/vagrant/ directory
-   cd ./vagrant
+   # must be in the root directory of this repository
    vagrant up
    </pre>
 
@@ -87,17 +96,13 @@ message like this at the end of the log:
 
 The REDCap web application should be accessible in the browser at
 
-http://localhost:8080/redcap/
-
-If port 8080 is already in use on your computer Vagrant will choose a
-different port automatically. Read the log of "vagrant up" and note the port
-to be used.
+http://redcap.dev/redcap/
 
 The REDCap instance will be setup with the sample projects that shipped with
 that REDCap zip file.
 
 
-4. Verify the VM is running via the console
+5. Verify the VM is running via the console
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can also verify the virtual machine is working properly by accessing it
