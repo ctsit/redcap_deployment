@@ -3,6 +3,11 @@ All notable changes to the REDCap Deployment project will be documented in this 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.4.1] - 2016-04-25
+### Changed
+- Correct documentation and make it more suitable for public consumption (Philip Chase)
+
+
 ## [0.4.0] - 2016-04-25
 ### Added
 - Enable ssl in apache config (Philip Chase)
