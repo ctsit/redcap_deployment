@@ -80,7 +80,7 @@ function install_redcap() {
 
 function create_redcap_database() {
     echo "Creating database..."
-    mysql -uroot <<SQL
+    mysql <<SQL
 DROP DATABASE IF EXISTS redcap;
 CREATE DATABASE redcap;
 
