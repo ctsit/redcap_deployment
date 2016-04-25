@@ -44,8 +44,8 @@ function install_prereqs() {
     # configure MySQL to start every time
     update-rc.d mysql defaults
 
-    # Enable https
-    enable_ssl
+    # configure https
+    configure_ssl
 
     # restart apache
     service apache2 restart
@@ -276,10 +276,9 @@ function configure_php_mail() {
     sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php5/apache2/php.ini
 }
 
-function enable_ssl() {
-    echo "Enabling SSL..."
+function configure_ssl() {
+    echo "Configure SSL..."
 
     a2enmod ssl
     ln -s /etc/apache2/sites-available/default-ssl /etc/apache2/sites-enabled
-    service apache2 restart
 }
