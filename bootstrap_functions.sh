@@ -185,7 +185,7 @@ function move_edocs_folder() {
     default_edoc_path="/var/www/redcap/edocs"
     if [ ! -e $edoc_path ]; then
         if [ -e $default_edoc_path ]; then
-            rsync -ar $default_edoc_path $edoc_path && rm -rf $default_edoc_path
+            rsync -ar $default_edoc_path $edoc_path && rm -rf $default_edoc_path/*
         else
             mkdir $edoc_path
         fi
