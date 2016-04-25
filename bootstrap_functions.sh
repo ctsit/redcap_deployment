@@ -23,6 +23,10 @@ export DATABASE_ROOT_PASS=123
 export development_hostname=redcap.dev
 export redcap_base_url=http://$development_hostname/redcap/
 export smtp_smarthost=smtp.ufl.edu
+export max_input_vars=10000
+export upload_max_filesize=32M
+export post_max_size=32M
+
 
 function install_prereqs() {
     # Install the REDCap prerequisites:
@@ -34,10 +38,14 @@ function install_prereqs() {
         apache2 \
         mysql-server \
         php5 php-pear php5-mysql php5-curl \
+        php5-gd \
         unzip git php5-mcrypt
 
     # configure MySQL to start every time
     update-rc.d mysql defaults
+
+    # configure https
+    configure_ssl
 
     # restart apache
     service apache2 restart
@@ -67,12 +75,17 @@ function install_redcap() {
     create_redcap_tables
     # STEP 5: Configure REDCap
     configure_redcap
-    # STEP 6: Configuration Check
+    # STEP 6: Configure PHP
+    configure_php_for_redcap
+    configure_redcap_cron
+    move_edocs_folder
+    set_hook_functions_file
+    make_twilio_features_visible
 }
 
 function create_redcap_database() {
     echo "Creating database..."
-    mysql -uroot <<SQL
+    mysql <<SQL
 DROP DATABASE IF EXISTS redcap;
 CREATE DATABASE redcap;
 
@@ -149,7 +162,58 @@ function create_redcap_tables() {
 function configure_redcap() {
     echo "Setting redcap_base_url to $redcap_base_url..."
     echo "update redcap_config set value='$redcap_base_url' where field_name = 'redcap_base_url';" | mysql
+}
 
+# Adjust PHP vars to match REDCap needs
+function configure_php_for_redcap() {
+    echo "Configuring php to match redcap needs..."
+    php5_confd_for_redcap="/etc/php5/conf.d/90-settings-for-redcap.ini"
+    echo "max_input_vars = $max_input_vars" > $php5_confd_for_redcap
+    echo "upload_max_filesize = $upload_max_filesize" >> $php5_confd_for_redcap
+    echo "post_max_size = $post_max_size" >> $php5_confd_for_redcap
+}
+
+# Turn on REDCap Cron
+function configure_redcap_cron() {
+    echo "Turning on REDCap Cron job..."
+    crond_for_redcap=/etc/cron.d/redcap
+    echo "# REDCap Cron Job (runs every minute)" > $crond_for_redcap
+    echo "* * * * * root /usr/bin/php /var/www/redcap/cron.php > /dev/null" >> $crond_for_redcap
+}
+
+# move the edocs folder
+function move_edocs_folder() {
+    echo "Moving the edocs folder out of web space..."
+    edoc_path="/var/edocs"
+    default_edoc_path="/var/www/redcap/edocs"
+    if [ ! -e $edoc_path ]; then
+        if [ -e $default_edoc_path ]; then
+            rsync -ar $default_edoc_path $edoc_path && rm -rf $default_edoc_path/*
+        else
+            mkdir $edoc_path
+        fi
+        # adjust the permissions on the new
+        chown -R www-data.www-data $edoc_path
+        find $edoc_path -type d | xargs -i chmod 775 {}
+        find $edoc_path -type f | xargs -i chmod 664 {}
+    fi
+    set_redcap_config "Adjusting DB for edocs move..." edoc_path $edoc_path
+}
+
+function set_redcap_config() {
+    info_text=$1
+    field_name=$2
+    value=$3
+    echo "$1"
+    mysql -e "UPDATE redcap.redcap_config SET value = '$value' WHERE field_name = '$field_name';"
+}
+
+function set_hook_functions_file() {
+    set_redcap_config "Setting hook_functions_file..." "hook_functions_file" "/var/www/redcap/hooks/redcap_hooks.php"
+}
+
+function make_twilio_features_visible() {
+    set_redcap_config "Making twilio features visible..." "twilio_enabled_by_super_users_only" "0"
 }
 
 # Check if the Apache server is actually serving the REDCap files
@@ -210,4 +274,11 @@ function configure_php_mail() {
     echo "Configuring php mail..."
     sed -e "sX.*sendmail_path.*Xsendmail_path = /usr/sbin/sendmail -t -iX;" -i /etc/php5/apache2/php.ini
     sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php5/apache2/php.ini
+}
+
+function configure_ssl() {
+    echo "Configure SSL..."
+
+    a2enmod ssl
+    ln -s /etc/apache2/sites-available/default-ssl /etc/apache2/sites-enabled
 }

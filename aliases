@@ -28,3 +28,4 @@ alias remove_ban='echo "Query run: DELETE FROM redcap_ip_banned;" && mysql -ured
 alias show_columns='mysql -uredcap -ppassword redcap -e "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = \"redcap\" " '
 alias show_logs='mysql -uredcap -ppassword redcap -e "SELECT log_event_id, ip, object_type, event_id, data_values, description, sql_log FROM redcap_log_event ORDER BY log_event_id DESC LIMIT 10" '
 alias redcap_version='mysql -uredcap -ppassword redcap -se "select value from redcap.redcap_config WHERE field_name = \"redcap_version\";" | tail -n 1'
+alias dump_redcap_db='mysqldump --single-transaction=TRUE --skip-add-locks --skip-comments --skip-extended-insert --no-create-db --no-create-info redcap > redcap.sql'
