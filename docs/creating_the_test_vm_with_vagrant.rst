@@ -29,8 +29,10 @@ Steps
 
 On a Linux machine run:
 
--  sudo apt-get install vagrant
--  sudo apt-get install virtualbox
+::
+
+  sudo apt-get install vagrant
+  sudo apt-get install virtualbox
 
 On a Mac OSX machine:
 
@@ -41,8 +43,10 @@ On a Mac OSX machine:
 
 On Mac OSX users using brew can install these packages using brew cask:
 
-- brew cask install virtualbox
-- brew cask install vagrant
+::
+
+  brew cask install virtualbox
+  brew cask install vagrant
 
 
 2. Install Hosts updater plugin
@@ -50,7 +54,9 @@ On Mac OSX users using brew can install these packages using brew cask:
 
 Vagrant will need one plugin for this VM.  On any platform:
 
--  vagrant plugin install vagrant-hostsupdater
+::
+
+  vagrant plugin install vagrant-hostsupdater
 
 For more details about Vagrant software you can go to
 `why-vagrant <https://docs.vagrantup.com/v2/why-vagrant/>`__ page.
@@ -60,8 +66,8 @@ For more details about Vagrant software you can go to
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As mentioned above you have to obtain a copy of the REDCap software from http
-://project-redcap.org/.  Save the file with its default name to ./vagrant
-folder.  This ensures that in the provisioning script `bootstrap.sh
+://project-redcap.org/.  Save the file with its default name to the root of this
+repository.  This ensures that the provisioning script `bootstrap.sh
 <bootstrap.sh>`__ script can extract the files to the virtual
 machine path "**/var/www/redcap**\ ".
 
@@ -73,12 +79,10 @@ script will use the one with the highest version number.
 
 Follow this procedure to start the REDCap VM:
 
-.. raw:: html
+::
 
-   <pre>
    # must be in the root directory of this repository
    vagrant up
-   </pre>
 
 Vagrant will instantiate and provision the new VM. The initial download of the
 box file is slow, but this need happen only occur once.  Vagrant will cache
@@ -86,17 +90,13 @@ the box file indefinitely.  With the box file downloaded, the REDCap VM can be
 built from scratch in 2-3 minutes.  If it completes successfully you should a
 message like this at the end of the log:
 
-.. raw:: html
+::
 
-   <pre>
     ==> default: Checking if redcap application is running...
     ==> default:      <b>Welcome to REDCap!</b>
     ==> default: Please try to login to REDCap as user 'admin' and password: 'password'
-   </pre>
 
-The REDCap web application should be accessible in the browser at
-
-http://redcap.dev/redcap/
+The REDCap web application should be accessible in the browser at http://redcap.dev/redcap/
 
 The REDCap instance will be setup with the sample projects that shipped with
 that REDCap zip file.
@@ -108,22 +108,23 @@ that REDCap zip file.
 You can also verify the virtual machine is working properly by accessing it
 at the console using:
 
-.. raw:: html
+::
 
-   <pre>
    vagrant ssh
-   </pre>
 
 This will connect you to a shell on the virtual machine.
 
 You can check the REDCap server from the console with the command ``check_redcap``.  You will see output like this if it is running correctly:
 
-.. raw:: html
+::
 
-   <pre>
       vagrant@redcap:~$ check_redcap
             <b>Welcome to REDCap!</b>
-   </pre>
+
+The REDCap VM you connect to when you do ``vagrant ssh` is a Debian Linux 7.8 VM.
+You will connect as user ``vagrant``.  You can sudo to root without a password.
+The root of the git repository is mounted within the VM at ``/vagrant``.
+Any changes you make to the /vagrant folder from the VM will be immediately
+reflected in the host in the root of ther repo and vice versa.
 
 As with any ssh session, type ``exit`` when you are done at the shell.
-
