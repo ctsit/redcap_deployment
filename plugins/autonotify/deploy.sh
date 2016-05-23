@@ -30,13 +30,29 @@ cat << EOF > /etc/logrotate.d/redcap-autonotify
 }
 EOF
 
-# patch the apache SSL host config file and restart apache if this patch has never been applied
-if [ ! $SHIB == "0" ]; then
-    cd /etc/apache2/sites-available/
-    if [ `grep -c "/redcap/plugins/autonotify/det.php" default-ssl` == 0 ] ; then
-      patch -p3 < $DIR/default-ssl.patch
-      service apache2 restart
+# Make a directory for supplementary SSL configuration details
+SSL_INCLUDES=/etc/apache2/ssl-includes
+if [ ! -e $SSL_INCLUDES ]; then
+    mkdir -p $SSL_INCLUDES
+fi
+
+# make sure the above SSL_INCLUDES directory is referenced in the apache ssl config
+SSL_CONFIG=/etc/apache2/sites-available/default-ssl
+SITES_AVAILABLE=/etc/apache2/sites-available
+if [ -e $SSL_CONFIG ]; then
+    if [ `grep -c "Include ssl-includes/" $SSL_CONFIG` == 0 ] ; then
+      cd $SITES_AVAILABLE
+      patch -p4 < $DIR/ssl-includes.patch
     fi
+else
+    echo "Error: I don't know where the SSL configuration file is.  Exiting!"
+    exit
+fi
+
+# place our apache directives in the SSL_INCLUDES directory
+if [ ! $SHIB == "0" ]; then
+    cp $DIR/autonotify.conf $SSL_INCLUDES/
+    service apache2 restart
 fi
 
 # Alert the admin to turn on DET for the REDCAP system
