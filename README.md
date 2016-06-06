@@ -16,9 +16,9 @@ A user of these tools will need to download and provide their own REDCap bits,
 downloaded from Vanderbilt. This REDCap .zip should be placed in the root folder.
 It should not be renamed.
 
-This VM requires that Vagrant, VirtualBox and the vagrant-hostsupdater plugin be installed on the host system.
+This VM requires that Vagrant, VirtualBox, the vagrant-hostsupdater plugin and the vagrant-env plugin be installed on the host system.
 
-See [Creating the Test VM With Vagrant](docs/creating_the_test_vm_with_vagrant.rst) for details on how to mee those requirements.
+See [Creating the Test VM With Vagrant](docs/creating_the_test_vm_with_vagrant.rst) for details on how to meet those requirements.
 
 
 ## Using the Development environment

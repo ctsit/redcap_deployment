@@ -19,7 +19,8 @@ RED-I to import data into a sample REDCap project:
 -  You have to obtain the REDCap software from http://project-redcap.org/
 -  You have to install the **Vagrant** software
 -  You have to install the **Virtual Box** software or another virtual machine provider.  For this discussion we will assume Virtual Box is the virtual machine provider for Vagrant.
--  You have to install the Vagrant hostsupdater plugin
+-  You have to install the vagrant-hostsupdater plugin
+-  You have to install the vagrant-env plugin
 
 Steps
 -----
@@ -49,14 +50,15 @@ On Mac OSX users using brew can install these packages using brew cask:
   brew cask install vagrant
 
 
-2. Install Hosts updater plugin
+2. Install Vagrant plugins
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Vagrant will need one plugin for this VM.  On any platform:
+Vagrant will need a few plugins for this VM.  On any platform:
 
 ::
 
   vagrant plugin install vagrant-hostsupdater
+  vagrant plugin install vagrant-env
 
 For more details about Vagrant software you can go to
 `why-vagrant <https://docs.vagrantup.com/v2/why-vagrant/>`__ page.

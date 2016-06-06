@@ -37,7 +37,7 @@ if [ ! -e $SSL_INCLUDES ]; then
 fi
 
 # make sure the above SSL_INCLUDES directory is referenced in the apache ssl config
-SSL_CONFIG=/etc/apache2/sites-available/default-ssl
+SSL_CONFIG=/etc/apache2/sites-available/default-ssl.conf
 SITES_AVAILABLE=/etc/apache2/sites-available
 if [ -e $SSL_CONFIG ]; then
     if [ `grep -c "Include ssl-includes/" $SSL_CONFIG` == 0 ] ; then
