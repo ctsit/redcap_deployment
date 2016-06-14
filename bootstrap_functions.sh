@@ -8,224 +8,360 @@
 #    Ruchi Vivek Desai <ruchivdesai@gmail.com>
 #    Taeber Rapczak <taeber@ufl.edu>
 #    Josh Hanna <josh@hanna.io>
-
-# Copyright (c) 2015, University of Florida
+#
+# Copyright (c) 2016, University of Florida
 # All rights reserved.
 #
 # Distributed under the BSD 3-Clause License
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
 
-export DATABASE_HOST=localhost
-export DATABASE_NAME=redcap
-export DATABASE_USER=redcap
-export DATABASE_PASSWORD=password
-export DATABASE_ROOT_PASS=123
-export development_hostname=redcap.dev
-export redcap_base_url=http://$development_hostname/redcap/
-export smtp_smarthost=smtp.ufl.edu
-export max_input_vars=10000
-export upload_max_filesize=32M
-export post_max_size=32M
+function log() {
+    echo -n "MSG: "
+    echo $*
+}
 
+function install_utils() {
+    log "Executing ${FUNCNAME[0]}"
+    apt-get install -y git vim ack-grep unzip \
+        tree colordiff libxml2-utils xmlstarlet nmap
+
+    cp /vagrant/dot_files/bash_aliases  /home/vagrant/.bash_aliases
+    cp /vagrant/dot_files/bashrc        /home/vagrant/.bashrc
+    cp /vagrant/dot_files/vimrc         /home/vagrant/.vimrc
+    chown -R vagrant.vagrant /home/vagrant
+
+    cp /vagrant/dot_files/bash_aliases  /root/.bash_aliases
+    cp /vagrant/dot_files/bashrc        /root/.bashrc
+    cp /vagrant/dot_files/vimrc         /root/.vimrc
+}
 
 function install_prereqs() {
-    # Install the REDCap prerequisites:
-    #   https://iwg.devguard.com/trac/redcap/wiki/3rdPartySoftware
+    log "Executing ${FUNCNAME[0]}"
+    REQUIRED_PARAMETER_COUNT=2
+    if [ $# != $REQUIRED_PARAMETER_COUNT ]; then
+        echo "${FUNCNAME[0]} Installs and configures MySQL, Apache and php5"
+        echo "${FUNCNAME[0]} requires these $REQUIRED_PARAMETER_COUNT parameters in this order:"
+        echo "MYSQL_REPO           The MySQL Repo to install from.  E.g., mysql-5.6"
+        echo "DATABASE_ROOT_PASS   Password of the MySQL root user."
+        return 1
+    else
+        MYSQL_REPO=$1
+        DATABASE_ROOT_PASS=$2
+    fi
+
+
+    # Try two different keyservers to get the MySQL repository key
+    gpg --keyserver pgp.mit.edu --recv-keys 5072E1F5 || gpg --keyserver sks-keyservers.net --recv-keys 5072E1F5
+    gpg -a --export 5072E1F5 | sudo apt-key add -
+
+cat << END > /etc/apt/sources.list.d/mysql.list
+deb http://repo.mysql.com/apt//debian/ jessie $MYSQL_REPO
+deb-src http://repo.mysql.com/apt//debian/ jessie $MYSQL_REPO
+END
 
     apt-get update
 
-    apt-get install -y \
-        apache2 \
-        mysql-server \
-        php5 php-pear php5-mysql php5-curl \
-        php5-gd \
-        unzip git php5-mcrypt
+    log "Preparing to install mysql-community-server with root password: '$DATABASE_ROOT_PASS'..."
+    echo mysql-server mysql-server/root_password       password $DATABASE_ROOT_PASS | debconf-set-selections
+    echo mysql-server mysql-server/root_password_again password $DATABASE_ROOT_PASS | debconf-set-selections
+    echo mysql-community-server mysql-community-server/root_password       password $DATABASE_ROOT_PASS | debconf-set-selections
+    echo mysql-community-server mysql-community-server/root_password_again password $DATABASE_ROOT_PASS | debconf-set-selections
+    echo mysql-community-server mysql-community-server/root-pass           password $DATABASE_ROOT_PASS | debconf-set-selections
+    echo mysql-community-server mysql-community-server/re-root-pass        password $DATABASE_ROOT_PASS | debconf-set-selections
+
+    apt-get install -y apache2
+    apt-get install -y mysql-community-server
+    apt-get install -y php5 php5-mysql php5-mcrypt php5-gd
+
+    # Configure mysqld to be more permissive
+    log "Configure mysqld to be more permissive..."
+    MYSQLCONF=/etc/mysql/my.cnf
+    echo '' >> $MYSQLCONF
+    echo '[mysqld]' >> $MYSQLCONF
+    echo 'sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' >> $MYSQLCONF
+    service mysql restart
 
     # configure MySQL to start every time
     update-rc.d mysql defaults
 
-    # configure https
-    configure_ssl
+    # Increase the default upload size limit to allow ginormous files
+    sed -i 's/upload_max_filesize =.*/upload_max_filesize = 20M/' /etc/php5/apache2/php.ini
+    sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php5/apache2/php.ini
+    sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php5/cli/php.ini
 
-    # restart apache
-    service apache2 restart
+    log "Stop apache..."
+    service apache2 stop
+    # Keep the default site on port :80
+    # a2dissite 000-default
+
+    log "Link config files for apache port 443"
+    find /etc/apache2/sites-* | xargs -i ls -l {}
+    cp /vagrant/apache-ssl.conf /etc/apache2/sites-available/default-ssl.conf
+    ln -sfv /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/apache-ssl.conf
+
+    log "Link config files for apache port 80"
+    OLD_APACHE_DEFAULT=/etc/apache2/sites-enabled/000-default.conf
+    if [ -e $OLD_APACHE_DEFAULT ]; then rm $OLD_APACHE_DEFAULT; fi
+
+    OLD_APACHE_DEFAULT=/etc/apache2/sites-available/000-default.conf
+    if [ -e $OLD_APACHE_DEFAULT ]; then rm $OLD_APACHE_DEFAULT; fi
+
+    cp /vagrant/apache-default.conf /etc/apache2/sites-available/000-default.conf
+    ln -sfv /etc/apache2/sites-available/000-default.conf  /etc/apache2/sites-enabled/000-default.conf
+
+    log "Enable apache modules"
+    a2enmod ssl
+    a2enmod rewrite
+
+    log "Restarting apache with new config..."
+    sleep 2
+    service apache2 start
 }
 
-# Setup REDCap
-function install_redcap() {
-    rm -rf /var/www/*
+function create_database() {
+    log "Executing ${FUNCNAME[0]}"
 
-    # extract a standard REDCap zip file as downloaded from Vanderbilt.
-    unzip -q $REDCAP_ZIP -d /var/www/
+    REQUIRED_PARAMETER_COUNT=5
+    if [ $# != $REQUIRED_PARAMETER_COUNT ]; then
+        echo "${FUNCNAME[0]} Creates a MySQL database, a DB user with access to the DB, and sets user's password."
+        echo "${FUNCNAME[0]} requires these $REQUIRED_PARAMETER_COUNT parameters in this order:"
+        echo "DATABASE_NAME        Name of the database to create"
+        echo "DATABASE_USER        Database user who will have access to DATABASE_NAME"
+        echo "DATABASE_PASSWORD    Password of DATABASE_USER"
+        echo "DATABASE_HOST        The host from which DATABASE_USER is authorized to access DATABASE_NAME"
+        echo "DATABASE_ROOT_PASS   Password of the mysql root user"
+        return 1
+    else
+        DATABASE_NAME=$1
+        DATABASE_USER=$2
+        DATABASE_PASSWORD=$3
+        DATABASE_HOST=$4
+        DATABASE_ROOT_PASS=$5
+    fi
 
-    # adjust ownership so apache can write to the temp folders
-    chown -R www-data.root /var/www/redcap/edocs/
-    chown -R www-data.root /var/www/redcap/temp/
-
-    REDCAP_VERSION_DETECTED=`ls /var/www/redcap | grep redcap_v | cut -d 'v' -f2 | sort -n | tail -n 1`
-    echo "$REDCAP_ZIP content indicates REDCap version: $REDCAP_VERSION_DETECTED"
-
-    # STEP 1: Create a MySQL database/schema and user
-    create_redcap_database
-    # STEP 2: Add MySQL connection values to 'database.php'
-    update_redcap_connection_settings
-    # STEP 3: simplify mysql connections with a .my.cnf file
-    write_dot_mysql_dot_cnf
-    # STEP 4: Create the REDCap database tables
-    create_redcap_tables
-    # STEP 5: Configure REDCap
-    configure_redcap
-    # STEP 6: Configure PHP
-    configure_php_for_redcap
-    configure_redcap_cron
-    move_edocs_folder
-    set_hook_functions_file
-    make_twilio_features_visible
-}
-
-function create_redcap_database() {
-    echo "Creating database..."
-    mysql <<SQL
-DROP DATABASE IF EXISTS redcap;
-CREATE DATABASE redcap;
+    log "Creating database $DATABASE_NAME"
+    # Create database used by the app
+    mysql -u root -p$DATABASE_ROOT_PASS mysql <<SQL
+DROP DATABASE IF EXISTS $DATABASE_NAME;
+CREATE DATABASE $DATABASE_NAME;
 
 GRANT
     SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, EXECUTE, CREATE VIEW, SHOW VIEW
 ON
-    redcap.*
+    $DATABASE_NAME.*
 TO
-    'redcap'@'localhost'
+    '$DATABASE_USER'@'$DATABASE_HOST'
 IDENTIFIED BY
-    'password';
+    '$DATABASE_PASSWORD';
 SQL
+
 }
 
-function update_redcap_connection_settings() {
-    # edit redcap database config file (This needs to be done after extraction of zip files)
-    echo "Setting the connection variables in: /var/www/redcap/database.php"
-    echo '$hostname   = "localhost";' >> /var/www/redcap/database.php
-    echo '$db         = "redcap";'    >> /var/www/redcap/database.php
-    echo '$username   = "redcap";'    >> /var/www/redcap/database.php
-    echo '$password   = "password";'  >> /var/www/redcap/database.php
-    echo '$salt   = "abc";'  >> /var/www/redcap/database.php
+function update_cake_connection_settings() {
+    log "Executing ${FUNCNAME[0]}"
+
+    REQUIRED_PARAMETER_COUNT=4
+    if [ $# != $REQUIRED_PARAMETER_COUNT ]; then
+        echo "${FUNCNAME[0]} Rewrites the CakePHP database.php for this app."
+        echo "${FUNCNAME[0]} requires these $REQUIRED_PARAMETER_COUNT parameters in this order:"
+        echo "DEPLOY_DIR           The directory where the app is deployed"
+        echo "DATABASE_USER        Database user who will have access to DATABASE_NAME"
+        echo "DATABASE_PASSWORD    Password of DATABASE_USER"
+        echo "DATABASE_HOST        The host from which DATABASE_USER is authorized to access DATABASE_NAME"
+        return 1
+    else
+        DEPLOY_DIR=$1
+        DATABASE_USER=$2
+        DATABASE_PASSWORD=$3
+        DATABASE_HOST=$4
+    fi
+
+    # edit cake database config file
+    CAKE_DB_CONFIG_FILE=$DEPLOY_DIR/app/Config/database.php
+    echo "Setting the connection variables in: $CAKE_DB_CONFIG_FILE"
+    sed -e "s/'host'.*=>.*/'host' => '$DATABASE_HOST',/;" -i $CAKE_DB_CONFIG_FILE
+    sed -e "s/'login'.*=>.*/'login' => '$DATABASE_USER',/;" -i $CAKE_DB_CONFIG_FILE
+    sed -e "s/'password'.*=>.*/'password' => '$DATABASE_PASSWORD',/;" -i $CAKE_DB_CONFIG_FILE
+    #sed -e "s/'database'.*=>.*/'database' => '$DATABASE_NAME',/;" -i $CAKE_DB_CONFIG_FILE
 }
 
 function write_dot_mysql_dot_cnf() {
+    log "Executing ${FUNCNAME[0]}"
+    REQUIRED_PARAMETER_COUNT=4
+    if [ $# != $REQUIRED_PARAMETER_COUNT ]; then
+        echo "${FUNCNAME[0]} Creates .my.cnf files for vagrant user and root."
+        echo "${FUNCNAME[0]} requires these $REQUIRED_PARAMETER_COUNT parameters in this order:"
+        echo "DATABASE_NAME        Name of the database to access."
+        echo "DATABASE_USER        Database user to connect with."
+        echo "DATABASE_PASSWORD    Password of DATABASE_USER"
+        echo "DATABASE_ROOT_PASS   Password of root MySQL user"
+        return 1
+    else
+        DATABASE_NAME=$1
+        DATABASE_USER=$2
+        DATABASE_PASSWORD=$3
+        DATABASE_ROOT_PASS=$4
+    fi
+
     # Write a .my.cnf file into the vagrant user's home dir
-    echo "Writing ~/.my.cnf for vagrant user..."
     cat << EOF > /home/vagrant/.my.cnf
 [mysql]
-password=$DATABASE_PASSWORD
+password="$DATABASE_PASSWORD"
 user=$DATABASE_USER
 database=$DATABASE_NAME
 
 [mysqldump]
-password=$DATABASE_PASSWORD
+password="$DATABASE_PASSWORD"
 user=$DATABASE_USER
 EOF
     chown vagrant.vagrant /home/vagrant/.my.cnf
 
-    echo "Writing ~/.my.cnf for root..."
-    cat << EOF > ~/.my.cnf
+    # Write a .my.cnf file into the root's home dir
+    cat << EOF > /root/.my.cnf
 [mysql]
-password=$DATABASE_PASSWORD
-user=$DATABASE_USER
+password="$DATABASE_ROOT_PASS"
+user=root
 database=$DATABASE_NAME
 
 [mysqldump]
-password=$DATABASE_PASSWORD
-user=$DATABASE_USER
+password="$DATABASE_ROOT_PASS"
+user=root
 EOF
-
 }
 
-
-# Create tables from sql files distributed with redcap under
-#  redcap_vA.B.C/Resources/sql/
-#
-# @see install.php for details
-function create_redcap_tables() {
-    echo "Creating REDCap tables..."
-    SQL_DIR=/var/www/redcap/redcap_v$REDCAP_VERSION_DETECTED/Resources/sql
-    mysql -uredcap -ppassword redcap < $SQL_DIR/install.sql
-    mysql -uredcap -ppassword redcap < $SQL_DIR/install_data.sql
-    mysql -uredcap -ppassword redcap -e "UPDATE redcap.redcap_config SET value = '$REDCAP_VERSION_DETECTED' WHERE field_name = 'redcap_version' "
-
-    files=$(ls -v $SQL_DIR/create_demo_db*.sql)
-    for i in $files; do
-        echo "Executing sql file $i"
-        mysql -uredcap -ppassword redcap < $i
-    done
-}
-
-# Set REDCap settings for this dev instance of REDCap
-function configure_redcap() {
-    echo "Setting redcap_base_url to $redcap_base_url..."
-    echo "update redcap_config set value='$redcap_base_url' where field_name = 'redcap_base_url';" | mysql
-}
-
-# Adjust PHP vars to match REDCap needs
-function configure_php_for_redcap() {
-    echo "Configuring php to match redcap needs..."
-    php5_confd_for_redcap="/etc/php5/conf.d/90-settings-for-redcap.ini"
-    echo "max_input_vars = $max_input_vars" > $php5_confd_for_redcap
-    echo "upload_max_filesize = $upload_max_filesize" >> $php5_confd_for_redcap
-    echo "post_max_size = $post_max_size" >> $php5_confd_for_redcap
-}
-
-# Turn on REDCap Cron
-function configure_redcap_cron() {
-    echo "Turning on REDCap Cron job..."
-    crond_for_redcap=/etc/cron.d/redcap
-    echo "# REDCap Cron Job (runs every minute)" > $crond_for_redcap
-    echo "* * * * * root /usr/bin/php /var/www/redcap/cron.php > /dev/null" >> $crond_for_redcap
-}
-
-# move the edocs folder
-function move_edocs_folder() {
-    echo "Moving the edocs folder out of web space..."
-    edoc_path="/var/edocs"
-    default_edoc_path="/var/www/redcap/edocs"
-    if [ ! -e $edoc_path ]; then
-        if [ -e $default_edoc_path ]; then
-            rsync -ar $default_edoc_path $edoc_path && rm -rf $default_edoc_path/*
-        else
-            mkdir $edoc_path
-        fi
-        # adjust the permissions on the new
-        chown -R www-data.www-data $edoc_path
-        find $edoc_path -type d | xargs -i chmod 775 {}
-        find $edoc_path -type f | xargs -i chmod 664 {}
+function populate_db () {
+    log "Executing ${FUNCNAME[0]}"
+    REQUIRED_PARAMETER_COUNT=5
+    if [ $# != $REQUIRED_PARAMETER_COUNT ]; then
+        echo "${FUNCNAME[0]} Creates a MySQL database, a DB user with access to the DB, and sets user's password."
+        echo "${FUNCNAME[0]} requires these $REQUIRED_PARAMETER_COUNT parameters in this order:"
+        echo "DATABASE_NAME        Name of the database to create"
+        echo "DATABASE_USER        Database user who will have access to DATABASE_NAME"
+        echo "DATABASE_PASSWORD    Password of DATABASE_USER"
+        echo "DEPLOY_DIR           The directory where the app is deployed"
+        echo "DB_EPOCH_VERSION     The version of the schema files to be loaded before applying upgrades"
+        return 1
+    else
+        DATABASE_NAME=$1
+        DATABASE_USER=$2
+        DATABASE_PASSWORD=$3
+        DEPLOY_DIR=$4
+        DB_EPOCH_VERSION=$5
     fi
-    set_redcap_config "Adjusting DB for edocs move..." edoc_path $edoc_path
+
+    SCHEMA_FOLDER=$DEPLOY_DIR/schema
+
+    # LOad the three epoch files--schema.sql, data_minimal.sql and data_testing.sql--in that order
+    for file in schema.sql data_minimal.sql data_testing.sql ; do
+        create_tables $DATABASE_NAME $DATABASE_USER $DATABASE_PASSWORD $SCHEMA_FOLDER/$DB_EPOCH_VERSION/$file
+    done
+
+    # load every upgrade.sql with a higher version number than the $DB_EPOCH_VERSION
+    for dir in `find $SCHEMA_FOLDER -maxdepth 1 -type d | sort --version-sort | grep -A1000 $DB_EPOCH_VERSION | tail -n +2` ; do
+        if [ -e $dir/upgrade.sql ]; then
+            create_tables $DATABASE_NAME $DATABASE_USER $DATABASE_PASSWORD $dir/upgrade.sql
+        fi
+    done
+
 }
 
-function set_redcap_config() {
-    info_text=$1
-    field_name=$2
-    value=$3
-    echo "$1"
-    mysql -e "UPDATE redcap.redcap_config SET value = '$value' WHERE field_name = '$field_name';"
+function create_tables() {
+    log "Executing: create_tables()"
+    # load a single SQL file into the database to initialize the application
+
+    REQUIRED_PARAMETER_COUNT=4
+    if [ $# != $REQUIRED_PARAMETER_COUNT ]; then
+        echo "${FUNCNAME[0]} Creates a MySQL database, a DB user with access to the DB, and sets user's password."
+        echo "${FUNCNAME[0]} requires these $REQUIRED_PARAMETER_COUNT parameters in this order:"
+        echo "DATABASE_NAME        Name of the database to create"
+        echo "DATABASE_USER        Database user who will have access to DATABASE_NAME"
+        echo "DATABASE_PASSWORD    Password of DATABASE_USER"
+        echo "SQL_FILE             The full path to the SQL file that will be loaded into the DATABASE_NAME"
+        return 1
+    else
+        DATABASE_NAME=$1
+        DATABASE_USER=$2
+        DATABASE_PASSWORD=$3
+        SQL_FILE=$4
+    fi
+
+    if [ -e $SQL_FILE ]; then
+        echo "Loading database file $SQL_FILE into $DATABASE_NAME..."
+        mysql -u$DATABASE_USER -p$DATABASE_PASSWORD $DATABASE_NAME < $SQL_FILE
+    else
+        echo "Database file $SQL_FILE does not exist"
+    fi
 }
 
-function set_hook_functions_file() {
-    set_redcap_config "Setting hook_functions_file..." "hook_functions_file" "/var/www/redcap/hooks/redcap_hooks.php"
+function install_xdebug() {
+    # Install XDebug for enabling code coverage
+    log "Executing: install_xdebug()"
+    apt-get install -y php5-xdebug
+
+    echo 'Restarting apache server'
+    service apache2 restart
 }
 
-function make_twilio_features_visible() {
-    set_redcap_config "Making twilio features visible..." "twilio_enabled_by_super_users_only" "0"
+function install_composer_deps() {
+    log "Executing: install_composer_deps()"
+    REQUIRED_PARAMETER_COUNT=1
+    if [ $# != $REQUIRED_PARAMETER_COUNT ]; then
+        echo "${FUNCNAME[0]} Installs PHP Composer and runs 'composer install' for this app"
+        echo "${FUNCNAME[0]} requires these $REQUIRED_PARAMETER_COUNT parameters in this order:"
+        echo "DEPLOY_DIR           The directory where the app is deployed"
+        return 1
+    else
+        DEPLOY_DIR=$1
+    fi
+
+    curl -sS https://getcomposer.org/installer | php
+    mv composer.phar /usr/local/bin/composer
+
+    pushd $DEPLOY_DIR/app
+        # silence the deprecation notice
+        # The Composer\Package\LinkConstraint\VersionConstraint class is deprecated,
+        # use Composer\Semver\Constraint\Constraint instead. in phar:///usr/local/bin/composer/src/Composer/Package/LinkConstraint/VersionConstraint.php:17
+        php5dismod xdebug
+        composer install 2>&1 | tee ~/log_install_composer_deps
+        php5enmod xdebug
+    popd
+    log "Done with install_composer_deps()"
 }
 
-# Check if the Apache server is actually serving the REDCap files
-function check_redcap_status() {
-    echo "Checking if redcap application is running..."
-    curl -s http://localhost/redcap/ | grep -i 'Welcome\|Critical Error'
-    echo "Please try to login to REDCap as user 'admin' and password: 'password'"
+function upgrade_acl () {
+    echo "Executing: upgrade_acl()"
+
+    REQUIRED_PARAMETER_COUNT=2
+    if [ $# != $REQUIRED_PARAMETER_COUNT ]; then
+        echo "${FUNCNAME[0]} Runs any ACL Upgrade scripts"
+        echo "${FUNCNAME[0]} requires these $REQUIRED_PARAMETER_COUNT parameters in this order:"
+        echo "DEPLOY_DIR           The directory where the app is deployed"
+        echo "DB_EPOCH_VERSION     The version of the schema files to be loaded before applying upgrades"
+        return 1
+    else
+        DEPLOY_DIR=$1
+        DB_EPOCH_VERSION=$2
+    fi
+
+    SCHEMA_FOLDER=$DEPLOY_DIR/schema
+
+    # run every acl-upgrade.sh with a higher version number than the $DB_EPOCH_VERSION
+    for dir in `find $SCHEMA_FOLDER -maxdepth 1 -type d | sort --version-sort | grep -A1000 $DB_EPOCH_VERSION | tail -n +2` ; do
+        if [ -e $dir/acl-upgrade.sh ]; then
+            echo "Running $dir/acl-upgrade.sh..."
+            bash $dir/acl-upgrade.sh
+        fi
+    done
+
 }
 
-function install_utils() {
-    echo "Installing utilities..."
-    cp $SHARED_FOLDER/aliases /home/vagrant/.bash_aliases
+function reset_db {
+    . /vagrant/.env
+    create_database $DB $DB_APP_USER $DB_APP_PASSWORD $DB_HOST $DB_PASS
+    create_database $DB_TEST $DB_APP_USER $DB_APP_PASSWORD $DB_HOST $DB_PASS
+    update_cake_connection_settings $PATH_TO_APP_IN_GUEST_FILESYSTEM $DB_APP_USER $DB_APP_PASSWORD $DB_HOST
+    populate_db $DB $DB_USER $DB_PASS $PATH_TO_APP_IN_GUEST_FILESYSTEM $DB_EPOCH_VERSION
+    upgrade_acl $PATH_TO_APP_IN_GUEST_FILESYSTEM $DB_EPOCH_VERSION
 }
 
 function configure_exim4() {
@@ -234,7 +370,7 @@ cat << EOF > /etc/exim4/update-exim4.conf.conf
 dc_eximconfig_configtype='satellite'
 dc_other_hostnames='localhost'
 dc_local_interfaces='127.0.0.1 ; ::1'
-dc_readhost='$development_hostname'
+dc_readhost='$HOSTNAME_IN_HOST'
 dc_relay_domains=''
 dc_minimaldns='false'
 dc_relay_nets=''
@@ -263,7 +399,7 @@ root: vagrant
 EOF
 
 cat << EOF > /etc/mailname
-$development_hostname
+$HOSTNAME_IN_HOST
 EOF
 
 service exim4 restart
@@ -276,9 +412,3 @@ function configure_php_mail() {
     sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php5/apache2/php.ini
 }
 
-function configure_ssl() {
-    echo "Configure SSL..."
-
-    a2enmod ssl
-    ln -s /etc/apache2/sites-available/default-ssl /etc/apache2/sites-enabled
-}

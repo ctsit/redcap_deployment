@@ -17,6 +17,7 @@ set -e
 export SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Set defaults for required variables where they do not exist
+REDCAP_ROOT=$PATH_TO_APP_IN_GUEST_FILESYSTEM
 if [ -z "$REDCAP_ROOT" ]; then
     export REDCAP_ROOT=/var/https/redcap
 fi
