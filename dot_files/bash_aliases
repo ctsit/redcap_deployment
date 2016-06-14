@@ -1,8 +1,9 @@
+. /vagrant/.env
 
-alias db='mysql --prompt="(\u@\h) [\d]> " --pager="less -niSX" -uroot -p$DB_ROOT_USER $DB'
-alias db_test='mysql --prompt="(\u@\h) [\d]> " --pager="less -niSX" -uroot -p$DB_ROOT_USER $DB_TEST'
+alias db='mysql --prompt="(\u@\h) [\d]> " --pager="less -niSX" -uroot -p$DB_ROOT_PASS $DB'
+alias db_test='mysql --prompt="(\u@\h) [\d]> " --pager="less -niSX" -uroot -p$DB_ROOT_PASS $DB_TEST'
 
-alias show_columns='mysql -uroot -p$DB_ROOT_USER $DB -e "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = \"$DB\" " '
+alias show_columns='mysql -uroot -p$DB_ROOT_PASS $DB -e "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = \"$DB\" " '
 
 alias cd_app='cd $PATH_TO_APP_IN_GUEST_FILESYSTEM && pwd && ls -al'
 

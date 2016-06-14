@@ -28,6 +28,7 @@ function install_utils() {
     cp /vagrant/dot_files/bash_aliases  /home/vagrant/.bash_aliases
     cp /vagrant/dot_files/bashrc        /home/vagrant/.bashrc
     cp /vagrant/dot_files/vimrc         /home/vagrant/.vimrc
+    chown -R vagrant.vagrant /home/vagrant
 
     cp /vagrant/dot_files/bash_aliases  /root/.bash_aliases
     cp /vagrant/dot_files/bashrc        /root/.bashrc
