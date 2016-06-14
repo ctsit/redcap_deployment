@@ -1,0 +1,115 @@
+set ls=2
+set bs=2
+set background=dark
+
+set nu
+set nocompatible
+set ruler
+filetype on
+syntax on
+filetype indent on
+
+set autoindent
+set smartindent
+set splitbelow
+set splitright
+set showmatch
+" How many tenths of a second to blink when matching brackets
+set mat=2
+
+set expandtab
+set tabstop=4 " Set Tab size
+set expandtab " Expand Tabs (pressing Tab inserts spaces)
+set shiftwidth=4 " Number of spaces to use for each step of (auto)indent
+set softtabstop=4 " makes the spaces feel like real tabs; one backspace goes back X spaces :)
+set backspace=indent,eol,start
+retab
+
+set nowrapscan
+set ignorecase " Ignore case in search
+set smartcase " Consider case only when typing Uppercase
+set incsearch " Show search results when typing
+set hlsearch " highlight search pattern
+set vb t_vb= " don't notify (no audio/visual bell)
+set showmode " display mode INSERT/REPLACE/...
+set scrolloff=3 " do not let the curser get too close to the edge
+set laststatus=2 " laststatus: show status line? Yes, always!
+
+map! <F1> <ESC> " F1 != Help; remove acces to help :)
+map <F1> <ESC>
+" switch lines
+map <F5> ddkkp<CR>
+map <F6> :set number! <CR>
+
+nnoremap 2 <c-w>wl
+autocmd filetype php nnoremap <F3> :w <bar> exec '!php -l ' .shellescape('%')<CR>
+autocmd filetype php nnoremap <F4> :w <bar> exec '!php '.shellescape('%')<CR>
+
+" restore position
+function! ResCur()
+  if line("'\"") <= line("$")
+    normal! g`"
+    return 1
+  endif
+endfunction
+
+augroup resCur
+  autocmd!
+  autocmd BufWinEnter * call ResCur()
+augroup END
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => from puphpet.com
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Set to auto read when a file is changed from the outside
+set autoread
+
+" With a map leader it's possible to do extra key combinations
+" like <leader>w saves the current file
+let mapleader = ","
+let g:mapleader = ","
+
+" Fast saving
+nmap <leader>w :w!<cr>
+
+" :W sudo saves the file
+" (useful for handling the permission-denied error)
+command W w !sudo tee % > /dev/null
+
+set wildmenu
+
+"Don't redraw while executing macros (good performance config)
+set lazyredraw
+
+" For regular expressions turn magic on
+set magic
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Editing mappings
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Remap VIM 0 to first non-blank character
+map 0 ^
+
+" Move a line of text using ALT+[jk] or Comamnd+[jk] on mac
+nmap <M-j> mz:m+<cr>`z
+nmap <M-k> mz:m-2<cr>`z
+vmap <M-j> :m'>+<cr>`<my`>mzgv`yo`z
+vmap <M-k> :m'<-2<cr>`>my`<mzgv`yo`z
+
+if has("mac") || has("macunix")
+  nmap <D-j> <M-j>
+  nmap <D-k> <M-k>
+  vmap <D-j> <M-j>
+  vmap <D-k> <M-k>
+endif
+
+" Delete trailing white space on save, useful for Python and CoffeeScript ;)
+func! DeleteTrailingWS()
+  exe "normal mz"
+  %s/\s\+$//ge
+  exe "normal `z"
+endfunc
+autocmd BufWrite *.py :call DeleteTrailingWS()
+autocmd BufWrite *.coffee :call DeleteTrailingWS()

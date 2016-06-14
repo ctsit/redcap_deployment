@@ -3,6 +3,15 @@ All notable changes to the REDCap Deployment project will be documented in this 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.5.0] - 2016-06-14
+### Changed
+- Refactor dev VM and its related deployment scripts to use the vagrant-env plugin, Debian Jessie, and MySQL Community Server (Philip Chase)
+- Fix formatting errors in 'Creating the Test VM With Vagrant' and embellish content (Philip Chase)
+- Use our apache ssl configuration (Philip Chase)
+- Check for box file updates at 'vagrant up' (Philip Chase)
+- Reconfigure how the autonotify plugin deployment integrates with apache (Philip Chase)
+
+
 ## [0.4.1] - 2016-04-25
 ### Changed
 - Correct documentation and make it more suitable for public consumption (Philip Chase)

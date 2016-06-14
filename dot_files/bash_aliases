@@ -1,0 +1,83 @@
+. /vagrant/.env
+
+alias db='mysql --prompt="(\u@\h) [\d]> " --pager="less -niSX" -uroot -p$DB_ROOT_PASS $DB'
+alias db_test='mysql --prompt="(\u@\h) [\d]> " --pager="less -niSX" -uroot -p$DB_ROOT_PASS $DB_TEST'
+
+alias show_columns='mysql -uroot -p$DB_ROOT_PASS $DB -e "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = \"$DB\" " '
+
+alias cd_app='cd $PATH_TO_APP_IN_GUEST_FILESYSTEM && pwd && ls -al'
+
+alias conf_apache='     sudo vim /etc/apache2/sites-enabled/apache-ssl.conf'
+alias restart_apache='  sudo /etc/init.d/apache2 reload '
+alias restart_mysql='   sudo service mysql restart'
+alias tail_apache_err=' echo /var/log/apache2/error.log  && sudo tail -f /var/log/apache2/error.log'
+alias tail_apache_acc=' echo /var/log/apache2/access.log && sudo tail -f /var/log/apache2/access.log'
+
+alias ali='vim ~/.bash_aliases'
+alias ma='vim Makefile'
+alias ba='vim ~/.bashrc'
+alias refresh='. ~/.bashrc'
+alias ls='ls --color=auto'
+alias lsa='ls -al'
+alias lss='ls -ltr'
+alias dua='du -hcs'
+alias duf="du -h --max-depth=1 ./ | sort -n -r"
+alias cdd='cd ..'
+alias cdg='cd ~/git'
+
+alias gst='git status'
+alias glog='git log'
+alias gdiff='git diff'
+alias gdif='git diff --cached'
+alias gb='git branch'
+alias gp='git remote -v'
+alias gf='git show --name-status'
+
+alias gan='git blame'
+alias gin='git fetch && git log ..origin/master'
+alias gout='git fetch && git log origin/master..'
+
+alias grepa="nice ack-grep -i"
+alias grepp="nice ack-grep --php --python -i"
+alias fin='find -iname'
+
+function show() {
+   # credits: http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options
+   list=''
+   status_only=no
+   show_help=no
+
+   set -- $(getopt fh "$@")
+   while [ $# -gt 0 ]
+      do
+   case "$1" in
+         (-f) status_only=yes;;
+         (-h) show_help=yes;;
+         (-c) list="$list $2"; shift;;
+         (--) shift; break;;
+         (-*) echo "$0: error - unrecognized option $1" 1>&2; exit 1;;
+         (*)  break;;
+         esac
+         shift
+   done
+
+   if [[ $# -lt 1 ]] || [[ "yes" == "$show_help" ]] ; then
+      echo 'Usage: '
+      echo '   show [-f file status only] [-h help] commit_index'
+      return
+   fi
+
+   # validate the index
+   re='^[0-9]+$'
+   if ! [[ "$1" =~ $re ]]; then
+      echo "The commit index must be an integer " >&2
+      return
+   fi
+
+   if [[ "yes" == "$status_only" ]]; then
+      git log --format='%H' -"$1" | tail -1 | xargs git show --name-status
+      #git log --pretty=oneline  | nl | grep " $1\t"  |  cut  -f2 | cut -d ' ' -f1 | xargs git show --name-status
+   else
+      git log --format='%H' -"$1" | tail -1 | xargs git show
+   fi
+}

@@ -1,0 +1,13 @@
+diff --git a/etc/apache2/sites-available/default-ssl.conf b/etc/apache2/sites-available/default-ssl.conf
+index dea77bf..7cb2e1d 100644
+--- a/etc/apache2/sites-available/default-ssl.conf
++++ b/etc/apache2/sites-available/default-ssl.conf
+@@ -35,6 +35,8 @@
+ 		# defined in app/Config/constants.php for cake applications
+ 		SetEnv IS_MODE_STAGING
+ 
++		Include ssl-includes/
++
+ 	</VirtualHost>
+ </IfModule>
+ 
