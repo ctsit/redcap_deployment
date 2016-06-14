@@ -1,10 +1,10 @@
 diff --git a/etc/apache2/sites-available/default-ssl.conf b/etc/apache2/sites-available/default-ssl.conf
-index 432b965..c6152e7 100644
+index dea77bf..7cb2e1d 100644
 --- a/etc/apache2/sites-available/default-ssl.conf
 +++ b/etc/apache2/sites-available/default-ssl.conf
-@@ -130,6 +130,8 @@
- 		# MSIE 7 and newer should be able to use keepalive
- 		BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
+@@ -35,6 +35,8 @@
+ 		# defined in app/Config/constants.php for cake applications
+ 		SetEnv IS_MODE_STAGING
  
 +		Include ssl-includes/
 +

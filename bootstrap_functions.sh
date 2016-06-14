@@ -96,8 +96,8 @@ END
 
     log "Link config files for apache port 443"
     find /etc/apache2/sites-* | xargs -i ls -l {}
-    cp /vagrant/apache-ssl.conf /etc/apache2/sites-available/default-ssl
-    ln -sfv /etc/apache2/sites-available/default-ssl    /etc/apache2/sites-available/apache-ssl.conf
+    cp /vagrant/apache-ssl.conf /etc/apache2/sites-available/default-ssl.conf
+    ln -sfv /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/apache-ssl.conf
 
     log "Link config files for apache port 80"
     OLD_APACHE_DEFAULT=/etc/apache2/sites-enabled/000-default.conf
@@ -113,7 +113,7 @@ END
     a2enmod ssl
     a2enmod rewrite
 
-    log "Restaring apache with new config..."
+    log "Restarting apache with new config..."
     sleep 2
     service apache2 start
 }
