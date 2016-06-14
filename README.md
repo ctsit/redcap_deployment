@@ -12,7 +12,7 @@ production and staging instances of REDCap at the CTSI.
 
 ## Requirements
 
-A user of these tools will need to download and provide their own REDCap bits,
+A user of these tools will need to download and provide their own REDCap zip file,
 downloaded from Vanderbilt. This REDCap .zip should be placed in the root folder.
 It should not be renamed.
 
@@ -21,13 +21,21 @@ This VM requires that Vagrant, VirtualBox, the vagrant-hostsupdater plugin and t
 See [Creating the Test VM With Vagrant](docs/creating_the_test_vm_with_vagrant.rst) for details on how to meet those requirements.
 
 
-## Using the Development environment
+## Configure the Development Environment
 
-To with the above requirements met, start the VM with the command
+The development environment needs to be configured before it can be started.
+Copy the file _example.env.txt_ to the name _.env_ and customize it for your
+use. Minimally, you will need to set _smtp\_smarthost_ the dns name of a mail
+server your development host can use to deliver mail.  This will allow you to
+better test features that send email.
+
+## Using the Development Environment
+
+With the above requirements and configuration completed, start the VM with the command
 
     vagrant up
 
-After about two minutes, the VM should be accessible at [http://redcap.dev/redcap/](http://redcap.dev/redcap/) and at [https://redcap.dev/redcap/](https://redcap.dev/redcap/)
+After about two minutes, the VM should be accessible at [http://redcap.dev/redcap/](http://redcap.dev/redcap/) and at [https://redcap.dev/redcap/](https://redcap.dev/redcap/) (or whatever URL _URL\_OF\_DEPLOYED\_APP_ is set to in _.env_)
 
 
 ## Hook and Plugin deployment
@@ -49,7 +57,7 @@ ToDo: Convert steps of wiki article to shell script.
 
 ## REDCap installation
 
-We do not currently have a bare-metal installation procedure. That said, the
+CTS-IT does not currently have a bare-metal installation procedure. That said, the
 vagrant files presented in this repo contain many of the required steps in
 such a deployment process. Other steps can be found in the above upgrade
 instructions.
