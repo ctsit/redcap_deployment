@@ -2,6 +2,13 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.0] - 2016-08-01
+### Changed
+- Merge Requirements section from docs/creating_the_test_vm_with_vagrant.rst into README and update text of README (Philip Chase)
+
+### Added
+- Add condensed_pdf_report plugin (Philip Chase)
+
 
 ## [0.5.0] - 2016-06-14
 ### Changed
