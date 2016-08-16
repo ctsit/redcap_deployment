@@ -2,6 +2,11 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.1] - 2016-08-15
+### Changed
+- Replace patching of default-ssl.conf with warning if there is no line to include ssl-includes/ (Philip Chase)
+- Fix typos in the README (Philip Chase)
+
 ## [0.6.0] - 2016-08-01
 ### Changed
 - Merge Requirements section from docs/creating_the_test_vm_with_vagrant.rst into README and update text of README (Philip Chase)
