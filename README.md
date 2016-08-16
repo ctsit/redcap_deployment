@@ -56,14 +56,14 @@ For more details about Vagrant software you can go to [why-vagrant](https://docs
 
 You must provide a copy of the REDCap software from http ://project-redcap.org/. Save the .zip file with its default name to the root of this repository. This ensures the provisioning script [bootstrap.sh](bootstrap.sh) script can extract the files to the virtual machine path "**/var/www/redcap**".
 
-If you put multiple redcap\*.zip files in the vagrant folder, the provisioning script will use the one with the highest version number.
+If you put multiple redcap\*.zip files in the root folder, the provisioning script will use the one with the highest version number.
 
 
 ## Configure the Development Environment
 
 The development environment needs to be configured before it can be started.
 Copy the file _example.env.txt_ to the name _.env_ and customize it for your
-use. Minimally, you will need to set _smtp\_smarthost_ the dns name of a mail
+use. Minimally, you will need to set _smtp\_smarthost_ to the dns name of a mail
 server your development host can use to deliver mail.  This will allow you to
 better test features that send email.
 

@@ -38,11 +38,9 @@ fi
 
 # make sure the above SSL_INCLUDES directory is referenced in the apache ssl config
 SSL_CONFIG=/etc/apache2/sites-available/default-ssl.conf
-SITES_AVAILABLE=/etc/apache2/sites-available
 if [ -e $SSL_CONFIG ]; then
     if [ `grep -c "Include ssl-includes/" $SSL_CONFIG` == 0 ] ; then
-      cd $SITES_AVAILABLE
-      patch -p4 < $DIR/ssl-includes.patch
+        echo "WARNING: the line 'Include ssl-includes/' does not existing in $SSL_CONFIG.  Please fix this."
     fi
 else
     echo "Error: I don't know where the SSL configuration file is.  Exiting!"
