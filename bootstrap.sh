@@ -89,4 +89,5 @@ check_redcap_status
 
 export PATH_TO_APP_IN_GUEST_FILESYSTEM
 
-/vagrant/deploy_extensions.sh
+/vagrant/deploy_hooks.sh
+/vagrant/deploy_plugins.sh

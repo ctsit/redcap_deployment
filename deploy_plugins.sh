@@ -13,6 +13,11 @@
 # Fail on first error
 set -e
 
+# use the same vagrant .env the guest was provisioned with
+if [ -e /vagrant/.env ]; then
+    . /vagrant/.env
+fi
+
 # make a note of where this script lives so we can use relative paths later
 export SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -37,5 +42,4 @@ fi
 
 . $SCRIPT_DIR/deployment_functions.sh
 
-deploy_hooks
 deploy_plugins
