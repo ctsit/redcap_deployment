@@ -2,22 +2,29 @@
 
 ## Overview
 
-This repo documents the scripts and tools used by CTS-IT for deployments and
-upgrades to the CTSI REDCap staging and production instances. This repo
-includes a Vagrant VM on which these tools can be developed and tested.
+This project provides tools for scripted deployments of REDCap instances and the extensions installed within them. The tools achieve this through scripted building of packages of the REDCap with extensions and scripted deployment of those packages to hosts. The goal of the project is to build packages rapidly and consistently across REDCap version numbers and deployed instances. This will reduce the cost of testing, the variability in test environments, and the costs of upgrading REDCap instances.
 
-This repo also contains the mapping of hooks to specific project id's for the
-production and staging instances of REDCap at the CTSI.
+Ancillary to this goal, this project provides a local REDCap instance that can be used as an educational REDCap tool and/or a software development test bed. You can use this project for any or all of these goals.
+
 
 ## Requirements
 
-A user of these tools will need to download and provide their own REDCap zip file,
-downloaded from Vanderbilt. This REDCap .zip should be placed in the root folder.
-It should not be renamed.
+### REDCap
 
-This VM requires that Vagrant, VirtualBox, the vagrant-hostsupdater plugin and
-the vagrant-env plugin be installed on the host system.
+A user of these tools will need to download and provide their own REDCap zip
+file, downloaded from Vanderbilt. This REDCap .zip should be placed in the
+root folder of this project. It should not be renamed.
 
+### Virtual Machine
+
+This project provides a virtual machine wherein it hosts the local REDCap instance. Creating the virtual machine (VM) the software packages Vagrant, VirtualBox, the vagrant-hostsupdater plugin and the vagrant-env plugin be installed on the host system.
+
+### Packaging and Deployment
+
+The packaging and deployment tools are designed to deploy REDCap to Debian Linux hosts. They may or may not work with non-Debian REDCap hosts and cannot deploy REDCap to Windows hosts. The packaging and deployment tools written using the [Fabric](http://www.fabfile.org/) system. Fabric is written in Python, so both Python 2.7 and Fabric must be installed to do packaging and deployment.
+
+
+## Installing dependencies
 
 ### Install Vagrant and Virtual Box
 
@@ -54,12 +61,12 @@ For more details about Vagrant software you can go to [why-vagrant](https://docs
 
 ### Get your REDCap zip file
 
-You must provide a copy of the REDCap software from http ://project-redcap.org/. Save the .zip file with its default name to the root of this repository. This ensures the provisioning script [bootstrap.sh](bootstrap.sh) script can extract the files to the virtual machine path "**/var/www/redcap**".
+You must provide a copy of the REDCap software from https://projectredcap.org/. Save the .zip file with its default name to the root of this repository. This ensures the packaging and provisioning scripts can locate the REDCap code when needed.
 
-If you put multiple redcap\*.zip files in the root folder, the provisioning script will use the one with the highest version number.
+If you put multiple redcap\*.zip files in the root folder, the provisioning script will default to using the one with the highest version number.
 
 
-## Configure the Development Environment
+## Configure the Virtual Machine
 
 The development environment needs to be configured before it can be started.
 Copy the file _example.env.txt_ to the name _.env_ and customize it for your
@@ -68,41 +75,23 @@ server your development host can use to deliver mail.  This will allow you to
 better test features that send email.
 
 
-## Using the Development Environment
+## Using the testing and development environment
 
 With the above requirements and configuration completed, start the VM with the command
 
     vagrant up
 
-After about two minutes, the VM should be accessible at [http://redcap.dev/redcap/](http://redcap.dev/redcap/) and at [https://redcap.dev/redcap/](https://redcap.dev/redcap/) (or whatever URL _URL\_OF\_DEPLOYED\_APP_ is set to in _.env_)
+After about two minutes, the VM should be accessible at the value you set for _URL\_OF\_DEPLOYED\_APP_ is set to in _.env_  By default this is [http://redcap.dev/redcap/](http://redcap.dev/redcap/)
 
 
 ## Hook and Plugin Deployment
 
-CTSI REDCap Hooks and Plugins are deployed using the script
-deploy_extensions.sh in this repo.  This repo also contains the data files
-need to configure hook deployment for the CTSI REDCap instances.  See [Hook
-Deployment ](README-hooks.md) for usage instructions and details.
+The VM provisioning scripts will automatically deploy all hooks and plugins described in the sub directories of ./deploy/hooks, ./deploy/hook-framework, and ./deploy/plugins as long as those extensions comply with the specification defined in ./docs/redcap_extension_deployment_specification.md
 
 
-## REDCap Upgrade
+## Hook and Plugin Development
 
-At the moment, CTS-IT does not have a fully scripted upgrade or procedures
-that can be be shared publicly.  The upgrade procedures used live in a private
-Wiki article found at [CTS-IT Wiki Article on REDCap Upgrades](https://ctsit-
-forge.ctsi.ufl.edu/projects/redcap/wiki/REDCap_Upgrade_Instructions)
-
-ToDo: Move wiki article to a markdown doc in this repo.
-ToDo: Convert steps of wiki article to shell script.
-
-
-## REDCap Installation
-
-CTS-IT does not currently have a bare-metal installation procedure. That said, the
-vagrant files presented in this repo contain many of the required steps in
-such a deployment process.
-
-ToDo: Make vagrant provisioning scripts more like a production deployment.
+The directories of deployed hooks and plugins are accessible from the host computer in this project directory at ./redcap/hooks and ./redcap/plugins.  Indeed, the entire deployed REDCap code base is accessible.  This allows the deployed code base to be modified on the fly. Use the aid development and expermentation, but beware that these files will be erased if you destroy the VM.
 
 
 ## Contributions
