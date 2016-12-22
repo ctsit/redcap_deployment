@@ -3,3 +3,5 @@
 ~$*
 redcap*.zip
 redcap/
+build
+*.pyc

@@ -1,4 +1,8 @@
 """
+This fab file packages, deploys, and upgrades REDCap. The fab file uses a 
+settings file to define the parameters of each deployed instance. 
+"""
+"""
 This fab file takes the QIPR project and deploys it using a provided settings file.
 The settings files contains secrets, so it should be kept locally somewhere outside
 the git directory. The secrets file path in this script needs to be changed to match your installation.
@@ -51,7 +55,19 @@ from datetime import datetime
 import configparser, string, random, os
 
 config = configparser.ConfigParser()
-settings_file_path = 'qipr_approver/deploy/settings.ini' #path to where app is looking for settings.ini
+settings_file_path = 'settings/dev.ini' #path to where app is looking for settings.ini
+
+@task
+def make_builddir(builddir="build"):
+    with settings(warn_only=True):
+        if local("test -e %s" % builddir).failed:
+            local("mkdir %s" % builddir)
+        else:
+            print ("Directory %s already exists!" % builddir)
+
+@task
+def clean(builddir="build"):
+    local("rm -rf %s" % builddir)
 
 def get_config(key):
     return config.get("fabric_deploy", key)
