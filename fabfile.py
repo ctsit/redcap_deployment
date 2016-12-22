@@ -69,6 +69,18 @@ def make_builddir(builddir="build"):
 def clean(builddir="build"):
     local("rm -rf %s" % builddir)
 
+@task
+def latest_redcap(sourcedir="."):
+    env.latest_redcap = local("ls %s/redcap*.zip | grep 'redcap[0-9]\{1,2\}\.[0-9]\{1,2\}\.[0-9]\{1,2\}\.zip' | sort -n | tail -n 1" % sourcedir, capture=True).stdout
+    print (env.latest_redcap)
+
+@task
+def extract_redcap(redcap_version="."):
+    print (redcap_version)
+    #TODO determine if redcap_version is a RC.zip or a path
+
+##########################
+
 def get_config(key):
     return config.get("fabric_deploy", key)
 
