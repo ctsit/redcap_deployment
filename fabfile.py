@@ -1,6 +1,6 @@
 """
-This fab file packages, deploys, and upgrades REDCap. The fab file uses a 
-settings file to define the parameters of each deployed instance. 
+This fab file packages, deploys, and upgrades REDCap. The fab file uses a
+settings file to define the parameters of each deployed instance.
 """
 """
 This fab file takes the QIPR project and deploys it using a provided settings file.
@@ -81,8 +81,15 @@ def extract_redcap(redcap_version="."):
 
 ##########################
 
+@task(alias='backup')
+def backup_database():
+    run("mysqldump --skip-lock-tables -u %s -p%s -h %s %s > dump.sql" % \
+        (env.database_name, env.database_password, env.database_host, env.database_name))
+
+##########################
+
 def get_config(key):
-    return config.get("fabric_deploy", key)
+    return config.get("instance", key)
 
 def define_env():
     """
@@ -101,10 +108,15 @@ def define_env():
     env.project_settings_path = get_config('project_settings_path')
     env.live_project_full_path = get_config('live_pre_path') + "/" + get_config('project_path') #
     env.backup_project_full_path = get_config('backup_pre_path') + "/" + get_config('project_path')
-    env.key_filename = get_config('ssh_keyfile_path')
+    env.key_filename = get_config('key_filename')
+    env.database_name = get_config('database_name')
+    env.database_user = get_config('database_user')
+    env.database_password = get_config('database_password')
+    env.database_host = get_config('database_host')
 
-@task(alias='v')
-def vagrant(admin=False):
+
+@task(alias='d')
+def dev(admin=False):
     """
     Set up deployment for vagrant
 
@@ -114,11 +126,10 @@ def vagrant(admin=False):
 
     define_env()
     if admin:
-        env.user = 'vagrant'
-        env.key_filename = '../vagrant/.vagrant/machines/qipr_approver/virtualbox/private_key' #This is the hardcoded vagrant key based on this projects file structure
+        env.user = get_config('admin_user')
 
-    env.hosts = ['127.0.0.1']
-    env.port = '2222'
+    env.hosts = [get_config('host')]
+    env.port = get_config('host_ssh_port')
 
 @task(alias='s')
 def stage(admin=False):
