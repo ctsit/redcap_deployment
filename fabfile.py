@@ -54,6 +54,7 @@ from fabric.utils import abort
 from datetime import datetime
 import configparser, string, random, os
 from tempfile import mkstemp
+import re
 
 config = configparser.ConfigParser()
 settings_file_path = 'settings/dev.ini' #path to where app is looking for settings.ini
@@ -76,17 +77,20 @@ def latest_redcap(sourcedir="."):
     return (env.latest_redcap)
 
 @task
-def extract_redcap(redcap_version="."):
-    print (redcap_version)
-    #TODO determine if redcap_version is a RC.zip or a path
+def extract_redcap(redcap_zip="."):
+    print (redcap_zip)
+    #TODO determine if redcap_zip is a RC.zip or a path
     with settings(warn_only=True):
-        if local("test -d %s" % redcap_version).succeeded:
-            redcap_path = latest_redcap(redcap_version)
-        elif local("test -e %s" % redcap_version).succeeded:
-            redcap_path = redcap_version
+        if local("test -d %s" % redcap_zip).succeeded:
+            redcap_path = latest_redcap(redcap_zip)
+        elif local("test -e %s" % redcap_zip).succeeded:
+            redcap_path = redcap_zip
         else:
             abort("The redcap version specified is neither a zip file nor a path.")
     print (redcap_path)
+    match = re.search(r"(redcap)(\d+.\d+.\d+)(.zip)", redcap_path)
+    print(match.group(2))
+    env.redcap_version = match.group(2)
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
 
 
@@ -125,31 +129,22 @@ def backup_database():
 
 ##########################
 
-def package_redcap(redcap_version=".", version=""):
+@task(alias='package')
+def package_redcap(redcap_zip="."):
     """
     This function will go into the project directory and zip all
     of the required files
     """
 
     make_builddir(env.builddir)
-    extract_redcap(redcap_version)
-
+    extract_redcap(redcap_zip)
     #pull out file name for reuse
-    env.package_name = '%(project_name)s-%(project_version)s.tar.gzip' % env
+    env.package_name = '%(project_name)s-%(redcap_version)s.tar.gzip' % env
 
     #create the package
-    local("cd %(builddir)s  tar -cz --exclude='__pycache__' --exclude='.DS_Store' \
+    local("cd %(builddir)s && tar -cz --exclude='__pycache__' --exclude='.DS_Store' \
     -f %(package_name)s \
-    venv/ \
-    manage.py \
-    qipr_approver/deploy/settings.ini \
-    qipr_approver/__init__.py \
-    qipr_approver/migration_urls.py \
-    qipr_approver/settings.py \
-    qipr_approver/urls.py \
-    qipr_approver/wsgi.py \
-    approver/ \
-    static/" % env)
+    *" % env)
 
 ##########################
 
