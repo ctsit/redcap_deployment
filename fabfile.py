@@ -99,11 +99,18 @@ def write_remote_my_cnf():
     put(file, '/home/%s/.my.cnf' % get_config('deploy_user'), use_sudo=False)
     os.unlink(file)
 
+def timestamp():
+    return(datetime.now().strftime("%Y%m%dT%H%M%Z"))
+
 @task(alias='backup')
 def backup_database():
+    # backup a mysql database from the remote host
+    # timestamp the file and make a static symlink to the timestamped file
     write_remote_my_cnf()
-    run("mysqldump --skip-lock-tables -u %s -h %s %s > dump.sql" % \
-        (env.database_name, env.database_host, env.database_name))
+    now = timestamp()
+    run("mysqldump --skip-lock-tables -u %s -h %s %s > redcap-dump-%s.sql" % \
+        (env.database_name, env.database_host, env.database_name, now))
+    run("ln -sf redcap-dump-%s.sql redcap-dump-latest.sql" % now)
 
 ##########################
 
