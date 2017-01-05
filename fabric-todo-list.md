@@ -2,13 +2,13 @@
 
 ## Things Fabric must do to package REDCap
 
-* make temporary builddir
-* locate redcap\<version\>.zip
+* DONE make temporary builddir
+* DONE locate redcap\<version\>.zip
 * extract redcap\<version\>.zip into builddir
-* checkout named commits of redcap_deployment
+* checkout named commits ogit Fabricf redcap_deployment
 * copy named components from redcap_deployment into build space
-* execute all deploy.sh scripts in ./deploy/hooks/*/deploy.sh
 * execute all deploy.sh scripts in ./deploy/plugins/*/deploy.sh
+* execute all deploy.sh scripts in ./deploy/hooks/*/deploy.sh
 
 
 ## Things Fabric must do to deploy REDCap
@@ -26,13 +26,13 @@
 * set_hook_functions_file - see redcap\_deployment\_functions.sh
 * Make required directories for hook deployment - deployment_functions.sh
 * Create sym links for hooks to be executed - deployment_functions.sh
-
-* make_twilio_features_visible - see redcap\_deployment\_functions.sh
 * Symlink code in "backup" directory into apache document root location.
 
 
 ## Things we would like Fabric to do but might delay
 
+* DONE backup mysql database from the remote host
+* make_twilio_features_visible - see redcap\_deployment\_functions.sh
 * Read remote database.php to get credentials for DB operations.
 * Take REDCap offline.
 * generate upgrade.sql - This will be harder as we will need to copy RC code to make our own PHP-based command line tools generate the upgrade.sql.
