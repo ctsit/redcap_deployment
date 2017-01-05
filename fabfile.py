@@ -114,6 +114,34 @@ def backup_database():
 
 ##########################
 
+def package_redcap(redcap_version=".", version=""):
+	"""
+    This function will go into the project directory and zip all
+    of the required files
+    """
+
+    make_builddir(env.builddir)
+    extract_redcap(redcap_version)
+
+    #pull out file name for reuse
+    env.package_name = '%(project_name)s-%(project_version)s.tar.gzip' % env
+
+    #create the package
+    local("cd %(builddir)s  tar -cz --exclude='__pycache__' --exclude='.DS_Store' \
+    -f %(package_name)s \
+    venv/ \
+	manage.py \
+	qipr_approver/deploy/settings.ini \
+    qipr_approver/__init__.py \
+    qipr_approver/migration_urls.py \
+    qipr_approver/settings.py \
+    qipr_approver/urls.py \
+    qipr_approver/wsgi.py \
+	approver/ \
+	static/" % env)
+
+##########################
+
 def get_config(key):
     return config.get("instance", key)
 
@@ -139,6 +167,7 @@ def define_env():
     env.database_user = get_config('database_user')
     env.database_password = get_config('database_password')
     env.database_host = get_config('database_host')
+    env.builddir = get_config('builddir')
 
 
 @task(alias='d')
