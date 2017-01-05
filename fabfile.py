@@ -53,6 +53,7 @@ from fabric.contrib.files import exists
 from fabric.utils import abort
 from datetime import datetime
 import configparser, string, random, os
+from tempfile import mkstemp
 
 config = configparser.ConfigParser()
 settings_file_path = 'settings/dev.ini' #path to where app is looking for settings.ini
@@ -80,11 +81,29 @@ def extract_redcap(redcap_version="."):
     #TODO determine if redcap_version is a RC.zip or a path
 
 ##########################
+def write_my_cnf():
+    _, file = mkstemp()
+    f = open(file, 'w')
+    f.write("[mysqldump]" +"\n")
+    f.write("user=" + env.database_user +"\n")
+    f.write("password=" + env.database_password +"\n")
+    f.write("" +"\n")
+    f.write("[client]" +"\n")
+    f.write("user=" + env.database_user +"\n")
+    f.write("password=" + env.database_password +"\n")
+    f.close()
+    return(file)
+
+def write_remote_my_cnf():
+    file = write_my_cnf()
+    put(file, '/home/%s/.my.cnf' % get_config('deploy_user'), use_sudo=False)
+    os.unlink(file)
 
 @task(alias='backup')
 def backup_database():
-    run("mysqldump --skip-lock-tables -u %s -p%s -h %s %s > dump.sql" % \
-        (env.database_name, env.database_password, env.database_host, env.database_name))
+    write_remote_my_cnf()
+    run("mysqldump --skip-lock-tables -u %s -h %s %s > dump.sql" % \
+        (env.database_name, env.database_host, env.database_name))
 
 ##########################
 
