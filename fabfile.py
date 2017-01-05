@@ -73,12 +73,23 @@ def clean(builddir="build"):
 @task
 def latest_redcap(sourcedir="."):
     env.latest_redcap = local("ls %s/redcap*.zip | grep 'redcap[0-9]\{1,2\}\.[0-9]\{1,2\}\.[0-9]\{1,2\}\.zip' | sort -n | tail -n 1" % sourcedir, capture=True).stdout
-    print (env.latest_redcap)
+    return (env.latest_redcap)
 
 @task
 def extract_redcap(redcap_version="."):
     print (redcap_version)
     #TODO determine if redcap_version is a RC.zip or a path
+    with settings(warn_only=True):
+        if local("test -d %s" % redcap_version).succeeded:
+            redcap_path = latest_redcap(redcap_version)
+        elif local("test -e %s" % redcap_version).succeeded:
+            redcap_path = redcap_version
+        else:
+            abort("The redcap version specified is neither a zip file nor a path.")
+    print (redcap_path)
+    local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
+
+
 
 ##########################
 def write_my_cnf():
