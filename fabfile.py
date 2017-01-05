@@ -109,7 +109,7 @@ def backup_database():
     write_remote_my_cnf()
     now = timestamp()
     run("mysqldump --skip-lock-tables -u %s -h %s %s > redcap-dump-%s.sql" % \
-        (env.database_name, env.database_host, env.database_name, now))
+        (env.database_user, env.database_host, env.database_name, now))
     run("ln -sf redcap-dump-%s.sql redcap-dump-latest.sql" % now)
 
 ##########################
