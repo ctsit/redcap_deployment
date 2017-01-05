@@ -115,7 +115,7 @@ def backup_database():
 ##########################
 
 def package_redcap(redcap_version=".", version=""):
-	"""
+    """
     This function will go into the project directory and zip all
     of the required files
     """
@@ -130,15 +130,15 @@ def package_redcap(redcap_version=".", version=""):
     local("cd %(builddir)s  tar -cz --exclude='__pycache__' --exclude='.DS_Store' \
     -f %(package_name)s \
     venv/ \
-	manage.py \
-	qipr_approver/deploy/settings.ini \
+    manage.py \
+    qipr_approver/deploy/settings.ini \
     qipr_approver/__init__.py \
     qipr_approver/migration_urls.py \
     qipr_approver/settings.py \
     qipr_approver/urls.py \
     qipr_approver/wsgi.py \
-	approver/ \
-	static/" % env)
+    approver/ \
+    static/" % env)
 
 ##########################
 
