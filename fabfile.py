@@ -240,28 +240,6 @@ def git_version(version):
     local("git stash save 'Stashing current changes while releasing version %s'" % version)
     local("git fetch --all; git checkout %s" % (version))
 
-def package_files():
-    """
-    This function will go into the project directory and zip all
-    of the required files
-    """
-    #pull out file name for reuse
-    env.package_name = '%(project_name)s-%(project_version)s.tar.gzip' % env
-
-    #create the package
-    local("tar -cz --exclude='__pycache__' --exclude='.DS_Store' \
-    -f %(package_name)s \
-    venv/ \
-	manage.py \
-	qipr_approver/deploy/settings.ini \
-    qipr_approver/__init__.py \
-    qipr_approver/migration_urls.py \
-    qipr_approver/settings.py \
-    qipr_approver/urls.py \
-    qipr_approver/wsgi.py \
-	approver/ \
-	static/" % env)
-
 def create_backup():
     """
     This function creates a backup of the current live directory using the project name and current time
