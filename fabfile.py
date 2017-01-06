@@ -178,12 +178,21 @@ def package_redcap(redcap_zip="."):
     # Get variables to tell us where to write the package
     env.package_name = '%(project_name)s-%(redcap_version)s.tgz' % env
     cwd = os.getcwd()
-
     # create the package
     local("cd %s && tar -cz --exclude='.DS_Store' \
     -f %s/%s \
     redcap" % (env.builddir, cwd, env.package_name))
 
+@task(alias='upload')
+def upload_package(name=""):
+    """
+    This function moves the package to live directory on remote host using the project name and current time
+    """
+    put(name, '%(upload_project_full_path)s' % env)
+    with cd("%(upload_project_full_path)s" % env):
+        #run("mkdir -p %s" % (env.project_name))
+        run("tar -xzf %s" % name)
+        run("mv %s %s-%s" % (env.project_name, env.project_name, datetime.now().strftime("%Y%m%dT%H%M%Z")))
 ##########################
 
 def get_config(key):
@@ -206,6 +215,7 @@ def define_env():
     env.project_settings_path = get_config('project_settings_path')
     env.live_project_full_path = get_config('live_pre_path') + "/" + get_config('project_path') #
     env.backup_project_full_path = get_config('backup_pre_path') + "/" + get_config('project_path')
+    env.upload_project_full_path = get_config('backup_pre_path')
     env.key_filename = get_config('key_filename')
     env.database_name = get_config('database_name')
     env.database_user = get_config('database_user')
