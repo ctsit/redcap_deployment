@@ -93,6 +93,39 @@ def extract_redcap(redcap_zip="."):
     env.redcap_version = match.group(2)
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
 
+@task(alias="dpibs")
+def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins"):
+    """
+    Deploy each extension into build space by running its own deploy.sh.
+    Lacking a deploy.sh, copy the extension files to the build space.
+    For each extension run test.sh if it exists.
+    """
+    # make sure the target directory exists
+    extension_dir_in_build_space=env.builddir + target_within_build_space
+    with settings(warn_only=True):
+        if local("test -d %s" % extension_dir_in_build_space).failed:
+            local("mkdir %s" % extension_dir_in_build_space)
+
+    # locate every directory plugins_deployment_source/*
+    for (dirpath, dirnames, filenames) in os.walk(env.plugins_deployment_source):
+        for dir in dirnames:
+            # make the target directory
+            this_target = os.path.join(extension_dir_in_build_space, dir)
+            if not os.path.exists(this_target):
+                os.mkdir(this_target)
+
+            # run the deployment script
+            this_deploy_script = os.path.join(dirpath,dir,'deploy.sh')
+            if os.path.isfile(this_deploy_script):
+                local("bash %s %s" % (this_deploy_script, this_target))
+            else:
+                # copy files to target
+                local("cp %s/* %s" % (os.path.join(dirpath,dir,), this_target))
+
+            # run test deployment script
+            this_test_script = os.path.join(dirpath,dir,'test.sh')
+            if os.path.isfile(this_test_script):
+                local("bash %s " % this_test_script)
 
 
 ##########################
@@ -140,6 +173,7 @@ def package_redcap(redcap_zip="."):
     clean(env.builddir)
     make_builddir(env.builddir)
     extract_redcap(redcap_zip)
+    deploy_plugins_into_build_space()
 
     # Get variables to tell us where to write the package
     env.package_name = '%(project_name)s-%(redcap_version)s.tgz' % env
@@ -178,6 +212,7 @@ def define_env():
     env.database_password = get_config('database_password')
     env.database_host = get_config('database_host')
     env.builddir = get_config('builddir')
+    env.plugins_deployment_source = get_config('plugins_deployment_source')
 
 
 @task(alias='d')
