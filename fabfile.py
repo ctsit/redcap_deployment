@@ -136,15 +136,19 @@ def package_redcap(redcap_zip="."):
     of the required files
     """
 
+    # Build the app
+    clean(env.builddir)
     make_builddir(env.builddir)
     extract_redcap(redcap_zip)
-    #pull out file name for reuse
-    env.package_name = '%(project_name)s-%(redcap_version)s.tar.gzip' % env
 
-    #create the package
-    local("cd %(builddir)s && tar -cz --exclude='__pycache__' --exclude='.DS_Store' \
-    -f %(package_name)s \
-    *" % env)
+    # Get variables to tell us where to write the package
+    env.package_name = '%(project_name)s-%(redcap_version)s.tgz' % env
+    cwd = os.getcwd()
+
+    # create the package
+    local("cd %s && tar -cz --exclude='.DS_Store' \
+    -f %s/%s \
+    redcap" % (env.builddir, cwd, env.package_name))
 
 ##########################
 

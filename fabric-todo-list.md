@@ -4,12 +4,12 @@
 
 * DONE make temporary builddir
 * DONE locate redcap\<version\>.zip
-* extract redcap\<version\>.zip into builddir
+* DONE extract redcap\<version\>.zip into builddir
 * DONE Using git_version - checkout named commits
 * copy named components from redcap_deployment into build space
 * deploy_plugins_in_build_space execute all deploy.sh scripts in ./deploy/plugins/*/deploy.sh
 * deploy_hooks_in_build_space execute all deploy.sh scripts in ./deploy/hooks/*/deploy.sh
-* package_redcap - make a timestamped TGZ of the entire content of the builddir. Use git workdir contents if version is not specified
+* DONE package_redcap - make a timestamped TGZ of the entire content of the builddir. Use git workdir contents if version is not specified
 
 
 ## Things Fabric must do to deploy REDCap
