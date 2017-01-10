@@ -185,15 +185,17 @@ def upload_package(name=""):
     """
     This function moves the package to live directory on remote host using the project name and current time
     """
-    put(name, '%(upload_project_full_path)s' % env)
-    with cd("%(upload_project_full_path)s" % env):
-        #run("mkdir -p %s" % (env.project_name))
-        run("tar -xzf %s" % name)
-        run("mv %s %s-%s" % (env.project_name, env.project_name, datetime.now().strftime("%Y%m%dT%H%M%Z")))
+    with settings(user=env.deploy_user):
+        put(name, '%(upload_project_full_path)s' % env)
+        with cd("%(upload_project_full_path)s" % env):
+            #run("mkdir -p %s" % (env.project_name))
+            run("tar -xzf %s" % name)
+            run("mv %s %s-%s" % (env.project_name, env.project_name, datetime.now().strftime("%Y%m%dT%H%M%Z")))
+
 ##########################
 
-def get_config(key):
-    return config.get("instance", key)
+def get_config(key, section="instance"):
+    return config.get(section, key)
 
 def define_default_env(settings_file_path="settings/defaults.ini"):
     """
@@ -207,12 +209,13 @@ def define_default_env(settings_file_path="settings/defaults.ini"):
         print("The secrets file path cannot be found. It is set to: %s" % settings_file_path)
         abort("Secrets File not set")
 
-    env.project_name = get_config('project_name')
-    env.project_settings_path = get_config('project_settings_path')
-    env.builddir = get_config('builddir')
-    env.plugins_deployment_source = get_config('plugins_deployment_source')
+    section="DEFAULT"
+    env.project_name = get_config('project_name',section)
+    env.project_settings_path = get_config('project_settings_path',section)
+    env.builddir = get_config('builddir',section)
+    env.plugins_deployment_source = get_config('plugins_deployment_source',section)
 
-def define_env():
+def define_env(settings_file_path=""):
     """
     This function sets up some global variables
     """
@@ -224,12 +227,18 @@ def define_env():
         print("The secrets file path cannot be found. It is set to: %s" % settings_file_path)
         abort("Secrets File not set")
 
-    env.user = get_config('deploy_user') #default ssh deploy user account
+    if get_config('deploy_user') != "":
+        env.user = get_config('deploy_user')
+
+    env.deploy_user = get_config('deploy_user') #default ssh deploy user account
+    env.deploy_group = get_config('deploy_group')
     env.project_name = get_config('project_name')
     env.project_settings_path = get_config('project_settings_path')
     env.live_project_full_path = get_config('live_pre_path') + "/" + get_config('project_path') #
     env.backup_project_full_path = get_config('backup_pre_path') + "/" + get_config('project_path')
     env.upload_project_full_path = get_config('backup_pre_path')
+    env.live_pre_path = get_config('live_pre_path')
+    env.backup_pre_path = get_config('backup_pre_path')
     env.key_filename = get_config('key_filename')
     env.database_name = get_config('database_name')
     env.database_user = get_config('database_user')
@@ -237,10 +246,11 @@ def define_env():
     env.database_host = get_config('database_host')
     env.builddir = get_config('builddir')
     env.plugins_deployment_source = get_config('plugins_deployment_source')
+    env.pubkey_filename = get_config("pubkey_filename")
 
 
-@task(alias='d')
-def dev(admin=False):
+@task(alias='dev')
+def vagrant(admin=False):
     """
     Set up deployment for vagrant
 
@@ -248,7 +258,9 @@ def dev(admin=False):
     """
     #TODO: vagrant ssh-config gives these details, we can read them and strip them out automatically
 
-    define_env()
+    settings_file_path = 'settings/vagrant.ini'
+    define_env(settings_file_path)
+
     if admin:
         env.user = get_config('admin_user')
 
@@ -384,11 +396,11 @@ def setup_webspace():
     sudo("mkdir -p %(backup_project_full_path)s/archive" % env)
 
     #Change the permissions to match the correct user and group
-    sudo("chown -R %s.%s /var/www.backup" % (get_config('deploy_user'), get_config('deploy_user_group')))
-    sudo("chmod -R 755 /var/www.backup")
+    sudo("chown -R %s.%s %s" % (env.deploy_user, env.deploy_group, env.backup_pre_path))
+    sudo("chmod -R 755 %s"  % (env.backup_pre_path))
 
-    sudo("chown -R %s.%s /var/www" % (get_config('deploy_user'), get_config('deploy_user_group')))
-    sudo("chmod -R 755 /var/www/")
+    sudo("chown -R %s.%s %s" % (env.deploy_user, env.deploy_group, env.live_pre_path))
+    sudo("chmod -R 755 %s"  % (env.live_pre_path))
 
 @task
 def setup_server():
@@ -399,7 +411,7 @@ def setup_server():
     create_deploy_user_with_ssh()
     setup_webspace()
 
-@task
+@task(alias='cduws')
 def create_deploy_user_with_ssh():
     """
     This function will ssh in with the assigned admin user account,
@@ -411,12 +423,25 @@ def create_deploy_user_with_ssh():
     Note: Admin must be true in the environment
     """
     random_password = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(32))
-    deploy_user = get_config('deploy_user')
-    deploy_user_group = get_config('deploy_user_group')
-    sudo('useradd -m -b /home -u 800 -g %s -s /bin/bash -c "deployment user" %s -p %s' % (deploy_user_group, deploy_user, random_password))
+    #sudo('getent passwd %s > /dev/null; if [ $? -ne 0 ]; then; useradd -m -b /home -u 800 -g %s -s /bin/bash -c "deployment user" %s -p %s; else; usermod -g %s %s ;fi' % (env.user, env.group, env.user, random_password))
 
-    #create SSH directory
-    sudo('mkdir -p /home/%s/.ssh/keys' % deploy_user)
+    # Make a deploy user with the right group membership
+    with settings(warn_only=True):
+        if (sudo('getent passwd %s > /dev/null' % env.deploy_user).return_code == 0):
+            sudo('usermod -g %s %s' % (env.deploy_group, env.deploy_user))
+        else:
+            sudo('useradd -m -b /home -u 800 -g %s -s /bin/bash -c "deployment user" %s -p %s' \
+                % (env.deploy_group, env.deploy_user, random_password))
+
+    with settings(user=env.deploy_user):
+        with settings(warn_only=True):
+            if (run('test -d ~/.ssh/keys').failed):
+                run('mkdir -p ~/.ssh/keys')
+                if run("test -e ~/.ssh/authorized_keys").succeeded:
+                    run('cp ~/.ssh/authorized_keys ~/.ssh/keys/default.pub')
+                else:
+                    put(env.pubkey_filename,"~/.ssh/keys/%s.pub" % env.user)
+
     update_ssh_permissions()
 
     #TODO: automatically add ssh key or prompt
@@ -426,12 +451,13 @@ def update_ssh_permissions():
     This function makes the deploy user owner of these documents and locks down
     other permissions
     """
-    deploy_user = get_config('deploy_user')
 
-    sudo('chmod 700 /home/%s/.ssh' % deploy_user)
-    sudo('chmod 644 /home/%s/.ssh/authorized_keys' % deploy_user)
-    sudo('chmod -R 700 /home/%s/.ssh/keys' % deploy_user)
-    sudo('chown -R %s.%s /home/%s' % (deploy_user, get_config('deploy_user_group'), deploy_user))
+    #create SSH directory
+    with settings(user=env.deploy_user):
+        run('chmod 700 /home/%s/.ssh' % env.deploy_user)
+        run('chmod 644 /home/%s/.ssh/authorized_keys' % env.deploy_user)
+        run('chmod -R 700 /home/%s/.ssh/keys' % env.deploy_user)
+        #run('chown -R %s.%s /home/%s' % (env.deploy_user, env.deploy_group, env.deploy_user))
 
 @task(alias='ssh_string')
 def add_new_ssh_key_as_string(ssh_public_key_string, name):
@@ -474,11 +500,11 @@ def copy_ssh_key_to_host(ssh_key, name):
     ssh_key: String of ssh_key to create a new pub file from
     name: the name of the user this key is tied to
     """
-    pub_file = open('%s.pub' % name, 'w')
-    pub_file.write(ssh_key)
-    pub_file.close()
-    put('%s.pub' % name, '/home/%s/.ssh/keys/' % get_config('deploy_user'), use_sudo=True)
-    #sudo("echo %s >> /home/%s/.ssh/keys/%s.pub" % (, get_config('deploy_user'), name))
+    with settings(user=env.deploy_user):
+        pub_file = open('%s.pub' % name, 'w')
+        pub_file.write(ssh_key)
+        pub_file.close()
+        put('%s.pub' % name, '/home/%s/.ssh/keys/' % env.user)
 
 def rebuild_authorized_keys():
     """
@@ -486,12 +512,11 @@ def rebuild_authorized_keys():
     If any of the pub files are removed, they get removed from the authorized keys
     and can no longer ssh in.
     """
-    sudo('sudo cat `sudo find /home/%s/.ssh/keys/ -type f` > tmpfile' % get_config('deploy_user'))
-    sudo('cp tmpfile /home/%s/.ssh/authorized_keys' % get_config('deploy_user'))
-    sudo('rm tmpfile')
+    with settings(user=env.deploy_user):
+        run('cat `find /home/%s/.ssh/keys/ -type f` > tmpfile' % env.deploy_user)
+        run('cp tmpfile /home/%s/.ssh/authorized_keys' % env.deploy_user)
+        run('rm tmpfile')
 
 config = configparser.ConfigParser()
 default_settings_file_path = 'settings/defaults.ini' #path to where app is looking for settings.ini
-settings_file_path = 'settings/dev.ini' #path to where app is looking for settings.ini
-define_default_env(settings_file_path) # load default settings
-
+define_default_env(default_settings_file_path) # load default settings
