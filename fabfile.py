@@ -56,9 +56,6 @@ import configparser, string, random, os
 from tempfile import mkstemp
 import re
 
-config = configparser.ConfigParser()
-settings_file_path = 'settings/dev.ini' #path to where app is looking for settings.ini
-
 @task
 def make_builddir(builddir="build"):
     with settings(warn_only=True):
@@ -197,6 +194,23 @@ def upload_package(name=""):
 
 def get_config(key):
     return config.get("instance", key)
+
+def define_default_env(settings_file_path="settings/defaults.ini"):
+    """
+    This function sets up some global variables
+    """
+
+    #first, copy the secrets file into the deploy directory
+    if os.path.exists(settings_file_path):
+        config.read(settings_file_path)
+    else:
+        print("The secrets file path cannot be found. It is set to: %s" % settings_file_path)
+        abort("Secrets File not set")
+
+    env.project_name = get_config('project_name')
+    env.project_settings_path = get_config('project_settings_path')
+    env.builddir = get_config('builddir')
+    env.plugins_deployment_source = get_config('plugins_deployment_source')
 
 def define_env():
     """
@@ -475,3 +489,9 @@ def rebuild_authorized_keys():
     sudo('sudo cat `sudo find /home/%s/.ssh/keys/ -type f` > tmpfile' % get_config('deploy_user'))
     sudo('cp tmpfile /home/%s/.ssh/authorized_keys' % get_config('deploy_user'))
     sudo('rm tmpfile')
+
+config = configparser.ConfigParser()
+default_settings_file_path = 'settings/defaults.ini' #path to where app is looking for settings.ini
+settings_file_path = 'settings/dev.ini' #path to where app is looking for settings.ini
+define_default_env(settings_file_path) # load default settings
+
