@@ -187,10 +187,12 @@ def upload_package(name=""):
     """
     with settings(user=env.deploy_user):
         put(name, '%(upload_project_full_path)s' % env)
+        time = timestamp()
+        env.remote_project_name = '%s-%s' % (env.project_name,time)
         with cd("%(upload_project_full_path)s" % env):
             #run("mkdir -p %s" % (env.project_name))
             run("tar -xzf %s" % name)
-            run("mv %s %s-%s" % (env.project_name, env.project_name, datetime.now().strftime("%Y%m%dT%H%M%Z")))
+            run("mv %s %s" % (env.project_name, env.remote_project_name))
 
 ##########################
 
