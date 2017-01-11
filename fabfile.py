@@ -194,6 +194,17 @@ def upload_package(name=""):
             run("tar -xzf %s" % name)
             run("mv %s %s" % (env.project_name, env.remote_project_name))
 
+@task(alias='urc')
+def update_redcap_connection(db_settings_file="database.php", salt="abc"):
+    """This function will update the database.php file with settings
+    that correspond to the chosen environment"""
+    redcap_database_settings_path = os.path.join(env.backup_pre_path, env.remote_project_name, db_settings_file)
+    run('echo \'$hostname   = "%s";\' >> %s' % (env.database_host, redcap_database_settings_path))
+    run('echo \'$db   = "%s";\' >> %s' % (env.database_name, redcap_database_settings_path))
+    run('echo \'$username   = "%s";\' >> %s' % (env.database_user, redcap_database_settings_path))
+    run('echo \'$password   = "%s";\' >> %s' % (env.database_password, redcap_database_settings_path))
+    run('echo \'$salt   = "%s";\' >> %s' % (salt, redcap_database_settings_path))
+
 ##########################
 
 def get_config(key, section="instance"):
