@@ -17,7 +17,7 @@
 * DONE Deploy code into a time-stamped "backup" directory
 * DONE Upload package
 * DONE Extract package
-* update_redcap_connection_settings - update database.php with database settings
+* DONE update_redcap_connection_settings - update database.php with database settings
 * create_redcap_tables - see redcap\_deployment\_functions.sh
 * configure_redcap - see redcap\_deployment\_functions.sh
 * apply_patches - Apply patches to REDCap

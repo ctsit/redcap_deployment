@@ -198,12 +198,17 @@ def upload_package(name=""):
 def update_redcap_connection(db_settings_file="database.php", salt="abc"):
     """This function will update the database.php file with settings
     that correspond to the chosen environment"""
-    redcap_database_settings_path = os.path.join(env.backup_pre_path, env.remote_project_name, db_settings_file)
+    redcap_database_settings_path = "/".join([env.backup_pre_path, env.remote_project_name, db_settings_file])
     run('echo \'$hostname   = "%s";\' >> %s' % (env.database_host, redcap_database_settings_path))
     run('echo \'$db   = "%s";\' >> %s' % (env.database_name, redcap_database_settings_path))
     run('echo \'$username   = "%s";\' >> %s' % (env.database_user, redcap_database_settings_path))
     run('echo \'$password   = "%s";\' >> %s' % (env.database_password, redcap_database_settings_path))
     run('echo \'$salt   = "%s";\' >> %s' % (salt, redcap_database_settings_path))
+
+"""@task(alias='configrc')
+def configure_redcap():
+    run('echo "Setting redcap_base_url to $URL_OF_DEPLOYED_APP..."')
+    run('echo "update redcap_config set value='$URL_OF_DEPLOYED_APP' where field_name = 'redcap_base_url';" | mysql')"""
 
 ##########################
 
