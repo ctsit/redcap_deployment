@@ -205,10 +205,15 @@ def update_redcap_connection(db_settings_file="database.php", salt="abc"):
     run('echo \'$password   = "%s";\' >> %s' % (env.database_password, redcap_database_settings_path))
     run('echo \'$salt   = "%s";\' >> %s' % (salt, redcap_database_settings_path))
 
-"""@task(alias='configrc')
-def configure_redcap():
-    run('echo "Setting redcap_base_url to $URL_OF_DEPLOYED_APP..."')
-    run('echo "update redcap_config set value='$URL_OF_DEPLOYED_APP' where field_name = 'redcap_base_url';" | mysql')"""
+@task
+def set_redcap_base_url():
+    """This function will set the redacp base url"""
+    set_redcap_config('redcap_base_url', env.url_of_deployed_app)
+
+@task
+def set_redcap_config(field_name="", value=""):
+    """This function will update values for the redcap system"""
+    run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
 
 ##########################
 
@@ -265,6 +270,7 @@ def define_env(settings_file_path=""):
     env.builddir = get_config('builddir')
     env.plugins_deployment_source = get_config('plugins_deployment_source')
     env.pubkey_filename = get_config("pubkey_filename")
+    env.url_of_deployed_app = get_config("url_of_deployed_app")
 
 
 @task(alias='dev')
