@@ -91,14 +91,17 @@ def extract_redcap(redcap_zip="."):
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
 
 @task(alias="dpibs")
-def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins"):
+def deploy_plugins_into_build_space(target_within_build_space="redcap/plugins"):
+    deploy_extension_into_build_space(target_within_build_space)
+
+def deploy_extension_into_build_space(target_within_build_space=""):
     """
     Deploy each extension into build space by running its own deploy.sh.
     Lacking a deploy.sh, copy the extension files to the build space.
     For each extension run test.sh if it exists.
     """
     # make sure the target directory exists
-    extension_dir_in_build_space=env.builddir + target_within_build_space
+    extension_dir_in_build_space=env.builddir + "/" + target_within_build_space
     with settings(warn_only=True):
         if local("test -d %s" % extension_dir_in_build_space).failed:
             local("mkdir %s" % extension_dir_in_build_space)
