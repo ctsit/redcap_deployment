@@ -214,6 +214,8 @@ def package_redcap(redcap_zip="."):
     make_builddir(env.builddir)
     extract_redcap(redcap_zip)
     deploy_plugins_into_build_space()
+    deploy_hooks_into_build_space()
+    deploy_hooks_framework_into_build_space()
 
     # Get variables to tell us where to write the package
     env.package_name = '%(project_name)s-%(redcap_version)s.tgz' % env
