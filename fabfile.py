@@ -276,12 +276,8 @@ def define_default_env(settings_file_path="settings/defaults.ini"):
         abort("Secrets File not set")
 
     section="DEFAULT"
-    env.project_name = get_config('project_name',section)
-    env.project_settings_path = get_config('project_settings_path',section)
-    env.builddir = get_config('builddir',section)
-    env.plugins_deployment_source = get_config('plugins_deployment_source',section)
-    env.hooks_deployment_source = get_config("hooks_deployment_source",section)
-    env.hook_framework_deployment_source = get_config("hook_framework_deployment_source",section)
+    for (name,value) in config.items(section):
+        env[name] = value
 
 
 def define_env(settings_file_path=""):
@@ -299,26 +295,9 @@ def define_env(settings_file_path=""):
     if get_config('deploy_user') != "":
         env.user = get_config('deploy_user')
 
-    env.deploy_user = get_config('deploy_user') #default ssh deploy user account
-    env.deploy_group = get_config('deploy_group')
-    env.project_name = get_config('project_name')
-    env.project_settings_path = get_config('project_settings_path')
-    env.live_project_full_path = get_config('live_pre_path') + "/" + get_config('project_path') #
-    env.backup_project_full_path = get_config('backup_pre_path') + "/" + get_config('project_path')
-    env.upload_project_full_path = get_config('backup_pre_path')
-    env.live_pre_path = get_config('live_pre_path')
-    env.backup_pre_path = get_config('backup_pre_path')
-    env.key_filename = get_config('key_filename')
-    env.database_name = get_config('database_name')
-    env.database_user = get_config('database_user')
-    env.database_password = get_config('database_password')
-    env.database_host = get_config('database_host')
-    env.builddir = get_config('builddir')
-    env.plugins_deployment_source = get_config('plugins_deployment_source')
-    env.pubkey_filename = get_config("pubkey_filename")
-    env.url_of_deployed_app = get_config("url_of_deployed_app")
-    env.hooks_deployment_source = get_config("hooks_deployment_source")
-    env.hook_framework_deployment_source = get_config("hook_framework_deployment_source")
+    section="instance"
+    for (name,value) in config.items(section):
+        env[name] = value
 
 @task(alias='dev')
 def vagrant(admin=False):
