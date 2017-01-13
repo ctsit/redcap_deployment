@@ -90,6 +90,16 @@ def extract_redcap(redcap_zip="."):
     env.redcap_version = match.group(2)
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
 
+@task(alias="dhfibs")
+def deploy_hooks_framework_into_build_space(target_within_build_space="redcap/hooks/"):
+    """
+    Deploy UF's REDCap hooks framework
+    """
+    # make sure the target directory exists
+    source_dir = env.hook_framework_deployment_source
+    this_target ='/'.join([env.builddir, target_within_build_space])
+    deploy_extension_to_build_space(source_dir, this_target)
+
 
 @task(alias="dhibs")
 def deploy_hooks_into_build_space(target_within_build_space="redcap/hooks/library"):
@@ -270,6 +280,9 @@ def define_default_env(settings_file_path="settings/defaults.ini"):
     env.project_settings_path = get_config('project_settings_path',section)
     env.builddir = get_config('builddir',section)
     env.plugins_deployment_source = get_config('plugins_deployment_source',section)
+    env.hooks_deployment_source = get_config("hooks_deployment_source",section)
+    env.hook_framework_deployment_source = get_config("hook_framework_deployment_source",section)
+
 
 def define_env(settings_file_path=""):
     """
@@ -305,7 +318,7 @@ def define_env(settings_file_path=""):
     env.pubkey_filename = get_config("pubkey_filename")
     env.url_of_deployed_app = get_config("url_of_deployed_app")
     env.hooks_deployment_source = get_config("hooks_deployment_source")
-
+    env.hook_framework_deployment_source = get_config("hook_framework_deployment_source")
 
 @task(alias='dev')
 def vagrant(admin=False):
