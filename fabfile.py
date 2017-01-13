@@ -90,6 +90,36 @@ def extract_redcap(redcap_zip="."):
     env.redcap_version = match.group(2)
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
 
+
+@task(alias="dhibs")
+def deploy_hooks_into_build_space(target_within_build_space="redcap/hooks/library"):
+    """
+    Deploy each extension into build space by running its own deploy.sh.
+    Lacking a deploy.sh, copy the extension files to the build space.
+    For each extension run test.sh if it exists.
+    """
+    # make sure the target directory exists
+    extension_dir_in_build_space='/'.join([env.builddir, target_within_build_space])
+    with settings(warn_only=True):
+        if local("test -d %s" % extension_dir_in_build_space).failed:
+            local("mkdir -p %s" % extension_dir_in_build_space)
+
+    # For each type of hook, make the target directory and deploy its children
+    for hooktype in os.listdir(env.hooks_deployment_source):
+        # make the target directory
+        hooktype_fp_in_src = '/'.join([env.hooks_deployment_source, hooktype])
+        if os.path.isdir(hooktype_fp_in_src):
+            # file is a hook type
+            hooktype_fp_in_target = '/'.join([extension_dir_in_build_space, hooktype])
+            if not os.path.exists(hooktype_fp_in_target):
+                os.mkdir(hooktype_fp_in_target)
+
+            # locate every directory in the source that matches the pattern hooks_deployment_source/<hooktype>/*
+            for hook in os.listdir(hooktype_fp_in_src):
+                hook_fp_in_src = '/'.join([hooktype_fp_in_src,hook])
+                if os.path.isdir(hook_fp_in_src):
+                    deploy_extension_to_build_space(hook_fp_in_src, hooktype_fp_in_target)
+
 @task(alias="dpibs")
 def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins"):
     """
@@ -101,28 +131,31 @@ def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins")
     extension_dir_in_build_space=env.builddir + target_within_build_space
     with settings(warn_only=True):
         if local("test -d %s" % extension_dir_in_build_space).failed:
-            local("mkdir %s" % extension_dir_in_build_space)
+            local("mkdir -p %s" % extension_dir_in_build_space)
 
     # locate every directory plugins_deployment_source/*
     for (dirpath, dirnames, filenames) in os.walk(env.plugins_deployment_source):
         for dir in dirnames:
-            # make the target directory
+            source_dir = '/'.join([dirpath,dir])
             this_target = os.path.join(extension_dir_in_build_space, dir)
-            if not os.path.exists(this_target):
-                os.mkdir(this_target)
+            deploy_extension_to_build_space(source_dir, this_target)
 
-            # run the deployment script
-            this_deploy_script = os.path.join(dirpath,dir,'deploy.sh')
-            if os.path.isfile(this_deploy_script):
-                local("bash %s %s" % (this_deploy_script, this_target))
-            else:
-                # copy files to target
-                local("cp %s/* %s" % (os.path.join(dirpath,dir,), this_target))
+def deploy_extension_to_build_space(source_dir="", build_target=""):
+    if not os.path.exists(build_target):
+        os.mkdir(build_target)
 
-            # run test deployment script
-            this_test_script = os.path.join(dirpath,dir,'test.sh')
-            if os.path.isfile(this_test_script):
-                local("bash %s " % this_test_script)
+    # run the deployment script
+    this_deploy_script = os.path.join(source_dir,'deploy.sh')
+    if os.path.isfile(this_deploy_script):
+        local("bash %s %s" % (this_deploy_script, build_target))
+    else:
+        # copy files to target
+        local("cp %s/* %s" % (source_dir, build_target))
+
+    # run test deployment script
+    this_test_script = os.path.join(source_dir,'test.sh')
+    if os.path.isfile(this_test_script):
+        local("bash %s " % this_test_script)
 
 
 ##########################
@@ -271,6 +304,7 @@ def define_env(settings_file_path=""):
     env.plugins_deployment_source = get_config('plugins_deployment_source')
     env.pubkey_filename = get_config("pubkey_filename")
     env.url_of_deployed_app = get_config("url_of_deployed_app")
+    env.hooks_deployment_source = get_config("hooks_deployment_source")
 
 
 @task(alias='dev')
