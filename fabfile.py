@@ -286,6 +286,13 @@ def set_redcap_config(field_name="", value=""):
     """This function will update values for the redcap system"""
     run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
 
+
+@task
+def configure_redcap_cron():
+    crond_for_redcap = '/etc/cron.d/redcap'
+    sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
+    sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' % (env.live_project_full_path, crond_for_redcap))
+
 ##########################
 
 def get_config(key, section="instance"):
