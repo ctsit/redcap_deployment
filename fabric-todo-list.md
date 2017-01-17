@@ -17,10 +17,11 @@
 * DONE Deploy code into a time-stamped "backup" directory
 * DONE Upload package
 * DONE Extract package
+* DONE create_table - (re)create the empty database that is to hold the REDCap DB
 * DONE update_redcap_connection_settings - update database.php with database settings
 * DONE set_redcap_config - see redcap\_deployment\_functions.sh
 * DONE configure_redcap - see redcap\_deployment\_functions.sh
-* create_redcap_tables - see redcap\_deployment\_functions.sh
+* DONE create_redcap_tables - see redcap\_deployment\_functions.sh
 * DONE configure_redcap - see redcap\_deployment\_functions.sh
 * apply_patches - Apply patches to REDCap
 * configure_redcap_cron - see redcap\_deployment\_functions.sh
@@ -32,14 +33,14 @@
 
 
 ## Things fabric must do to upgrade an existing instance
-* copy_running_code_to_backup_dir
 * upgrade - a function to upgrade an existing redcap. This function would call:
+    * make_upload_target
     * copy_running_code_to_backup_dir
-    * upload - to deploy package to remote (needs to be split into make_upload_target, upload, and extract so copy_running_code_to_backup_dir can be spliced in before extract)
+    * upload_package_and_extract - to deploy package to remote (upload package needs to be split into make_upload_target and upload_package_and_extract so copy_running_code_to_backup_dir can be spliced in before extract)
     * offline - use set_redcap_config to go offline
     * upgrade_software - replace symbolic link to old code with symlink to new code.
     * upgrade_db - will do this manually at first
-    * fix shibboleth exceptions manually (? we really need to obsolete this with ideas from redcap forum)
+    * fix_shibboleth_exceptions - we will do this manually (we really need to obsolete this with ideas from the redcap forum)
     * online - use set_redcap_config to go online
 
 
