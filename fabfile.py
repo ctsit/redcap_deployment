@@ -232,8 +232,6 @@ def upload_package(name=""):
     """
     with settings(user=env.deploy_user):
         put(name, '%(upload_project_full_path)s' % env)
-        time = timestamp()
-        env.remote_project_name = '%s-%s' % (env.project_name,time)
         with cd("%(upload_project_full_path)s" % env):
             #run("mkdir -p %s" % (env.project_name))
             run("tar -xzf %s" % name)
@@ -285,6 +283,28 @@ def set_redcap_base_url():
 def set_redcap_config(field_name="", value=""):
     """This function will update values for the redcap system"""
     run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
+
+@task()
+def create_redcap_tables(resource_path = "Resources/sql"):
+    """
+    This function creates redcap tables in remote host
+    """
+    print("Creating redcap tables")
+    redcap_sql_root_dir = os.path.join(env.backup_pre_path,env.remote_project_name)
+    redcap_name = run("ls %s | grep 'redcap_v[0-9]\{1,2\}\.[0-9]\{1,2\}\.[0-9]\{1,2\}' | sort -n | tail -n 1" % redcap_sql_root_dir)
+    redcap_sql_dir = os.path.join(redcap_sql_root_dir,redcap_name,resource_path)
+    match = re.search('redcap_v(\d+.\d+.\d+)', redcap_name)
+    version = match.group(1)
+
+    run('mysql -u%s -p%s %s < %s/install.sql' % (env.database_user, env.database_password, env.database_name, redcap_sql_dir))
+    run('mysql -u%s -p%s %s < %s/install_data.sql' % (env.database_user,env.database_password,env.database_name, redcap_sql_dir))
+    run('mysql -u%s -p%s %s -e "UPDATE %s.redcap_config SET value = \'%s\' WHERE field_name = \'redcap_version\' "' % (env.database_user,env.database_password,env.database_name, env.database_name,version))
+
+    files=run('ls -v %s/create_demo_db*.sql' % redcap_sql_dir)
+    for file in files.splitlines():
+        print("Executing sql file %s" % file)
+        run('mysql -u%s -p%s %s < %s' % (env.database_user, env.database_password,env.database_name,file))
+
 
 ##########################
 
@@ -603,3 +623,5 @@ def rebuild_authorized_keys():
 config = configparser.ConfigParser()
 default_settings_file_path = 'settings/defaults.ini' #path to where app is looking for settings.ini
 define_default_env(default_settings_file_path) # load default settings
+time = timestamp()
+env.remote_project_name = '%s-%s' % (env.project_name,time)
