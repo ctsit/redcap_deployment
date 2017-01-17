@@ -313,12 +313,78 @@ def create_redcap_tables(resource_path = "Resources/sql"):
         print("Executing sql file %s" % file)
         run('mysql -u%s -p%s %s < %s' % (env.database_user, env.database_password,env.database_name,file))
 
-
 @task
 def configure_redcap_cron():
     crond_for_redcap = '/etc/cron.d/redcap'
     sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
     sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' % (env.live_project_full_path, crond_for_redcap))
+
+######################
+
+@task
+def upgrade():
+    '''A function to upgrade an existing redcap instance.'''
+
+    # TODO: upload_package needs to be split into make_upload_target and upload_package_and_extract so copy_running_code_to_backup_dir can be spliced in before extract)'''
+    make_upload_target()
+    copy_running_code_to_backup_dir()
+    upload_package_and_extract()
+    offline()
+    upgrade_software()
+    upgrade_db()
+    fix_shibboleth_exceptions ()
+    #online()
+
+@task
+def make_upload_target():
+    '''
+    Make the directory from which new software will be deployed,
+    e.g., /var/www.backup/redcap-20160117T1543/
+    '''
+    return 0
+
+@task
+def copy_running_code_to_backup_dir():
+    '''
+    Copy the running code e.g. /var/www/redcap/* to the directory from which the
+    the new software will be deployed, e.g., /var/www.backup/redcap-20160117T1543/.
+    This will allow the new software to be overlain on the old software without
+    risk of corrupting the old software.
+    '''
+    return 0
+
+@task
+def upload_package_and_extract():
+    '''
+    Upload the redcap package and extract it into the directory from which new
+    software will be deployed, e.g., /var/www.backup/redcap-20160117T1543/
+    '''
+    return 0
+
+@task
+def offline():
+    '''use set_redcap_config to go offline'''
+    return 0
+
+@task
+def upgrade_software():
+    '''Replace the symbolic link to the old code with symbolic link to new code.'''
+    return 0
+
+@task
+def upgrade_db():
+    '''TODO: Write this later.  We will do this manually at first'''
+    return 0
+
+@task
+def fix_shibboleth_exceptions ():
+    '''TODON'T: Don't write this. (we really need to obsolete this with ideas from redcap forum)'''
+    return 0
+
+@task
+def online():
+    '''use set_redcap_config to go online'''
+    return 0
 
 ##########################
 
