@@ -284,6 +284,14 @@ def set_redcap_config(field_name="", value=""):
     """This function will update values for the redcap system"""
     run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
 
+@task
+def set_hook_functions_file():
+    """
+    This function sets the hook_functions_file
+    """
+    value = '%s/%s' % (env.live_project_full_path,env.hooks_framework_path)
+    set_redcap_config('hook_functions_file',value)
+
 @task()
 def create_redcap_tables(resource_path = "Resources/sql"):
     """
@@ -322,9 +330,9 @@ def upgrade():
     copy_running_code_to_backup_dir()
     upload_package_and_extract()
     offline()
-    upgrade_software()
-    upgrade_db()
-    fix_shibboleth_exceptions ()
+    move_software_to_live()
+    #upgrade_db()
+    #fix_shibboleth_exceptions()
     #online()
 
 @task
@@ -333,7 +341,9 @@ def make_upload_target():
     Make the directory from which new software will be deployed,
     e.g., /var/www.backup/redcap-20160117T1543/
     '''
-    return 0
+    env.upload_target_backup_dir = '/'.join([env.upload_project_full_path, env.remote_project_name])
+    with settings(user=env.deploy_user):
+        run("mkdir -p %(upload_target_backup_dir)s" % env)
 
 @task
 def copy_running_code_to_backup_dir():
@@ -360,9 +370,9 @@ def offline():
     set_redcap_config('system_offline_message', 'System Offline')
 
 @task
-def upgrade_software():
+def move_software_to_live():
     '''Replace the symbolic link to the old code with symbolic link to new code.'''
-    return 0
+    run('ln -s %s/* %s' % (env.backup_pre_path,env.live_pre_path))
 
 @task
 def upgrade_db():

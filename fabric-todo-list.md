@@ -24,21 +24,20 @@
 * DONE create_redcap_tables - see redcap\_deployment\_functions.sh
 * DONE configure_redcap - see redcap\_deployment\_functions.sh
 * apply_patches - Apply patches to REDCap
-* configure_redcap_cron - see redcap\_deployment\_functions.sh
+* DONE configure_redcap_cron - see redcap\_deployment\_functions.sh
 * move_edocs_folder - see redcap\_deployment\_functions.sh
-* set_hook_functions_file - see redcap\_deployment\_functions.sh
+* DONE set_hook_functions_file - see redcap\_deployment\_functions.sh
 * Make required directories for hook deployment - deployment_functions.sh
 * Create sym links for hooks to be executed - deployment_functions.sh
-* Symlink code in "backup" directory into apache document root location.
 
 
 ## Things fabric must do to upgrade an existing instance
 * upgrade - a function to upgrade an existing redcap. This function would call:
-    * make_upload_target
+    * DONE make_upload_target
     * copy_running_code_to_backup_dir
     * upload_package_and_extract - to deploy package to remote (upload package needs to be split into make_upload_target and upload_package_and_extract so copy_running_code_to_backup_dir can be spliced in before extract)
     * offline - use set_redcap_config to go offline
-    * upgrade_software - replace symbolic link to old code with symlink to new code.
+    * move_software_to_live - replace symbolic link to old code with symlink to new code.
     * upgrade_db - will do this manually at first
     * fix_shibboleth_exceptions - we will do this manually (we really need to obsolete this with ideas from the redcap forum)
     * online - use set_redcap_config to go online
