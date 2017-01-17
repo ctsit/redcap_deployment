@@ -331,8 +331,8 @@ def upgrade():
     upload_package_and_extract()
     offline()
     move_software_to_live()
-    upgrade_db()
-    fix_shibboleth_exceptions ()
+    #upgrade_db()
+    #fix_shibboleth_exceptions()
     #online()
 
 @task
@@ -341,7 +341,9 @@ def make_upload_target():
     Make the directory from which new software will be deployed,
     e.g., /var/www.backup/redcap-20160117T1543/
     '''
-    return 0
+    env.upload_target_backup_dir = '/'.join([env.upload_project_full_path, env.remote_project_name])
+    with settings(user=env.deploy_user):
+        run("mkdir -p %(upload_target_backup_dir)s" % env)
 
 @task
 def copy_running_code_to_backup_dir():
