@@ -284,6 +284,14 @@ def set_redcap_config(field_name="", value=""):
     """This function will update values for the redcap system"""
     run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
 
+@task
+def set_hook_functions_file():
+    """
+    This function sets the hook_functions_file
+    """
+    value = '%s/%s' % (env.live_project_full_path,env.hooks_framework_path)
+    set_redcap_config('hook_functions_file',value)
+
 @task()
 def create_redcap_tables(resource_path = "Resources/sql"):
     """
