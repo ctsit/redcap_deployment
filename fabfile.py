@@ -356,7 +356,8 @@ def upload_package_and_extract():
 @task
 def offline():
     '''use set_redcap_config to go offline'''
-    return 0
+    set_redcap_config('system_offline', '1')
+    set_redcap_config('system_offline_message', 'System Offline')
 
 @task
 def upgrade_software():
@@ -376,7 +377,8 @@ def fix_shibboleth_exceptions ():
 @task
 def online():
     '''use set_redcap_config to go online'''
-    return 0
+    set_redcap_config('system_offline', '0')
+    set_redcap_config('system_offline_message', 'System Online')
 
 ##########################
 
