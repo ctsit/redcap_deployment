@@ -251,6 +251,32 @@ def update_redcap_connection(db_settings_file="database.php", salt="abc"):
     run('echo \'$salt   = "%s";\' >> %s' % (salt, redcap_database_settings_path))
 
 @task
+def create_database():
+    """Create an empty database in MySQL dropping the existing database if need be"""
+
+    # Only run on a local testing environment
+    if not env.vagrant_instance:
+        abort("create_database can only be run against the Vagrant instance")
+
+    # generate the DROP/CREATE command
+    create_database_sql="""
+    DROP DATABASE IF EXISTS %(database_name)s;
+    CREATE DATABASE %(database_name)s;
+
+    GRANT
+        SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, EXECUTE, CREATE VIEW, SHOW VIEW
+    ON
+        %(database_name)s.*
+    TO
+        '%(database_user)s'@'%(database_host)s'
+    IDENTIFIED BY
+        '%(database_password)s';""" % env
+
+    # run the DROP/CREATE command as root
+    run('echo "%s" | mysql -u root -p%s' % (create_database_sql, env.database_root_password))
+
+
+@task
 def set_redcap_base_url():
     """This function will set the redacp base url"""
     set_redcap_config('redcap_base_url', env.url_of_deployed_app)
@@ -310,6 +336,7 @@ def vagrant(admin=False):
     """
     #TODO: vagrant ssh-config gives these details, we can read them and strip them out automatically
 
+    env.vagrant_instance = True
     settings_file_path = 'settings/vagrant.ini'
     define_env(settings_file_path)
 
