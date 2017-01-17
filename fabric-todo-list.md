@@ -19,7 +19,7 @@
 * DONE Extract package
 * DONE update_redcap_connection_settings - update database.php with database settings
 * create_redcap_tables - see redcap\_deployment\_functions.sh
-* configure_redcap - see redcap\_deployment\_functions.sh
+* DONE configure_redcap - see redcap\_deployment\_functions.sh
 * apply_patches - Apply patches to REDCap
 * configure_redcap_cron - see redcap\_deployment\_functions.sh
 * move_edocs_folder - see redcap\_deployment\_functions.sh
