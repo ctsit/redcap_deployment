@@ -326,6 +326,10 @@ def define_env(settings_file_path=""):
     section="instance"
     for (name,value) in config.items(section):
         env[name] = value
+    # Set variables that do not have corresponding values in vagrant.ini file
+    env.live_project_full_path = get_config('live_pre_path') + "/" + get_config('project_path') #
+    env.backup_project_full_path = get_config('backup_pre_path') + "/" + get_config('project_path')
+    env.upload_project_full_path = get_config('backup_pre_path')
 
 @task(alias='dev')
 def vagrant(admin=False):
