@@ -330,7 +330,7 @@ def upgrade():
     copy_running_code_to_backup_dir()
     upload_package_and_extract()
     offline()
-    upgrade_software()
+    move_software_to_live()
     upgrade_db()
     fix_shibboleth_exceptions ()
     #online()
@@ -367,9 +367,9 @@ def offline():
     return 0
 
 @task
-def upgrade_software():
+def move_software_to_live():
     '''Replace the symbolic link to the old code with symbolic link to new code.'''
-    return 0
+    run('ln -s %s/* %s' % (env.backup_pre_path,env.live_pre_path))
 
 @task
 def upgrade_db():
