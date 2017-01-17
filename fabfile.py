@@ -90,6 +90,46 @@ def extract_redcap(redcap_zip="."):
     env.redcap_version = match.group(2)
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
 
+@task(alias="dhfibs")
+def deploy_hooks_framework_into_build_space(target_within_build_space="redcap/hooks/"):
+    """
+    Deploy UF's REDCap hooks framework
+    """
+    # make sure the target directory exists
+    source_dir = env.hook_framework_deployment_source
+    this_target ='/'.join([env.builddir, target_within_build_space])
+    deploy_extension_to_build_space(source_dir, this_target)
+
+
+@task(alias="dhibs")
+def deploy_hooks_into_build_space(target_within_build_space="redcap/hooks/library"):
+    """
+    Deploy each extension into build space by running its own deploy.sh.
+    Lacking a deploy.sh, copy the extension files to the build space.
+    For each extension run test.sh if it exists.
+    """
+    # make sure the target directory exists
+    extension_dir_in_build_space='/'.join([env.builddir, target_within_build_space])
+    with settings(warn_only=True):
+        if local("test -d %s" % extension_dir_in_build_space).failed:
+            local("mkdir -p %s" % extension_dir_in_build_space)
+
+    # For each type of hook, make the target directory and deploy its children
+    for hooktype in os.listdir(env.hooks_deployment_source):
+        # make the target directory
+        hooktype_fp_in_src = '/'.join([env.hooks_deployment_source, hooktype])
+        if os.path.isdir(hooktype_fp_in_src):
+            # file is a hook type
+            hooktype_fp_in_target = '/'.join([extension_dir_in_build_space, hooktype])
+            if not os.path.exists(hooktype_fp_in_target):
+                os.mkdir(hooktype_fp_in_target)
+
+            # locate every directory in the source that matches the pattern hooks_deployment_source/<hooktype>/*
+            for hook in os.listdir(hooktype_fp_in_src):
+                hook_fp_in_src = '/'.join([hooktype_fp_in_src,hook])
+                if os.path.isdir(hook_fp_in_src):
+                    deploy_extension_to_build_space(hook_fp_in_src, hooktype_fp_in_target)
+
 @task(alias="dpibs")
 def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins"):
     """
@@ -101,28 +141,31 @@ def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins")
     extension_dir_in_build_space=env.builddir + target_within_build_space
     with settings(warn_only=True):
         if local("test -d %s" % extension_dir_in_build_space).failed:
-            local("mkdir %s" % extension_dir_in_build_space)
+            local("mkdir -p %s" % extension_dir_in_build_space)
 
     # locate every directory plugins_deployment_source/*
     for (dirpath, dirnames, filenames) in os.walk(env.plugins_deployment_source):
         for dir in dirnames:
-            # make the target directory
+            source_dir = '/'.join([dirpath,dir])
             this_target = os.path.join(extension_dir_in_build_space, dir)
-            if not os.path.exists(this_target):
-                os.mkdir(this_target)
+            deploy_extension_to_build_space(source_dir, this_target)
 
-            # run the deployment script
-            this_deploy_script = os.path.join(dirpath,dir,'deploy.sh')
-            if os.path.isfile(this_deploy_script):
-                local("bash %s %s" % (this_deploy_script, this_target))
-            else:
-                # copy files to target
-                local("cp %s/* %s" % (os.path.join(dirpath,dir,), this_target))
+def deploy_extension_to_build_space(source_dir="", build_target=""):
+    if not os.path.exists(build_target):
+        os.mkdir(build_target)
 
-            # run test deployment script
-            this_test_script = os.path.join(dirpath,dir,'test.sh')
-            if os.path.isfile(this_test_script):
-                local("bash %s " % this_test_script)
+    # run the deployment script
+    this_deploy_script = os.path.join(source_dir,'deploy.sh')
+    if os.path.isfile(this_deploy_script):
+        local("bash %s %s" % (this_deploy_script, build_target))
+    else:
+        # copy files to target
+        local("cp %s/* %s" % (source_dir, build_target))
+
+    # run test deployment script
+    this_test_script = os.path.join(source_dir,'test.sh')
+    if os.path.isfile(this_test_script):
+        local("bash %s " % this_test_script)
 
 
 ##########################
@@ -171,6 +214,8 @@ def package_redcap(redcap_zip="."):
     make_builddir(env.builddir)
     extract_redcap(redcap_zip)
     deploy_plugins_into_build_space()
+    deploy_hooks_into_build_space()
+    deploy_hooks_framework_into_build_space()
 
     # Get variables to tell us where to write the package
     env.package_name = '%(project_name)s-%(redcap_version)s.tgz' % env
@@ -233,10 +278,9 @@ def define_default_env(settings_file_path="settings/defaults.ini"):
         abort("Secrets File not set")
 
     section="DEFAULT"
-    env.project_name = get_config('project_name',section)
-    env.project_settings_path = get_config('project_settings_path',section)
-    env.builddir = get_config('builddir',section)
-    env.plugins_deployment_source = get_config('plugins_deployment_source',section)
+    for (name,value) in config.items(section):
+        env[name] = value
+
 
 def define_env(settings_file_path=""):
     """
@@ -253,25 +297,9 @@ def define_env(settings_file_path=""):
     if get_config('deploy_user') != "":
         env.user = get_config('deploy_user')
 
-    env.deploy_user = get_config('deploy_user') #default ssh deploy user account
-    env.deploy_group = get_config('deploy_group')
-    env.project_name = get_config('project_name')
-    env.project_settings_path = get_config('project_settings_path')
-    env.live_project_full_path = get_config('live_pre_path') + "/" + get_config('project_path') #
-    env.backup_project_full_path = get_config('backup_pre_path') + "/" + get_config('project_path')
-    env.upload_project_full_path = get_config('backup_pre_path')
-    env.live_pre_path = get_config('live_pre_path')
-    env.backup_pre_path = get_config('backup_pre_path')
-    env.key_filename = get_config('key_filename')
-    env.database_name = get_config('database_name')
-    env.database_user = get_config('database_user')
-    env.database_password = get_config('database_password')
-    env.database_host = get_config('database_host')
-    env.builddir = get_config('builddir')
-    env.plugins_deployment_source = get_config('plugins_deployment_source')
-    env.pubkey_filename = get_config("pubkey_filename")
-    env.url_of_deployed_app = get_config("url_of_deployed_app")
-
+    section="instance"
+    for (name,value) in config.items(section):
+        env[name] = value
 
 @task(alias='dev')
 def vagrant(admin=False):
