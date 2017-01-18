@@ -36,11 +36,11 @@
     * DONE make_upload_target
     * DONE copy_running_code_to_backup_dir
     * upload_package_and_extract - to deploy package to remote (upload package needs to be split into make_upload_target and upload_package_and_extract so copy_running_code_to_backup_dir can be spliced in before extract)
-    * offline - use set_redcap_config to go offline
+    * DONE offline - use set_redcap_config to go offline
     * DONE move_software_to_live - replace symbolic link to old code with symlink to new code.
     * upgrade_db - will do this manually at first
     * fix_shibboleth_exceptions - we will do this manually (we really need to obsolete this with ideas from the redcap forum)
-    * online - use set_redcap_config to go online
+    * DONE online - use set_redcap_config to go online
 
 
 ## Things we would like Fabric to do but might delay
