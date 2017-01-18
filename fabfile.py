@@ -353,7 +353,10 @@ def copy_running_code_to_backup_dir():
     This will allow the new software to be overlain on the old software without
     risk of corrupting the old software.
     '''
-    return 0
+    with settings(user=env.deploy_user):
+        with settings(warn_only=True):
+            if run("test -e %(live_project_full_path)s/cron.php" % env).succeeded:
+                run("cp -r -P %(live_project_full_path)s/* %(upload_target_backup_dir)s" % env)
 
 @task
 def upload_package_and_extract():
@@ -371,7 +374,22 @@ def offline():
 @task
 def move_software_to_live():
     '''Replace the symbolic link to the old code with symbolic link to new code.'''
-    run('ln -s %s/* %s' % (env.backup_pre_path,env.live_pre_path))
+    with settings(user=env.deploy_user):
+        with settings(warn_only=True):
+            if run("test -d %(live_project_full_path)s" % env).succeeded:
+                # we need to back this directory up on the fly, destroy it and then symlink it back into existence
+                with settings(warn_only=False):
+                    new_backup_dir = env.upload_target_backup_dir + "-previous"
+                    run("mkdir -p %s" % new_backup_dir)
+                    run("cp -r -P %s/* %s" % (env.live_project_full_path, new_backup_dir))
+                    run("rm -rf  %s" % env.live_project_full_path)
+                    run('ln -s %s %s' % (new_backup_dir,env.live_project_full_path))
+            elif run("test -e %(live_project_full_path)s" % env).succeeded:
+                # As target is not a directory, we should be able to just delete it
+                run('rm %s' % (env.live_project_full_path))
+
+        # now switch the new code to live
+        run('ln -s %s %s' % (env.upload_target_backup_dir,env.live_project_full_path))
 
 @task
 def upgrade_db():
@@ -577,15 +595,14 @@ def setup_webspace():
 
     Note: Admin must be true in the environment
     """
-    sudo("mkdir -p %(live_project_full_path)s" % env)
-    sudo("mkdir -p %(backup_project_full_path)s/archive" % env)
-
     #Change the permissions to match the correct user and group
+    sudo("mkdir -p %(backup_project_full_path)s" % env)
+
     sudo("chown -R %s.%s %s" % (env.deploy_user, env.deploy_group, env.backup_pre_path))
-    sudo("chmod -R 755 %s"  % (env.backup_pre_path))
+    sudo("chmod -R 775 %s"  % (env.backup_pre_path))
 
     sudo("chown -R %s.%s %s" % (env.deploy_user, env.deploy_group, env.live_pre_path))
-    sudo("chmod -R 755 %s"  % (env.live_pre_path))
+    sudo("chmod -R 775 %s"  % (env.live_pre_path))
 
 @task
 def setup_server():

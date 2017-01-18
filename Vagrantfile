@@ -24,9 +24,10 @@ Vagrant.configure(2) do |config|
   config.hostsupdater.remove_on_suspend = false
   config.hostsupdater.aliases = [ENV["HOSTNAME_IN_HOST"]]
 
-  config.vm.synced_folder "redcap", ENV["PATH_TO_APP_IN_GUEST_FILESYSTEM"],
-    owner: "www-data",
-    group: "vagrant"
+  config.vm.synced_folder "www", ENV["APP_PARENT_FOLDER_IN_GUEST_FILESYSTEM"],
+    owner: "vagrant",
+    group: "www-data",
+    mount_options: ["dmode=775,fmode=664"]
 
   config.vm.provider "virtualbox" do |vb|
     # vb.memory = "1024"

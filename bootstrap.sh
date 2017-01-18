@@ -53,7 +53,11 @@ apt-get install -y php-pear php5-curl
 
 # prep the /var/www directory
 log "Prep the /var/www file system"
-rm -rf /var/www/redcap/*
+if [ -d /var/www/redcap ]; then
+    rm -rf /var/www/redcap
+elif [[ -e /var/www/redcap ]]; then
+    rm /var/www/redcap
+fi
 
 # extract a standard REDCap zip file as downloaded from Vanderbilt.
 unzip -o -q $REDCAP_ZIP -d /var/www/

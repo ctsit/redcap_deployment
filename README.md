@@ -91,7 +91,7 @@ The VM provisioning scripts will automatically deploy all hooks and plugins desc
 
 ## Hook and Plugin Development
 
-The directories of deployed hooks and plugins are accessible from the host computer in this project directory at ./redcap/hooks and ./redcap/plugins.  Indeed, the entire deployed REDCap code base is accessible.  This allows the deployed code base to be modified on the fly. Use the aid development and expermentation, but beware that these files will be erased if you destroy the VM.
+The directories of deployed hooks and plugins are accessible from the host computer in this project directory at ./www/redcap/hooks and ./www/redcap/plugins.  Indeed, the entire deployed REDCap code base is accessible.  This allows the deployed code base to be modified on the fly. Use the aid development and expermentation, but beware that these files will be erased if you destroy the VM.
 
 
 ## Contributions
