@@ -319,6 +319,20 @@ def configure_redcap_cron():
     sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
     sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' % (env.live_project_full_path, crond_for_redcap))
 
+@task
+def move_edocs_folder():
+    """
+    This function moves edocs folder out of web space
+    """
+    default_edoc_path = '%s/edocs' % env.live_project_full_path
+    with settings(user=env.deploy_user):
+        with settings(warn_only=True):
+            if run("test -e %s" % env.edoc_path).succeeded:
+                set_redcap_config('edoc_path',env.edoc_path)
+            if run("test -e %s" % default_edoc_path).succeeded:
+                with settings(warn_only=False):
+                    run('rmdir %s' % default_edoc_path)
+
 ######################
 
 @task
@@ -605,6 +619,8 @@ def setup_webspace():
 
     sudo("chown -R %s.%s %s" % (env.deploy_user, env.deploy_group, env.live_pre_path))
     sudo("chmod -R 775 %s"  % (env.live_pre_path))
+
+    sudo("mkdir -p %s" % env.edoc_path)
 
 @task
 def setup_server():
