@@ -23,7 +23,7 @@
 * DONE configure_redcap - see redcap\_deployment\_functions.sh
 * DONE create_redcap_tables - see redcap\_deployment\_functions.sh
 * DONE configure_redcap - see redcap\_deployment\_functions.sh
-* apply_patches - Apply patches to REDCap
+* apply_patches - modify the apply_patches function prototype to locally run the commands it currently prints
 * DONE configure_redcap_cron - see redcap\_deployment\_functions.sh
 * move_edocs_folder - see redcap\_deployment\_functions.sh
 * DONE set_hook_functions_file - see redcap\_deployment\_functions.sh
@@ -38,7 +38,7 @@
     * upload_package_and_extract - to deploy package to remote (upload package needs to be split into make_upload_target and upload_package_and_extract so copy_running_code_to_backup_dir can be spliced in before extract)
     * DONE offline - use set_redcap_config to go offline
     * DONE move_software_to_live - replace symbolic link to old code with symlink to new code.
-    * upgrade_db - will do this manually at first
+    * upgrade_db - make a function that tests for the existence of the
     * fix_shibboleth_exceptions - we will do this manually (we really need to obsolete this with ideas from the redcap forum)
     * DONE online - use set_redcap_config to go online
 
@@ -48,8 +48,6 @@
 * DONE backup mysql database from the remote host
 * make_twilio_features_visible - see redcap\_deployment\_functions.sh
 * Read remote database.php to get credentials for DB operations.
-* offline - Take REDCap offline.
 * generate upgrade.sql - This will be harder as we will need to copy RC code to make our own PHP-based command line tools generate the upgrade.sql.
 * upgrade_db - execute upgrade.sql - pending the generation of upgrade.sql
-* online - Put REDCap online.
 
