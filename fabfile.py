@@ -55,6 +55,7 @@ from datetime import datetime
 import configparser, string, random, os
 from tempfile import mkstemp
 import re
+import json
 
 @task
 def make_builddir(builddir="build"):
@@ -216,6 +217,7 @@ def package_redcap(redcap_zip="."):
     deploy_plugins_into_build_space()
     deploy_hooks_into_build_space()
     deploy_hooks_framework_into_build_space()
+    apply_patches()
 
     # Get variables to tell us where to write the package
     env.package_name = '%(project_name)s-%(redcap_version)s.tgz' % env
@@ -312,6 +314,17 @@ def create_redcap_tables(resource_path = "Resources/sql"):
     for file in files.splitlines():
         print("Executing sql file %s" % file)
         run('mysql -u%s -p%s %s < %s' % (env.database_user, env.database_password,env.database_name,file))
+
+@task
+def apply_patches():
+    for repo in json.loads(env.patch_repos):
+        print "\n\nApply Patches\n"
+        print "mktemp -d"
+        # use the output of the above command to set the local var tempdir
+        tempdir='mytempdir'
+        print "git clone %s %s" % (repo,tempdir)
+        print "bash %s/deploy.sh %s %s" % (tempdir, env.builddir, env.redcap_version)
+        print "rm %s" % tempdir
 
 @task
 def configure_redcap_cron():
