@@ -395,20 +395,18 @@ def upload_package_and_extract(name=""):
     # NOTE: run as $ fab <env> package make_upload_target upe ...necessary env
     # variables are set by package and make_upload_target funcitons
     with settings(user=env.deploy_user):
-        with settings(warn_only=True):
-            # Make a temp folder to upload the tar to
-            temp1 = run('mktemp -d')
-            put(env.package_name, temp1)
-            # Test where temp/'receiving' is
-            run('ls %s' % temp1)
-            temp2 = run('mktemp -d')
-            # Extract in temp ... -C specifies what directory to extract to
-            # Extract to temp2 so the tar is not included in the contents
-            run('tar -xzf %s/%s -C %s' % (temp1, env.package_name, temp2))
-            # Transfer contents from temp2/redcap to ultimate destination
-            run('mv %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
-            # Remove the temp directories
-            run('rm -r %s %s' % (temp1, temp2))
+        # Make a temp folder to upload the tar to
+        temp1 = run('mktemp -d')
+        put(env.package_name, temp1)
+        # Test where temp/'receiving' is
+        temp2 = run('mktemp -d')
+        # Extract in temp ... -C specifies what directory to extract to
+        # Extract to temp2 so the tar is not included in the contents
+        run('tar -xzf %s/%s -C %s' % (temp1, env.package_name, temp2))
+        # Transfer contents from temp2/redcap to ultimate destination
+        run('mv %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
+        # Remove the temp directories
+        run('rm -r %s %s' % (temp1, temp2))
 
 @task
 def offline():
