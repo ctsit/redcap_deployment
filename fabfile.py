@@ -226,18 +226,6 @@ def package(redcap_zip="."):
     -f %s/%s \
     redcap" % (env.builddir, cwd, env.package_name))
 
-@task(alias='upload')
-def upload_package(name=""):
-    """
-    This function moves the package to live directory on remote host using the project name and current time
-    """
-    with settings(user=env.deploy_user):
-        put(name, '%(upload_project_full_path)s' % env)
-        with cd("%(upload_project_full_path)s" % env):
-            #run("mkdir -p %s" % (env.project_name))
-            run("tar -xzf %s" % name)
-            run("mv %s %s" % (env.project_name, env.remote_project_name))
-
 @task(alias='urc')
 def update_redcap_connection(db_settings_file="database.php", salt="abc"):
     """This function will update the database.php file with settings
