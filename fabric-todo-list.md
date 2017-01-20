@@ -23,9 +23,9 @@
 * DONE configure_redcap - see redcap\_deployment\_functions.sh
 * DONE create_redcap_tables - see redcap\_deployment\_functions.sh
 * DONE configure_redcap - see redcap\_deployment\_functions.sh
-* apply_patches - modify the apply_patches function prototype to locally run the commands it currently prints
+* DONE apply_patches - modify the apply_patches function prototype to locally run the commands it currently prints
 * DONE configure_redcap_cron - see redcap\_deployment\_functions.sh
-* move_edocs_folder - see redcap\_deployment\_functions.sh
+* DONE move_edocs_folder - see redcap\_deployment\_functions.sh
 * DONE set_hook_functions_file - see redcap\_deployment\_functions.sh
 * Make required directories for hook deployment - deployment_functions.sh
 * Create sym links for hooks to be executed - deployment_functions.sh

@@ -318,13 +318,11 @@ def create_redcap_tables(resource_path = "Resources/sql"):
 @task
 def apply_patches():
     for repo in json.loads(env.patch_repos):
-        print "\n\nApply Patches\n"
-        print "mktemp -d"
-        # use the output of the above command to set the local var tempdir
-        tempdir='mytempdir'
-        print "git clone %s %s" % (repo,tempdir)
-        print "bash %s/deploy.sh %s %s" % (tempdir, env.builddir, env.redcap_version)
-        print "rm %s" % tempdir
+        tempdir = local('mktemp -d 2>&1', capture = True)
+        local('git clone %s %s' % (repo,tempdir))
+        local('%s/deploy.sh %s/redcap %s' % (tempdir, env.builddir, env.redcap_version))
+        local('rm -rf %s' % tempdir)
+
 
 @task
 def configure_redcap_cron():
