@@ -203,8 +203,7 @@ def backup_database():
 
 ##########################
 
-@task(alias='package')
-def package_redcap(redcap_zip="."):
+def package(redcap_zip="."):
     """
     This function will go into the project directory and zip all
     of the required files
@@ -281,7 +280,6 @@ def set_redcap_base_url():
     """This function will set the redacp base url"""
     set_redcap_config('redcap_base_url', env.url_of_deployed_app)
 
-@task
 def set_redcap_config(field_name="", value=""):
     """This function will update values for the redcap system"""
     run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
@@ -352,7 +350,7 @@ def move_edocs_folder():
 def upgrade():
     '''A function to upgrade an existing redcap instance.'''
 
-    # TODO: upload_package needs to be split into make_upload_target and upload_package_and_extract 
+    # TODO: upload_package needs to be split into make_upload_target and upload_package_and_extract
     # so copy_running_code_to_backup_dir can be spliced in before extract)'''
     make_upload_target()
     copy_running_code_to_backup_dir()
