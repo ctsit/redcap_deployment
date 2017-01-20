@@ -352,7 +352,8 @@ def move_edocs_folder():
 def upgrade():
     '''A function to upgrade an existing redcap instance.'''
 
-    # TODO: upload_package needs to be split into make_upload_target and upload_package_and_extract so copy_running_code_to_backup_dir can be spliced in before extract)'''
+    # TODO: upload_package needs to be split into make_upload_target and upload_package_and_extract 
+    # so copy_running_code_to_backup_dir can be spliced in before extract)'''
     make_upload_target()
     copy_running_code_to_backup_dir()
     upload_package_and_extract()
@@ -385,13 +386,29 @@ def copy_running_code_to_backup_dir():
             if run("test -e %(live_project_full_path)s/cron.php" % env).succeeded:
                 run("cp -r -P %(live_project_full_path)s/* %(upload_target_backup_dir)s" % env)
 
-@task
-def upload_package_and_extract():
+@task (alias='upe')
+def upload_package_and_extract(name=""):
     '''
     Upload the redcap package and extract it into the directory from which new
     software will be deployed, e.g., /var/www.backup/redcap-20160117T1543/
     '''
-    return 0
+    # NOTE: run as $ fab <env> package make_upload_target upe ...necessary env
+    # variables are set by package and make_upload_target funcitons
+    with settings(user=env.deploy_user):
+        with settings(warn_only=True):
+            # Make a temp folder to upload the tar to
+            temp1 = run('mktemp -d')
+            put(env.package_name, temp1)
+            # Test where temp/'receiving' is
+            run('ls %s' % temp1)
+            temp2 = run('mktemp -d')
+            # Extract in temp ... -C specifies what directory to extract to
+            # Extract to temp2 so the tar is not included in the contents
+            run('tar -xzf %s/%s -C %s' % (temp1, env.package_name, temp2))
+            # Transfer contents from temp2/redcap to ultimate destination
+            run('mv %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
+            # Remove the temp directories
+            run('rm -r %s %s' % (temp1, temp2))
 
 @task
 def offline():
