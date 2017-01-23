@@ -43,28 +43,28 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         localpath = "surveys/"
         self.fullpath=self.redcap_root + localpath
         expected_string = 'Please enter your access code to begin the survey'
-        self.assertTrue(expected_string in self.weburl.get(self.fullpath))
+        self.assertIn(expected_string, self.weburl.get(self.fullpath))
 
     def testSendItFolder(self):
         """Verify that we can access the REDCap SendIt/ folder"""
         localpath = "SendIt/"
         self.fullpath=self.redcap_root + self.redcap_version_path + localpath
         expected_string = 'download.php'
-        self.assertTrue(expected_string in self.weburl.get(self.fullpath))
+        self.assertIn(expected_string, self.weburl.get(self.fullpath))
 
     def testApiFolder(self):
         """Verify that we can access the REDCap api/ folder"""
         localpath = "api/"
         self.fullpath=self.redcap_root + localpath
         expected_string = 'The requested method is not implemented.'
-        self.assertTrue(expected_string in self.weburl.get(self.fullpath))
+        self.assertIn(expected_string, self.weburl.get(self.fullpath))
 
     def testApiHelpFolder(self):
         """Verify that we can access the REDCap api/help/ folder"""
         localpath = "api/help/"
         self.fullpath=self.redcap_root + localpath
         expected_string = 'REDCap API Documentation'
-        self.assertTrue(expected_string in self.weburl.get(self.fullpath))
+        self.assertIn(expected_string, self.weburl.get(self.fullpath))
 
 
     def testResourceFolder(self):
