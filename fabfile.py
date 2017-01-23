@@ -180,6 +180,7 @@ def write_my_cnf():
     f.write("[client]" +"\n")
     f.write("user=" + env.database_user +"\n")
     f.write("password=" + env.database_password +"\n")
+    f.write("database=" + env.database_name +"\n")
     f.close()
     return(file)
 
@@ -225,18 +226,6 @@ def package(redcap_zip="."):
     local("cd %s && tar -cz --exclude='.DS_Store' \
     -f %s/%s \
     redcap" % (env.builddir, cwd, env.package_name))
-
-@task(alias='upload')
-def upload_package(name=""):
-    """
-    This function moves the package to live directory on remote host using the project name and current time
-    """
-    with settings(user=env.deploy_user):
-        put(name, '%(upload_project_full_path)s' % env)
-        with cd("%(upload_project_full_path)s" % env):
-            #run("mkdir -p %s" % (env.project_name))
-            run("tar -xzf %s" % name)
-            run("mv %s %s" % (env.project_name, env.remote_project_name))
 
 @task(alias='urc')
 def update_redcap_connection(db_settings_file="database.php", salt="abc"):
@@ -308,7 +297,7 @@ def create_redcap_tables(resource_path = "Resources/sql"):
     run('mysql -u%s -p%s %s < %s/install_data.sql' % (env.database_user,env.database_password,env.database_name, redcap_sql_dir))
     run('mysql -u%s -p%s %s -e "UPDATE %s.redcap_config SET value = \'%s\' WHERE field_name = \'redcap_version\' "' % (env.database_user,env.database_password,env.database_name, env.database_name,version))
 
-    files=run('ls -v %s/create_demo_db*.sql' % redcap_sql_dir)
+    files=run('ls -v1 %s/create_demo_db*.sql' % redcap_sql_dir)
     for file in files.splitlines():
         print("Executing sql file %s" % file)
         run('mysql -u%s -p%s %s < %s' % (env.database_user, env.database_password,env.database_name,file))
@@ -316,13 +305,11 @@ def create_redcap_tables(resource_path = "Resources/sql"):
 @task
 def apply_patches():
     for repo in json.loads(env.patch_repos):
-        print "\n\nApply Patches\n"
-        print "mktemp -d"
-        # use the output of the above command to set the local var tempdir
-        tempdir='mytempdir'
-        print "git clone %s %s" % (repo,tempdir)
-        print "bash %s/deploy.sh %s %s" % (tempdir, env.builddir, env.redcap_version)
-        print "rm %s" % tempdir
+        tempdir = local('mktemp -d 2>&1', capture = True)
+        local('git clone %s %s' % (repo,tempdir))
+        local('%s/deploy.sh %s/redcap %s' % (tempdir, env.builddir, env.redcap_version))
+        local('rm -rf %s' % tempdir)
+
 
 @task
 def configure_redcap_cron():
@@ -342,7 +329,9 @@ def move_edocs_folder():
                 set_redcap_config('edoc_path',env.edoc_path)
             if run("test -e %s" % default_edoc_path).succeeded:
                 with settings(warn_only=False):
-                    run('rmdir %s' % default_edoc_path)
+                    file_name = run('ls -1 %s' % default_edoc_path)
+                    if file_name == "index.html":
+                        run('rm -r %s' % default_edoc_path)
 
 ######################
 
@@ -395,12 +384,12 @@ def upload_package_and_extract(name=""):
     with settings(user=env.deploy_user):
         # Make a temp folder to upload the tar to
         temp1 = run('mktemp -d')
-        put(env.package_name, temp1)
+        put(name, temp1)
         # Test where temp/'receiving' is
         temp2 = run('mktemp -d')
         # Extract in temp ... -C specifies what directory to extract to
         # Extract to temp2 so the tar is not included in the contents
-        run('tar -xzf %s/%s -C %s' % (temp1, env.package_name, temp2))
+        run('tar -xzf %s/%s -C %s' % (temp1, name, temp2))
         # Transfer contents from temp2/redcap to ultimate destination
         run('mv %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
         # Remove the temp directories
@@ -542,88 +531,29 @@ def prod(admin=False):
     env.hosts = get_config('production_host')
     #env.port = ### #Uncomment this line if a specific port is required
 
-@task
-def git_version(version):
-    """
-    Pulls the requested version from Master for deployment
-
-    version: the version applied to the tag of the release
-    Assumptions:
-    git is installed and configured
-    Master branch contains releases with the version number as a tag
-    """
-
-    local("git stash save 'Stashing current changes while releasing version %s'" % version)
-    local("git fetch --all; git checkout %s" % (version))
-
-def create_backup():
-    """
-    This function creates a backup of the current live directory using the project name and current time
-    """
-    with cd("%(backup_project_full_path)s" % env):
-        run("mkdir -p backup")
-        if exists('live'):
-            run("tar -cz -f backup/%s-%s.tar.gzip live" % (env.project_name, datetime.now().strftime("%Y%m%dT%H%M%Z")))
-
 #TODO create restore backup function
 
-def unpackage_files():
-    """
-    Unpackage the file in the remote backup directory
-    """
-    with cd("%(backup_project_full_path)s" % env):
-        run("mkdir -p archive/%(project_name)s-%(project_version)s" % env)
-        run("tar -x -C archive/%(project_name)s-%(project_version)s \
-            -f %(project_name)s-%(project_version)s.tar.gzip" % env)
-
-def link_to_live():
-    """
-    This function creates a symlink from the backup to the live www directory for the server
-    to run the app from.
-    """
-    run("ln -sf -T %(backup_project_full_path)s/archive/%(project_name)s-%(project_version)s \
-    %(live_project_full_path)s" % env)
-
-def refresh_server():
-    """
-    Touchs the wsgi file to have the server reload the necessary files
-    This may not be needed since we are overwriting the files anyways
-    """
-    run("touch %(live_project_full_path)s/%(project_settings_path)s/wsgi.py" % env)
-
-def ship_to_host():
-    """
-    Move the zip file to the correct remote directory
-    """
-    put('%(project_name)s-%(project_version)s.tar.gzip' % env, '%(backup_project_full_path)s' % env)
-
-def clean_up():
-    #clean up local files
-    local('rm %(project_name)s-%(project_version)s.tar.gzip' % env)
-
-    #clean up remote files
-    run('rm %(backup_project_full_path)s/%(project_name)s-%(project_version)s.tar.gzip' % env)
 
 @task
-def deploy(version):
+def deploy(name):
     """
     This function does all the work required to ship code to the
     server being deployed to.
 
     version: the version applied to the tag of the release
     """
-
-    env.project_version = version
-
-    git_version(version)
-    package_files()
-    ship_to_host()
-    create_backup()
-    unpackage_files()
-    link_to_live()
-    refresh_server()
+    make_upload_target()
+    upload_package_and_extract(name)
+    update_redcap_connection()
+    write_remote_my_cnf()
+    create_redcap_tables()
+    move_software_to_live()
+    move_edocs_folder()
+    set_redcap_base_url()
+    set_hook_functions_file()
+    configure_redcap_cron()
     #TODO: Run tests, run django validation
-    clean_up()
+
 
 """
 The following functions are admin level functions which will alter the server.

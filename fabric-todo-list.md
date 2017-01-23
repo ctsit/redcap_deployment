@@ -23,17 +23,17 @@
 * DONE configure_redcap - see redcap\_deployment\_functions.sh
 * DONE create_redcap_tables - see redcap\_deployment\_functions.sh
 * DONE configure_redcap - see redcap\_deployment\_functions.sh
-* apply_patches - modify the apply_patches function prototype to locally run the commands it currently prints
+* DONE apply_patches - modify the apply_patches function prototype to locally run the commands it currently prints
 * DONE configure_redcap_cron - see redcap\_deployment\_functions.sh
 * DONE move_edocs_folder - see redcap\_deployment\_functions.sh
 * DONE set_hook_functions_file - see redcap\_deployment\_functions.sh
-* Remove upload_package - we no longer need it.  IT has bene replaced by make_upload_target and upload_package_and_extract
+* DONE Remove upload_package - we no longer need it.  IT has bene replaced by make_upload_target and upload_package_and_extract
 * Make required directories for hook deployment - deployment_functions.sh
 * Create sym links for hooks to be executed - deployment_functions.sh
 
 ## deploy function
 
-deploy(name) - Revise the existing deploy function to call the functions needed to do a deployment of a new instance.  These packages are probably need in this order:
+DONE deploy(name) - Revise the existing deploy function to call the functions needed to do a deployment of a new instance.  These packages are probably need in this order:
 
     make_upload_target()
     upload_package_and_extract(name)
