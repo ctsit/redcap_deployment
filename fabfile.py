@@ -440,6 +440,22 @@ def upgrade_db():
     return 0
 
 @task
+def apply_incremental_db_changes(old, new):
+    '''update the database from current version to latest availalbe upgrade.sql
+    by applying the needed upgarde_version.sql files in sequence. The arguments
+    old and new will be version numbers (i.e., 6.11.5)'''
+    redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
+    files = run('ls -1 %s/*.sql  | sort --version-sort | grep -A1000 %s | tail -n +2' % (redcap_sql_dir, old))
+    with settings(warn_only=True):
+        for file in files.splitlines():
+            print("Executing sql file %s" % file)
+            run('mysql < %s' % file)
+
+    # Finalize upgrade
+    set_redcap_config('redcap_last_install_date', datetime.now().strftime("%Y-%m-%d"))
+    set_redcap_config('redcap_version', new)
+
+@task
 def fix_shibboleth_exceptions ():
     '''TODON'T: Don't write this. (we really need to obsolete this with ideas from redcap forum)'''
     return 0
