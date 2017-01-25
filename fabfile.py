@@ -304,6 +304,18 @@ def create_redcap_tables(resource_path = "Resources/sql"):
         run('mysql -u%s -p%s %s < %s' % (env.database_user, env.database_password,env.database_name,file))
 
 @task
+def apply_upgrade_sql():
+    """
+    This function copies upgrade.sql to remote vm and runs upgrade.sql file
+    """
+    upgrade_file = "upgrade.sql"
+    redcap_upgrade_sql_path = run('mktemp')
+    if local('test -e %s' % upgrade_file).succeeded:
+        put(upgrade_file, redcap_upgrade_sql_path)
+        if run('mysql < %s' % redcap_upgrade_sql_path).succeeded:
+            run('rm %s' % redcap_upgrade_sql_path)
+
+@task
 def apply_patches():
     for repo in json.loads(env.patch_repos):
         tempdir = local('mktemp -d 2>&1', capture = True)

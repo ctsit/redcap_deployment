@@ -66,7 +66,7 @@ At the same time delete these functions as they will no longer be referenced by 
     * DONE upload_package_and_extract - to deploy package to remote (upload package needs to be split into make_upload_target and upload_package_and_extract so copy_running_code_to_backup_dir can be spliced in before extract)
     * DONE offline - use set_redcap_config to go offline
     * DONE move_software_to_live - replace symbolic link to old code with symlink to new code.
-    * apply_upgrade_sql - make a function that tests for the existence of the file upgrade.sql in the root of the redcap app, applies upgrade.sql the redcap database if it does exist and then deletes upgrade.sql on success.
+    * DONE apply_upgrade_sql - make a function that tests for the existence of the file upgrade.sql in the root of the redcap app, applies upgrade.sql the redcap database if it does exist and then deletes upgrade.sql on success.
     * DONT DO fix_shibboleth_exceptions - we will do this manually (we really need to obsolete this with ideas from the redcap forum)
     * DONE online - use set_redcap_config to go online
 
