@@ -86,7 +86,7 @@ def extract_redcap(redcap_zip="."):
         else:
             abort("The redcap version specified is neither a zip file nor a path.")
     print (redcap_path)
-    match = re.search(r"(redcap)(\d+.\d+.\d+)(.zip)", redcap_path)
+    match = re.search(r"(redcap)(\d+.\d+.\d+)(|_upgrade)(.zip)", redcap_path)
     print(match.group(2))
     env.redcap_version = match.group(2)
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
@@ -204,6 +204,7 @@ def backup_database():
 
 ##########################
 
+@task
 def package(redcap_zip="."):
     """
     This function will go into the project directory and zip all
@@ -336,14 +337,15 @@ def move_edocs_folder():
 ######################
 
 @task
-def upgrade():
-    '''A function to upgrade an existing redcap instance.'''
+def upgrade(name):
+    '''A function to upgrade an existing redcap instance. using the redcap package named in 'name'.  
+    This file should be in the TGZ format as packaged by this fabfile'''
 
     # TODO: upload_package needs to be split into make_upload_target and upload_package_and_extract
     # so copy_running_code_to_backup_dir can be spliced in before extract)'''
     make_upload_target()
     copy_running_code_to_backup_dir()
-    upload_package_and_extract()
+    upload_package_and_extract(name)
     offline()
     move_software_to_live()
     #upgrade_db()
@@ -374,7 +376,7 @@ def copy_running_code_to_backup_dir():
                 run("cp -r -P %(live_project_full_path)s/* %(upload_target_backup_dir)s" % env)
 
 @task (alias='upe')
-def upload_package_and_extract(name=""):
+def upload_package_and_extract(name):
     '''
     Upload the redcap package and extract it into the directory from which new
     software will be deployed, e.g., /var/www.backup/redcap-20160117T1543/
@@ -391,9 +393,12 @@ def upload_package_and_extract(name=""):
         # Extract to temp2 so the tar is not included in the contents
         run('tar -xzf %s/%s -C %s' % (temp1, name, temp2))
         # Transfer contents from temp2/redcap to ultimate destination
-        run('mv %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
+        with settings(warn_only=True):
+            if run('test -d %s/webtools2/pdf/font/unifont' % env.upload_target_backup_dir).succeeded:
+                run('chmod ug+w %s/webtools2/pdf/font/unifont/*' % env.upload_target_backup_dir)
+        run('rsync -rc %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
         # Remove the temp directories
-        run('rm -r %s %s' % (temp1, temp2))
+        run('rm -rf %s %s' % (temp1, temp2))
 
 @task
 def offline():
@@ -413,10 +418,6 @@ def move_software_to_live():
                     run("mkdir -p %s" % new_backup_dir)
                     run("cp -r -P %s/* %s" % (env.live_project_full_path, new_backup_dir))
                     run("rm -rf  %s" % env.live_project_full_path)
-                    run('ln -s %s %s' % (new_backup_dir,env.live_project_full_path))
-            elif run("test -e %(live_project_full_path)s" % env).succeeded:
-                # As target is not a directory, we should be able to just delete it
-                run('rm %s' % (env.live_project_full_path))
 
         # now switch the new code to live
         run('ln -s %s %s' % (env.upload_target_backup_dir,env.live_project_full_path))
