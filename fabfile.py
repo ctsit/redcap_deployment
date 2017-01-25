@@ -428,7 +428,7 @@ def move_software_to_live():
                 with settings(warn_only=False):
                     new_backup_dir = env.upload_target_backup_dir + "-previous"
                     run("mkdir -p %s" % new_backup_dir)
-                    run("cp -r -P %s/* %s" % (env.live_project_full_path, new_backup_dir))
+                    run("cp -rf -P %s/* %s" % (env.live_project_full_path, new_backup_dir))
                     run("rm -rf  %s" % env.live_project_full_path)
 
         # now switch the new code to live
