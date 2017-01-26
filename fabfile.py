@@ -220,6 +220,7 @@ def package(redcap_zip="."):
     deploy_hooks_into_build_space()
     deploy_hooks_framework_into_build_space()
     apply_patches()
+    add_db_upgrade_script()
 
     # Get variables to tell us where to write the package
     env.package_name = '%(project_name)s-%(redcap_version)s.tgz' % env
@@ -324,6 +325,11 @@ def apply_patches():
         local('%s/deploy.sh %s/redcap %s' % (tempdir, env.builddir, env.redcap_version))
         local('rm -rf %s' % tempdir)
 
+@task
+def add_db_upgrade_script():
+    target_dir = '/'.join([env.builddir, env.project_name, "redcap_v%s" % env.redcap_version])
+    print target_dir
+    local('cp deploy/files/generate_upgrade_sql_from_php.php %s' % target_dir)
 
 @task
 def configure_redcap_cron():
@@ -351,8 +357,9 @@ def move_edocs_folder():
 
 @task
 def upgrade(name):
-    '''A function to upgrade an existing redcap instance. using the redcap package named in 'name'.  
-    This file should be in the TGZ format as packaged by this fabfile'''
+    '''A function to upgrade an existing redcap instance using the redcap
+    package named in 'name'.  This input file should be in the TGZ format
+    as packaged by this fabfile'''
 
     # TODO: upload_package needs to be split into make_upload_target and upload_package_and_extract
     # so copy_running_code_to_backup_dir can be spliced in before extract)'''
