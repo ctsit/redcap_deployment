@@ -56,6 +56,7 @@ import configparser, string, random, os
 from tempfile import mkstemp
 import re
 import json
+import fnmatch
 
 @task
 def make_builddir(builddir="build"):
@@ -444,13 +445,16 @@ def apply_incremental_db_changes(old, new):
     '''update the database from current version to latest availalbe upgrade.sql
     by applying the needed upgarde_version.sql files in sequence. The arguments
     old and new will be version numbers (i.e., 6.11.5)'''
+
+    old = "%d.%02d.%02d" % tuple(map(int,old.split('.')))
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
-    files = run('ls -1 %s/*.sql  | sort --version-sort | grep -A1000 %s | tail -n +2' % (redcap_sql_dir, old))
-    with settings(warn_only=True):
-        for file in files.splitlines():
+    files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort | grep -A1000 %s | tail -n +2' % (redcap_sql_dir, redcap_sql_dir, old))
+    for file in files.splitlines():
+        if fnmatch.fnmatch(file, "*.php"):
+            print (file + " is a php file!\n")
+        else:
             print("Executing sql file %s" % file)
             run('mysql < %s' % file)
-
     # Finalize upgrade
     set_redcap_config('redcap_last_install_date', datetime.now().strftime("%Y-%m-%d"))
     set_redcap_config('redcap_version', new)
