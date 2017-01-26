@@ -368,8 +368,7 @@ def upgrade(name):
     upload_package_and_extract(name)
     offline()
     move_software_to_live()
-    #upgrade_db()
-    #fix_shibboleth_exceptions()
+    #apply_incremental_db_changes(old,new)
     #online()
 
 @task
@@ -455,10 +454,12 @@ def apply_incremental_db_changes(old, new):
 
     old = "%d.%02d.%02d" % tuple(map(int,old.split('.')))
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
-    files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort | grep -A1000 %s | tail -n +2' % (redcap_sql_dir, redcap_sql_dir, old))
+    files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort ' % (redcap_sql_dir, redcap_sql_dir, old))
+    path_to_sql_generation = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'generate_upgrade_sql_from_php.php'])
     for file in files.splitlines():
         if fnmatch.fnmatch(file, "*.php"):
             print (file + " is a php file!\n")
+            run('php %s %s | mysql' % (path_to_sql_generation,file))
         else:
             print("Executing sql file %s" % file)
             run('mysql < %s' % file)
