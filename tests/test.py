@@ -38,6 +38,15 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         """Call after every test case."""
 
     # Test for access to root level folders
+    # NOTE: this test will fail in the local development vagrant until it is
+    #       reconfigured from no-authentication to table-based authentication
+    def testRedcapRootFolder(self):
+        """Verify that we *can't* access the redcap / folder without login"""
+        localpath = ""
+        self.fullpath=self.redcap_root + localpath
+        expected_string = 'Welcome to REDCap!'
+        self.assertNotIn(expected_string, self.weburl.get(self.fullpath))
+
     def testSurveysFolder(self):
         """Verify that we can access the REDCap surveys/ folder"""
         localpath = "surveys/"
