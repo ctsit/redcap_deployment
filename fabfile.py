@@ -446,23 +446,34 @@ def upgrade_db():
     '''TODO: Write this later.  We will do this manually at first'''
     return 0
 
+def convert_version_to_int(version):
+    """
+    Convert a redcap version number to integer
+    """
+    version = int("%d%02d%02d" % tuple(map(int,version.split('.'))))
+    return version
+
 @task
 def apply_incremental_db_changes(old, new):
     '''update the database from current version to latest availalbe upgrade.sql
     by applying the needed upgarde_version.sql files in sequence. The arguments
     old and new will be version numbers (i.e., 6.11.5)'''
 
-    old = "%d.%02d.%02d" % tuple(map(int,old.split('.')))
+    old = convert_version_to_int(old)
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
-    files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort ' % (redcap_sql_dir, redcap_sql_dir, old))
+    files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort ' % (redcap_sql_dir, redcap_sql_dir))
     path_to_sql_generation = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'generate_upgrade_sql_from_php.php'])
     for file in files.splitlines():
-        if fnmatch.fnmatch(file, "*.php"):
-            print (file + " is a php file!\n")
-            run('php %s %s | mysql' % (path_to_sql_generation,file))
-        else:
-            print("Executing sql file %s" % file)
-            run('mysql < %s' % file)
+        match = re.search(r"(upgrade_)(\d+.\d+.\d+)(.)(php|sql)", file)
+        version = match.group(2)
+        version = convert_version_to_int(version)
+        if(version > old):
+            if fnmatch.fnmatch(file, "*.php"):
+                print (file + " is a php file!\n")
+                run('php %s %s | mysql' % (path_to_sql_generation,file))
+            else:
+                print("Executing sql file %s" % file)
+                run('mysql < %s' % file)
     # Finalize upgrade
     set_redcap_config('redcap_last_install_date', datetime.now().strftime("%Y-%m-%d"))
     set_redcap_config('redcap_version', new)
