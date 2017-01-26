@@ -1,51 +1,32 @@
 """
 This fab file packages, deploys, and upgrades REDCap. The fab file uses a
-settings file to define the parameters of each deployed instance.
-"""
-"""
-This fab file takes the QIPR project and deploys it using a provided settings file.
-The settings files contains secrets, so it should be kept locally somewhere outside
-the git directory. The secrets file path in this script needs to be changed to match your installation.
+settings file to define the parameters of each deployed instance/environment.
+
+Usage:
+
+  fab package<:redcapM.N.O.zip>
+  fab <environment> deploy<:redcap-M.N.O.tgz>
+  fab <environment> upgrade<:redcap-M.N.O.tgz>
+
+Environments
+
+Each environment is a separate REDCap instance. Each instance can be deployed
+or upgraded. The valid environments are:
+
+  vagrant - a local development environment
+  stage - a staging test instance
+  prod - the production instance
+
+Each environment requires a same-named file at the local path settings/<name>.ini
+
+Recipes
+
+When (re)deploying a new instance to a local vagrant, use this syntax to erase
+the dataase and recreate it:
+
+  fab vagrant create_database deploy<:redcap-M.N.O.tgz>
 
 
-The basic deployment command (for staging) is "fab s deploy:0.7.0"
-fab - calling the fab command
-s - using the alias for stage, but could also be invoked using the whole word "stage"
-deploy - function to run called deploy
-:0.7.0 - run deploy and pass in the argument 0.7.0
-
-The settings file needs to include the following fields with the correct settings:
-[fabric_deploy]
-deploy_user = deploy #user account associated with deploying
-deploy_user_group = www-data #group that the deploy account is part of
-staging_host = my.staging.host.com #staging server
-production_host = my.production.host.com #production server
-admin_user = superman #account with root privilege on the server
-live_pre_path = /var/www #directory path leading up to the actual project directory
-backup_pre_path = /var/www.backup #directory path leading up to the backup project directory
-project_path = qipr/approver #where the project files are going to sit
-ssh_keyfile_path = /my/user/.ssh/id_rsa #path to a local ssh private key for easy login
-
-In order to keep deployments easy, the setups across all environments will remain
-constant, with the only difference being the server ip. The directory paths will
-remain constant.
-
-There are 3 environments this script will be able to deploy to:
-vagrant: includes the default admin user name and ssh key location, ip, and port
-staging: this is the test live server.
-production: this is the functional live server.
-Each environment includes a boolean flag to enable running as root for certain
-functions in this script.
-
-Running deploy is the main function to get a version sent off to the server.
-
-If the server is not setup for deployment yet, there are some additional helper
-functions to create a deployment user and set up its permissions.
-setup_server - creates the user and creates directories
-setup_webspace - just creates the directories for the deploy user
-
-There are also functions to add ssh keys to the deploy user for simple
-ssh commands using a passed in string or pub file location.
 """
 
 from fabric.api import *
@@ -58,8 +39,11 @@ import re
 import json
 import fnmatch
 
-@task
 def make_builddir(builddir="build"):
+    '''
+    Create the local build directory.
+    '''
+
     with settings(warn_only=True):
         if local("test -e %s" % builddir).failed:
             local("mkdir %s" % builddir)
@@ -68,14 +52,15 @@ def make_builddir(builddir="build"):
 
 @task
 def clean(builddir="build"):
+    '''
+    Clean the local build directory.
+    '''
     local("rm -rf %s" % builddir)
 
-@task
 def latest_redcap(sourcedir="."):
     env.latest_redcap = local("ls %s/redcap*.zip | grep 'redcap[0-9]\{1,2\}\.[0-9]\{1,2\}\.[0-9]\{1,2\}\.zip' | sort -n | tail -n 1" % sourcedir, capture=True).stdout
     return (env.latest_redcap)
 
-@task
 def extract_redcap(redcap_zip="."):
     print (redcap_zip)
     #TODO determine if redcap_zip is a RC.zip or a path
@@ -92,7 +77,6 @@ def extract_redcap(redcap_zip="."):
     env.redcap_version = match.group(2)
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
 
-@task(alias="dhfibs")
 def deploy_hooks_framework_into_build_space(target_within_build_space="redcap/hooks/"):
     """
     Deploy UF's REDCap hooks framework
@@ -103,7 +87,6 @@ def deploy_hooks_framework_into_build_space(target_within_build_space="redcap/ho
     deploy_extension_to_build_space(source_dir, this_target)
 
 
-@task(alias="dhibs")
 def deploy_hooks_into_build_space(target_within_build_space="redcap/hooks/library"):
     """
     Deploy each extension into build space by running its own deploy.sh.
@@ -132,7 +115,6 @@ def deploy_hooks_into_build_space(target_within_build_space="redcap/hooks/librar
                 if os.path.isdir(hook_fp_in_src):
                     deploy_extension_to_build_space(hook_fp_in_src, hooktype_fp_in_target)
 
-@task(alias="dpibs")
 def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins"):
     """
     Deploy each extension into build space by running its own deploy.sh.
@@ -195,8 +177,12 @@ def timestamp():
 
 @task(alias='backup')
 def backup_database():
-    # backup a mysql database from the remote host
-    # timestamp the file and make a static symlink to the timestamped file
+    '''
+    Backup a mysql database from the remote host.
+
+    The backup file will be time stamped with a name like 'redcap-dump-20170126T1620.sql'
+    The latest backup file will be linked to name 'redcap-dump-latest.sql'
+    '''
     write_remote_my_cnf()
     now = timestamp()
     run("mysqldump --skip-lock-tables -u %s -h %s %s > redcap-dump-%s.sql" % \
@@ -208,8 +194,9 @@ def backup_database():
 @task
 def package(redcap_zip="."):
     """
-    This function will go into the project directory and zip all
-    of the required files
+    Create a REDCap package from a redcapM.N.O.zip or redcapM.N.O_upgrade.zip
+
+    The resulting file will be named redcap-M.N.O.tgz
     """
 
     # Build the app
@@ -230,10 +217,11 @@ def package(redcap_zip="."):
     -f %s/%s \
     redcap" % (env.builddir, cwd, env.package_name))
 
-@task(alias='urc')
 def update_redcap_connection(db_settings_file="database.php", salt="abc"):
-    """This function will update the database.php file with settings
-    that correspond to the chosen environment"""
+    """
+    Update the database.php file with settings from the chosen environment
+    """
+
     redcap_database_settings_path = "/".join([env.backup_pre_path, env.remote_project_name, db_settings_file])
     run('echo \'$hostname   = "%s";\' >> %s' % (env.database_host, redcap_database_settings_path))
     run('echo \'$db   = "%s";\' >> %s' % (env.database_name, redcap_database_settings_path))
@@ -243,7 +231,9 @@ def update_redcap_connection(db_settings_file="database.php", salt="abc"):
 
 @task
 def create_database():
-    """Create an empty database in MySQL dropping the existing database if need be"""
+    '''
+    Create an empty database in MySQL dropping the existing database if need be.
+    '''
 
     # Only run on a local testing environment
     if not env.vagrant_instance:
@@ -267,27 +257,30 @@ def create_database():
     run('echo "%s" | mysql -u root -p%s' % (create_database_sql, env.database_root_password))
 
 
-@task
 def set_redcap_base_url():
-    """This function will set the redacp base url"""
+    """
+    Set the REDCap base url
+    """
+
     set_redcap_config('redcap_base_url', env.url_of_deployed_app)
 
 def set_redcap_config(field_name="", value=""):
-    """This function will update values for the redcap system"""
+    """
+    Update a single values in the redcap config table
+    """
+
     run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
 
-@task
 def set_hook_functions_file():
     """
-    This function sets the hook_functions_file
+    Sets the hook_functions_file
     """
     value = '%s/%s' % (env.live_project_full_path,env.hooks_framework_path)
     set_redcap_config('hook_functions_file',value)
 
-@task()
 def create_redcap_tables(resource_path = "Resources/sql"):
     """
-    This function creates redcap tables in remote host
+    Create redcap tables via the remote host
     """
     print("Creating redcap tables")
     redcap_sql_root_dir = os.path.join(env.backup_pre_path,env.remote_project_name)
@@ -305,10 +298,11 @@ def create_redcap_tables(resource_path = "Resources/sql"):
         print("Executing sql file %s" % file)
         run('mysql -u%s -p%s %s < %s' % (env.database_user, env.database_password,env.database_name,file))
 
-@task
 def apply_upgrade_sql():
     """
-    This function copies upgrade.sql to remote vm and runs upgrade.sql file
+    Copy upgrade.sql to the remote host and run upgrade.sql file
+
+    TODO: Delete this function?
     """
     upgrade_file = "upgrade.sql"
     redcap_upgrade_sql_path = run('mktemp')
@@ -317,7 +311,6 @@ def apply_upgrade_sql():
         if run('mysql < %s' % redcap_upgrade_sql_path).succeeded:
             run('rm %s' % redcap_upgrade_sql_path)
 
-@task
 def apply_patches():
     for repo in json.loads(env.patch_repos):
         tempdir = local('mktemp -d 2>&1', capture = True)
@@ -325,22 +318,19 @@ def apply_patches():
         local('%s/deploy.sh %s/redcap %s' % (tempdir, env.builddir, env.redcap_version))
         local('rm -rf %s' % tempdir)
 
-@task
 def add_db_upgrade_script():
     target_dir = '/'.join([env.builddir, env.project_name, "redcap_v%s" % env.redcap_version])
     print target_dir
     local('cp deploy/files/generate_upgrade_sql_from_php.php %s' % target_dir)
 
-@task
 def configure_redcap_cron():
     crond_for_redcap = '/etc/cron.d/redcap'
     sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
     sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' % (env.live_project_full_path, crond_for_redcap))
 
-@task
 def move_edocs_folder():
     """
-    This function moves edocs folder out of web space
+    Move the redcap/edocs folder out of web space.
     """
     default_edoc_path = '%s/edocs' % env.live_project_full_path
     with settings(user=env.deploy_user):
@@ -357,12 +347,13 @@ def move_edocs_folder():
 
 @task
 def upgrade(name):
-    '''A function to upgrade an existing redcap instance using the redcap
-    package named in 'name'.  This input file should be in the TGZ format
-    as packaged by this fabfile'''
+    '''
+    Upgrade an existing redcap instance using the <name> package.
 
-    # TODO: upload_package needs to be split into make_upload_target and upload_package_and_extract
-    # so copy_running_code_to_backup_dir can be spliced in before extract)'''
+    This input file should be in the TGZ format
+    as packaged by this fabfile
+    '''
+
     make_upload_target()
     copy_running_code_to_backup_dir()
     upload_package_and_extract(name)
@@ -371,7 +362,6 @@ def upgrade(name):
     #apply_incremental_db_changes(old,new)
     #online()
 
-@task
 def make_upload_target():
     '''
     Make the directory from which new software will be deployed,
@@ -381,7 +371,6 @@ def make_upload_target():
     with settings(user=env.deploy_user):
         run("mkdir -p %(upload_target_backup_dir)s" % env)
 
-@task
 def copy_running_code_to_backup_dir():
     '''
     Copy the running code e.g. /var/www/redcap/* to the directory from which the
@@ -394,7 +383,6 @@ def copy_running_code_to_backup_dir():
             if run("test -e %(live_project_full_path)s/cron.php" % env).succeeded:
                 run("cp -r -P %(live_project_full_path)s/* %(upload_target_backup_dir)s" % env)
 
-@task (alias='upe')
 def upload_package_and_extract(name):
     '''
     Upload the redcap package and extract it into the directory from which new
@@ -421,11 +409,13 @@ def upload_package_and_extract(name):
 
 @task
 def offline():
-    '''use set_redcap_config to go offline'''
+    '''
+    Take REDCap offline
+    '''
+
     set_redcap_config('system_offline', '1')
     set_redcap_config('system_offline_message', 'System Offline')
 
-@task
 def move_software_to_live():
     '''Replace the symbolic link to the old code with symbolic link to new code.'''
     with settings(user=env.deploy_user):
@@ -441,11 +431,6 @@ def move_software_to_live():
         # now switch the new code to live
         run('ln -s %s %s' % (env.upload_target_backup_dir,env.live_project_full_path))
 
-@task
-def upgrade_db():
-    '''TODO: Write this later.  We will do this manually at first'''
-    return 0
-
 def convert_version_to_int(version):
     """
     Convert a redcap version number to integer
@@ -455,9 +440,12 @@ def convert_version_to_int(version):
 
 @task
 def apply_incremental_db_changes(old, new):
-    '''update the database from current version to latest availalbe upgrade.sql
-    by applying the needed upgarde_version.sql files in sequence. The arguments
-    old and new will be version numbers (i.e., 6.11.5)'''
+    '''
+    Upgrade the database from the <old> REDCap version to the <new> version.
+
+    Applying the needed upgrade_M.NN.OO.sql and upgrade_M.NN.OO.ph files in
+    sequence. The arguments old and new must be version numbers (i.e., 6.11.5)
+    '''
 
     old = convert_version_to_int(old)
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
@@ -479,13 +467,10 @@ def apply_incremental_db_changes(old, new):
     set_redcap_config('redcap_version', new)
 
 @task
-def fix_shibboleth_exceptions ():
-    '''TODON'T: Don't write this. (we really need to obsolete this with ideas from redcap forum)'''
-    return 0
-
-@task
 def online():
-    '''use set_redcap_config to go online'''
+    '''
+    Put REDCap back online
+    '''
     set_redcap_config('system_offline', '0')
     set_redcap_config('system_offline_message', 'System Online')
 
@@ -553,7 +538,7 @@ def vagrant(admin=False):
     env.hosts = [get_config('host')]
     env.port = get_config('host_ssh_port')
 
-@task(alias='s')
+@task
 def stage(admin=False):
     """
     Set up deployment for staging server
@@ -568,7 +553,7 @@ def stage(admin=False):
     env.hosts = get_config('staging_host')
     #env.port = ### #Uncomment this line if a specific port is required
 
-@task(alias='p')
+@task
 def prod(admin=False):
     """
     Set up deployment for production server
@@ -589,10 +574,7 @@ def prod(admin=False):
 @task
 def deploy(name):
     """
-    This function does all the work required to ship code to the
-    server being deployed to.
-
-    version: the version applied to the tag of the release
+    Deploy a new REDCap instance defined by <package_name>.
     """
     make_upload_target()
     upload_package_and_extract(name)
@@ -604,20 +586,18 @@ def deploy(name):
     set_redcap_base_url()
     set_hook_functions_file()
     configure_redcap_cron()
-    #TODO: Run tests, run django validation
+    #TODO: Run tests
 
 
+#############################################################################
 """
 The following functions are admin level functions which will alter the server.
 They will need to be run with the admin=True flag when setting up the env
 """
 
-@task
 def setup_webspace():
     """
-    make www and www.backup directory as admin or root user
-
-    Note: Admin must be true in the environment
+    Make live web space (e.g., www) and backup web space (e.g. www.backup) as root user
     """
     #Change the permissions to match the correct user and group
     sudo("mkdir -p %(backup_project_full_path)s" % env)
@@ -633,23 +613,19 @@ def setup_webspace():
 @task
 def setup_server():
     """
-    This function creates the deploy user and sets up the directories being used for the project
-    Note: Admin must be true in the environment
+    Create the 'deploy' user and set up the web space and backup web space
     """
     create_deploy_user_with_ssh()
     setup_webspace()
 
-@task(alias='cduws')
 def create_deploy_user_with_ssh():
     """
-    This function will ssh in with the assigned admin user account,
-    prompt for password, and create the deployment user. It will place
-    this user in the group assigned.
+    Create 'deploy' user as root.
 
-    Note: If ssh is locked to specific users, make sure to add this
-    new user to that list
-    Note: Admin must be true in the environment
+    This function will create the deployment user. It will place
+    this user in the group assigned.
     """
+
     random_password = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(32))
     #sudo('getent passwd %s > /dev/null; if [ $? -ne 0 ]; then; useradd -m -b /home -u 800 -g %s -s /bin/bash -c "deployment user" %s -p %s; else; usermod -g %s %s ;fi' % (env.user, env.group, env.user, random_password))
 
@@ -676,8 +652,7 @@ def create_deploy_user_with_ssh():
 
 def update_ssh_permissions():
     """
-    This function makes the deploy user owner of these documents and locks down
-    other permissions
+    Adjust perms on the 'deploy' user's ssh keys
     """
 
     #create SSH directory
@@ -687,12 +662,10 @@ def update_ssh_permissions():
         run('chmod -R 700 /home/%s/.ssh/keys' % env.deploy_user)
         #run('chown -R %s.%s /home/%s' % (env.deploy_user, env.deploy_group, env.deploy_user))
 
-@task(alias='ssh_string')
 def add_new_ssh_key_as_string(ssh_public_key_string, name):
     """
-    This function will add the passed ssh key string to the deploy user to enable
-    passwordless login
-    Note: Admin must be true in the environment
+    Add an ssh key to the deploy user's authorized keys from a string.
+
     TODO: validate string is valid ssh key
 
     ssh_public_key_string: the actual public key string
@@ -704,17 +677,15 @@ def add_new_ssh_key_as_string(ssh_public_key_string, name):
     rebuild_authorized_keys()
     update_ssh_permissions()
 
-@task(alias='ssh_file')
-def add_new_ssh_key_as_file(ssh_public_key_path, name):
+@task(alias='add_ssh_key')
+def add_new_ssh_key_as_file(path, name):
     """
-    This function will copy the ssh key from a local file to the deploy user to enable
-    passwordless login
-    Note: Admin must be true in the environment
+    Add an ssh key to the deploy user's authorized keys
 
-    ssh_public_key_string: the actual public key full file path
-    name: the name of the user this key is tied to
+    ssh_public_key_path: the path to the file with the public key.
+    name: the name of the user this key is tied to.
     """
-    ssh_key = open(ssh_public_key_path, 'r').read()
+    ssh_key = open(path, 'r').read()
     copy_ssh_key_to_host(ssh_key, name)
     rebuild_authorized_keys()
     update_ssh_permissions()
