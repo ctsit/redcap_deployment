@@ -449,7 +449,8 @@ def apply_incremental_db_changes(old, new):
 
     old = convert_version_to_int(old)
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
-    files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort ' % (redcap_sql_dir, redcap_sql_dir))
+    with hide('output'):
+        files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort ' % (redcap_sql_dir, redcap_sql_dir))
     path_to_sql_generation = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'generate_upgrade_sql_from_php.php'])
     for file in files.splitlines():
         match = re.search(r"(upgrade_)(\d+.\d+.\d+)(.)(php|sql)", file)
