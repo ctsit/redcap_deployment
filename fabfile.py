@@ -438,6 +438,15 @@ def convert_version_to_int(version):
     version = int("%d%02d%02d" % tuple(map(int,version.split('.'))))
     return version
 
+
+def get_current_redcap_version():
+    '''
+    gets the current redcap version from database
+    '''
+    with hide('output'):
+        current_version = run('mysql -s -N -e "SELECT value from redcap_config WHERE field_name=\'redcap_version\'"')
+    return current_version
+
 @task
 def apply_incremental_db_changes(old, new):
     '''
@@ -446,8 +455,7 @@ def apply_incremental_db_changes(old, new):
     Applying the needed upgrade_M.NN.OO.sql and upgrade_M.NN.OO.ph files in
     sequence. The arguments old and new must be version numbers (i.e., 6.11.5)
     '''
-
-    old = convert_version_to_int(old)
+    old = convert_version_to_int(get_current_redcap_version())
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
     with hide('output'):
         files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort ' % (redcap_sql_dir, redcap_sql_dir))

@@ -3,7 +3,7 @@
 ## Things fabric must do to upgrade an existing instance
 
 * apply_incremental_db_changes still needs:
-    * a function to tell it the currently installed verison of redcap.  Read the redcap_config table to get it. Call this funciton to get 'old'
+    * DONE a function to tell it the currently installed verison of redcap.  Read the redcap_config table to get it. Call this funciton to get 'old'
     * a function to tell it the version number of the package being deployed.  Perhaps this is already in a variable?  This value will be supplied for 'new'
     *DONE silence the massive list of .sql and .php files echoed to the screen during the ls.  It is very distracting.
 
