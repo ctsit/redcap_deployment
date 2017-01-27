@@ -343,6 +343,15 @@ def move_edocs_folder():
                     if file_name == "index.html":
                         run('rm -r %s' % default_edoc_path)
 
+
+def extract_version_from_string(string):
+    '''
+    extracts version number from string
+    '''
+    match = re.search(r"(\d+\.\d+\.\d+)", string)
+    version=match.group(1)
+    return version
+
 ######################
 
 @task
@@ -359,7 +368,9 @@ def upgrade(name):
     upload_package_and_extract(name)
     offline()
     move_software_to_live()
-    #apply_incremental_db_changes(old,new)
+    new = extract_version_from_string(name)
+    old = get_current_redcap_version()
+    apply_incremental_db_changes(old,new)
     #online()
 
 def make_upload_target():
@@ -443,8 +454,9 @@ def get_current_redcap_version():
     '''
     gets the current redcap version from database
     '''
-    with hide('output'):
-        current_version = run('mysql -s -N -e "SELECT value from redcap_config WHERE field_name=\'redcap_version\'"')
+    with settings(user=env.deploy_user):
+        with hide('output'):
+            current_version = run('mysql -s -N -e "SELECT value from redcap_config WHERE field_name=\'redcap_version\'"')
     return current_version
 
 @task
@@ -455,7 +467,7 @@ def apply_incremental_db_changes(old, new):
     Applying the needed upgrade_M.NN.OO.sql and upgrade_M.NN.OO.ph files in
     sequence. The arguments old and new must be version numbers (i.e., 6.11.5)
     '''
-    old = convert_version_to_int(get_current_redcap_version())
+    old = convert_version_to_int(old)
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
     with hide('output'):
         files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort ' % (redcap_sql_dir, redcap_sql_dir))
