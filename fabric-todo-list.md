@@ -3,11 +3,11 @@
 
 ## Things fabric must do before we can use it on staging and prod
 
-* apply_incremental_db_changes still needs:
+* DONE apply_incremental_db_changes still needs:
     * DONE a function to tell it the currently installed verison of redcap.  Read the redcap_config table to get it. Call this funciton to get 'old'
     * DONE a function to tell it the version number of the package being deployed.  Perhaps this is already in a variable?  This value will be supplied for 'new'
     *DONE silence the massive list of .sql and .php files echoed to the screen during the ls.  It is very distracting.
-* Change the functions listed here to run as the 'deploy' user. i.e. prefix the 'run' and 'put' commands with 'with settings(user=env.deploy_user):'
+* DONE Change the functions listed here to run as the 'deploy' user. i.e. prefix the 'run' and 'put' commands with 'with settings(user=env.deploy_user):'
     * write_remote_my_cnf
     * backup_database
     * update_redcap_connection

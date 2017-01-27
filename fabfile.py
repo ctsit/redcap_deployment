@@ -169,7 +169,8 @@ def write_my_cnf():
 
 def write_remote_my_cnf():
     file = write_my_cnf()
-    put(file, '/home/%s/.my.cnf' % get_config('deploy_user'), use_sudo=False)
+    with settings(user=env.deploy_user):
+        put(file, '/home/%s/.my.cnf' % get_config('deploy_user'), use_sudo=False)
     os.unlink(file)
 
 def timestamp():
@@ -185,9 +186,10 @@ def backup_database():
     '''
     write_remote_my_cnf()
     now = timestamp()
-    run("mysqldump --skip-lock-tables -u %s -h %s %s > redcap-dump-%s.sql" % \
-        (env.database_user, env.database_host, env.database_name, now))
-    run("ln -sf redcap-dump-%s.sql redcap-dump-latest.sql" % now)
+    with settings(user=env.deploy_user):
+        run("mysqldump --skip-lock-tables -u %s -h %s %s > redcap-dump-%s.sql" % \
+            (env.database_user, env.database_host, env.database_name, now))
+        run("ln -sf redcap-dump-%s.sql redcap-dump-latest.sql" % now)
 
 ##########################
 
@@ -223,11 +225,12 @@ def update_redcap_connection(db_settings_file="database.php", salt="abc"):
     """
 
     redcap_database_settings_path = "/".join([env.backup_pre_path, env.remote_project_name, db_settings_file])
-    run('echo \'$hostname   = "%s";\' >> %s' % (env.database_host, redcap_database_settings_path))
-    run('echo \'$db   = "%s";\' >> %s' % (env.database_name, redcap_database_settings_path))
-    run('echo \'$username   = "%s";\' >> %s' % (env.database_user, redcap_database_settings_path))
-    run('echo \'$password   = "%s";\' >> %s' % (env.database_password, redcap_database_settings_path))
-    run('echo \'$salt   = "%s";\' >> %s' % (salt, redcap_database_settings_path))
+    with settings(user=env.deploy_user):
+        run('echo \'$hostname   = "%s";\' >> %s' % (env.database_host, redcap_database_settings_path))
+        run('echo \'$db   = "%s";\' >> %s' % (env.database_name, redcap_database_settings_path))
+        run('echo \'$username   = "%s";\' >> %s' % (env.database_user, redcap_database_settings_path))
+        run('echo \'$password   = "%s";\' >> %s' % (env.database_password, redcap_database_settings_path))
+        run('echo \'$salt   = "%s";\' >> %s' % (salt, redcap_database_settings_path))
 
 @task
 def create_database():
@@ -254,7 +257,8 @@ def create_database():
         '%(database_password)s';""" % env
 
     # run the DROP/CREATE command as root
-    run('echo "%s" | mysql -u root -p%s' % (create_database_sql, env.database_root_password))
+    with settings(user=env.deploy_user):
+        run('echo "%s" | mysql -u root -p%s' % (create_database_sql, env.database_root_password))
 
 
 def set_redcap_base_url():
@@ -268,8 +272,8 @@ def set_redcap_config(field_name="", value=""):
     """
     Update a single values in the redcap config table
     """
-
-    run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
+    with settings(user=env.deploy_user):
+        run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
 
 def set_hook_functions_file():
     """
@@ -284,19 +288,20 @@ def create_redcap_tables(resource_path = "Resources/sql"):
     """
     print("Creating redcap tables")
     redcap_sql_root_dir = os.path.join(env.backup_pre_path,env.remote_project_name)
-    redcap_name = run("ls %s | grep 'redcap_v[0-9]\{1,2\}\.[0-9]\{1,2\}\.[0-9]\{1,2\}' | sort -n | tail -n 1" % redcap_sql_root_dir)
+    with settings(user=env.deploy_user):
+        redcap_name = run("ls %s | grep 'redcap_v[0-9]\{1,2\}\.[0-9]\{1,2\}\.[0-9]\{1,2\}' | sort -n | tail -n 1" % redcap_sql_root_dir)
     redcap_sql_dir = os.path.join(redcap_sql_root_dir,redcap_name,resource_path)
     match = re.search('redcap_v(\d+.\d+.\d+)', redcap_name)
     version = match.group(1)
+    with settings(user=env.deploy_user):
+        run('mysql -u%s -p%s %s < %s/install.sql' % (env.database_user, env.database_password, env.database_name, redcap_sql_dir))
+        run('mysql -u%s -p%s %s < %s/install_data.sql' % (env.database_user,env.database_password,env.database_name, redcap_sql_dir))
+        run('mysql -u%s -p%s %s -e "UPDATE %s.redcap_config SET value = \'%s\' WHERE field_name = \'redcap_version\' "' % (env.database_user,env.database_password,env.database_name, env.database_name,version))
 
-    run('mysql -u%s -p%s %s < %s/install.sql' % (env.database_user, env.database_password, env.database_name, redcap_sql_dir))
-    run('mysql -u%s -p%s %s < %s/install_data.sql' % (env.database_user,env.database_password,env.database_name, redcap_sql_dir))
-    run('mysql -u%s -p%s %s -e "UPDATE %s.redcap_config SET value = \'%s\' WHERE field_name = \'redcap_version\' "' % (env.database_user,env.database_password,env.database_name, env.database_name,version))
-
-    files=run('ls -v1 %s/create_demo_db*.sql' % redcap_sql_dir)
-    for file in files.splitlines():
-        print("Executing sql file %s" % file)
-        run('mysql -u%s -p%s %s < %s' % (env.database_user, env.database_password,env.database_name,file))
+        files=run('ls -v1 %s/create_demo_db*.sql' % redcap_sql_dir)
+        for file in files.splitlines():
+            print("Executing sql file %s" % file)
+            run('mysql -u%s -p%s %s < %s' % (env.database_user, env.database_password,env.database_name,file))
 
 def apply_upgrade_sql():
     """
@@ -305,11 +310,13 @@ def apply_upgrade_sql():
     TODO: Delete this function?
     """
     upgrade_file = "upgrade.sql"
-    redcap_upgrade_sql_path = run('mktemp')
+    with settings(user=env.deploy_user):
+        redcap_upgrade_sql_path = run('mktemp')
     if local('test -e %s' % upgrade_file).succeeded:
-        put(upgrade_file, redcap_upgrade_sql_path)
-        if run('mysql < %s' % redcap_upgrade_sql_path).succeeded:
-            run('rm %s' % redcap_upgrade_sql_path)
+        with settings(user=env.deploy_user):
+            put(upgrade_file, redcap_upgrade_sql_path)
+            if run('mysql < %s' % redcap_upgrade_sql_path).succeeded:
+                run('rm %s' % redcap_upgrade_sql_path)
 
 def apply_patches():
     for repo in json.loads(env.patch_repos):
@@ -469,8 +476,9 @@ def apply_incremental_db_changes(old, new):
     '''
     old = convert_version_to_int(old)
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
-    with hide('output'):
-        files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort ' % (redcap_sql_dir, redcap_sql_dir))
+    with settings(user=env.deploy_user):
+        with hide('output'):
+            files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort ' % (redcap_sql_dir, redcap_sql_dir))
     path_to_sql_generation = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'generate_upgrade_sql_from_php.php'])
     for file in files.splitlines():
         match = re.search(r"(upgrade_)(\d+.\d+.\d+)(.)(php|sql)", file)
@@ -479,10 +487,12 @@ def apply_incremental_db_changes(old, new):
         if(version > old):
             if fnmatch.fnmatch(file, "*.php"):
                 print (file + " is a php file!\n")
-                run('php %s %s | mysql' % (path_to_sql_generation,file))
+                with settings(user=env.deploy_user):
+                    run('php %s %s | mysql' % (path_to_sql_generation,file))
             else:
                 print("Executing sql file %s" % file)
-                run('mysql < %s' % file)
+                with settings(user=env.deploy_user):
+                    run('mysql < %s' % file)
     # Finalize upgrade
     set_redcap_config('redcap_last_install_date', datetime.now().strftime("%Y-%m-%d"))
     set_redcap_config('redcap_version', new)
