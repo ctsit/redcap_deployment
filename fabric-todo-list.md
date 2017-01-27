@@ -47,3 +47,6 @@
 * Make required directories for hook deployment - deployment_functions.sh
 * Create sym links for hooks to be executed - deployment_functions.sh
 * move '    sudo("mkdir -p %s" % env.edoc_path)' out of setup webspace as it is too specific to redcap.  Maybe it should be addressed with 'configure_redcap_cron' as they both REDCap deployment tasks that require sudo permissions.
+* Write a fab function to run the tests against a particular instance.
+* Run tests at end of 'deploy'.
+* Run tests at end of upgrade just before 'online'.
