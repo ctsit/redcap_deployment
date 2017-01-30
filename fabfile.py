@@ -338,10 +338,15 @@ def add_db_upgrade_script():
     print target_dir
     local('cp deploy/files/generate_upgrade_sql_from_php.php %s' % target_dir)
 
-def configure_redcap_cron():
+
+def configure_redcap_cron(force_deployment_of_redcap_cron=False):
     crond_for_redcap = '/etc/cron.d/%s' % env.project_name
-    sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
-    sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' % (env.live_project_full_path, crond_for_redcap))
+    with settings(warn_only=True):
+        if run("test -e %s" % crond_for_redcap).failed or force_deployment_of_redcap_cron:
+            sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
+            sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' \
+                % (env.live_project_full_path, crond_for_redcap))
+
 
 def move_edocs_folder():
     """
@@ -597,9 +602,10 @@ def instance(name = ""):
     define_env(settings_file_path)
 
 @task
-def deploy(name):
+def deploy(name,force=""):
     """
-    Deploy a new REDCap instance defined by <package_name>.
+    Deploy a new REDCap instance defined by <package_name>, optionally forcing redcap cron deployment
+
     """
     make_upload_target()
     upload_package_and_extract(name)
@@ -610,7 +616,12 @@ def deploy(name):
     move_edocs_folder()
     set_redcap_base_url()
     set_hook_functions_file()
-    configure_redcap_cron()
+
+    if force == "force" or force == "True" or force == "true" or force=="t":
+        force_deployment_of_redcap_cron = True
+    else:
+        force_deployment_of_redcap_cron = False
+    configure_redcap_cron(force_deployment_of_redcap_cron)
     #TODO: Run tests
 
 
