@@ -299,6 +299,7 @@ def delete_all_tables(confirm=""):
         with settings(user=env.deploy_user):
             run("mysqldump --add-drop-table --no-data --single-transaction --databases %s | grep -e '^DROP \| FOREIGN_KEY_CHECKS' | mysql %s" \
                 % (env.database_name, env.database_name))
+        delete_remote_my_cnf()
     else:
         print "\nProvide a confirmation string (e.g. 'y', 'yes') if you want to delete all MySQL tables for this instance."
 
