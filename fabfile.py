@@ -479,7 +479,6 @@ def get_current_redcap_version():
             current_version = run('mysql -s -N -e "SELECT value from redcap_config WHERE field_name=\'redcap_version\'"')
     return current_version
 
-@task
 def apply_incremental_db_changes(old, new):
     '''
     Upgrade the database from the <old> REDCap version to the <new> version.
@@ -713,12 +712,12 @@ def add_new_ssh_key_as_string(ssh_public_key_string, name):
     rebuild_authorized_keys()
     update_ssh_permissions()
 
-@task(alias='add_ssh_key')
-def add_new_ssh_key_as_file(path, name):
+@task
+def add_ssh_key(path, name):
     """
-    Add an ssh key to the deploy user's authorized keys
+    Add an ssh key to the deploy user's authorized keys by providing <path>,<name>
 
-    ssh_public_key_path: the path to the file with the public key.
+    path: the path to the file with the public key.
     name: the name of the user this key is tied to.
     """
     ssh_key = open(path, 'r').read()
