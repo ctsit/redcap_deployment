@@ -27,13 +27,16 @@ the instance name as a parameter to the instance function:
   fab instance:stage2 deploy:redcap-7.1.0.tgz
 
 
-Recipes
+Deploying
 
-When (re)deploying a new instance to a local vagrant, use this syntax to erase
-the database and recreate it:
+When (re)deploying the instance named 'vagrant', be aware that deploy will
+drop the instance database.
 
-  fab vagrant create_database deploy<:redcap-M.N.O.tgz>
 
+Upgrading
+
+Upgrade packages must be created using one of Vanderbilt's 'upgrade' zip files
+or database credentials will not be preserved.
 
 """
 
@@ -635,16 +638,14 @@ def deploy(name,force=""):
     upload_package_and_extract(name)
     update_redcap_connection()
     write_remote_my_cnf()
+    if env.vagrant_instance:
+        create_database()
     create_redcap_tables()
     move_software_to_live()
     move_edocs_folder()
     set_redcap_base_url()
     set_hook_functions_file()
-
-    if force == "force" or force == "True" or force == "true" or force=="t":
-        force_deployment_of_redcap_cron = True
-    else:
-        force_deployment_of_redcap_cron = False
+    force_deployment_of_redcap_cron = is_affirmative(force)
     configure_redcap_cron(force_deployment_of_redcap_cron)
     #TODO: Run tests
 
