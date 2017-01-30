@@ -8,16 +8,16 @@ Usage:
   fab <environment> deploy<:redcap-M.N.O.tgz>
   fab <environment> upgrade<:redcap-M.N.O.tgz>
 
-Environments
+Instances
 
 Each environment is a separate REDCap instance. Each instance can be deployed
-or upgraded. The valid environments are:
+or upgraded. The valid instances are:
 
-  vagrant - a local development environment
+  vagrant - a local development instance
   stage - a staging test instance
   prod - the production instance
 
-Each environment requires a same-named file at the local path settings/<name>.ini
+Each instance requires a same-named file at the local path settings/<name>.ini
 
 Recipes
 
@@ -550,57 +550,43 @@ def define_env(settings_file_path=""):
     env.backup_project_full_path = get_config('backup_pre_path') + "/" + get_config('project_path')
     env.upload_project_full_path = get_config('backup_pre_path')
 
-@task(alias='dev')
-def vagrant(admin=False):
-    """
-    Set up deployment for vagrant
-
-    admin: True or False depending on if running as admin
-    """
-    #TODO: vagrant ssh-config gives these details, we can read them and strip them out automatically
-
-    env.vagrant_instance = True
-    settings_file_path = 'settings/vagrant.ini'
-    define_env(settings_file_path)
-
-    if admin:
-        env.user = get_config('admin_user')
-
     env.hosts = [get_config('host')]
     env.port = get_config('host_ssh_port')
 
+@task(alias='dev')
+def vagrant():
+    """
+    Set up deployment for vagrant
+    """
+    instance('vagrant')
+
+
 @task
-def stage(admin=False):
+def stage():
     """
     Set up deployment for staging server
-
-    admin: True or False depending on if running as admin
     """
-
-    define_env()
-    if admin:
-        env.user = get_config('admin_user')
-
-    env.hosts = get_config('staging_host')
-    #env.port = ### #Uncomment this line if a specific port is required
+    instance('stage')
 
 @task
-def prod(admin=False):
+def prod():
     """
     Set up deployment for production server
+    """
+    instance('prod')
 
-    admin: True or False depending on if running as admin
+@task
+def instance(name = ""):
+    """
+    Set up deployment for vagrant/stage/prod server
     """
 
-    define_env()
-    if admin:
-        env.user = get_config('admin_user')
-
-    env.hosts = get_config('production_host')
-    #env.port = ### #Uncomment this line if a specific port is required
-
-#TODO create restore backup function
-
+    if(name == ""):
+        abort("Please provide an instance name")
+    settings_file_path = 'settings/%s.ini' % name
+    if(name == 'vagrant'):
+        env.vagrant_instance = True
+    define_env(settings_file_path)
 
 @task
 def deploy(name):

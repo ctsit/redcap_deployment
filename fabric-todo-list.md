@@ -17,8 +17,8 @@
     * apply_upgrade_sql
     * apply_incremental_db_changes
 * DONE In 'configure_redcap_cron', '/etc/cron.d/redcap' should be '/etc/cron.d/%s' % env.project_name to better support multiple instances on a single host.
-* Make 'stage' load settings/stage.ini much like 'vagrant' loads vagrant.ini
-* Make 'prod'  load settings/prod.ini  much like 'vagrant' loads vagrant.ini
+* DONE Make 'stage' load settings/stage.ini much like 'vagrant' loads vagrant.ini
+* DONE Make 'prod'  load settings/prod.ini  much like 'vagrant' loads vagrant.ini
 * Address the problem of 'deploy' requiring sudo perms in 'configure_redcap_cron'.
 
 
