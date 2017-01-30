@@ -250,7 +250,6 @@ def update_redcap_connection(db_settings_file="database.php", salt="abc"):
         run('echo \'$password   = "%s";\' >> %s' % (env.database_password, redcap_database_settings_path))
         run('echo \'$salt   = "%s";\' >> %s' % (salt, redcap_database_settings_path))
 
-@task
 def create_database():
     '''
     Create an empty database in MySQL dropping the existing database if need be.
@@ -276,9 +275,7 @@ def create_database():
 
     # run the DROP/CREATE command as root
     with settings(user=env.deploy_user):
-        write_remote_my_cnf()
         run('echo "%s" | mysql -u root -p%s' % (create_database_sql, env.database_root_password))
-        delete_remote_my_cnf()
 
 
 def is_affirmative(response):
