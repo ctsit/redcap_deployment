@@ -21,6 +21,8 @@
 * DONE Make 'prod'  load settings/prod.ini  much like 'vagrant' loads vagrant.ini
 * DONE Address the problem of 'deploy' requiring sudo perms in 'configure_redcap_cron'.
 * DONE Write delete_all_tables a command that can drop all tables in a DB without dropping the DB.
+* DONE Write a function "delete_remote_my_cnf" that deletes ~/.my.cnf on the remote host. See write_remote_my_cnf for reference.
+* DONE Call 'delete_remote_my_cnf' as the final step in both 'upgrade' and 'deploy'
 
 
 ## Things Philip must do
@@ -35,8 +37,6 @@
 * Write a markdown file describing the fab tools and how they should be used for development, packaging, and deployments.
 * Replace the bootstrap.sh redcap deployment with fabric packaging and deployment and remove the related dead code.
 * Add the new and updated plugins for our customers.
-* Write a function "delete_remote_my_cnf" that deletes ~/.my.cnf on the remote host. See write_remote_my_cnf for reference.
-* Call 'delete_remote_my_cnf' as the final step in both 'upgrade' and 'deploy'
 * move apply_patches into the correct sequence amongst the packaging functions
 * move add_db_upgrade_script into the correct sequence amongst the packaging functions
 
@@ -47,7 +47,7 @@
 * Read remote database.php to get credentials for DB operations.
 * Make required directories for hook deployment - deployment_functions.sh
 * Create sym links for hooks to be executed - deployment_functions.sh
-* move '    sudo("mkdir -p %s" % env.edoc_path)' out of setup webspace as it is too specific to redcap.  Maybe it should be addressed with 'configure_redcap_cron' as they both REDCap deployment tasks that require sudo permissions.
+* move '    sudo("mkdir -p %s" % env.edoc_path)' out of setup webspace as it is too specific to redcap.
 * Write a fab function to run the tests against a particular instance.
 * Run tests at end of 'deploy'.
 * Run tests at end of upgrade just before 'online'.
