@@ -5,8 +5,9 @@ settings file to define the parameters of each deployed instance/environment.
 Usage:
 
   fab package<:redcapM.N.O.zip>
-  fab <environment> deploy<:redcap-M.N.O.tgz>
-  fab <environment> upgrade<:redcap-M.N.O.tgz>
+  fab <instance_name> deploy<:redcap-M.N.O.tgz>
+  fab <instance_name> upgrade<:redcap-M.N.O.tgz>
+  fab instance:<instance_name> upgrade<:redcap-M.N.O.tgz>
 
 Instances
 
@@ -19,10 +20,17 @@ or upgraded. The valid instances are:
 
 Each instance requires a same-named file at the local path settings/<name>.ini
 
+The *instance* function can be used to use an arbitrary instance by providing
+the instance name as a parameter to the instance function:
+
+  fab instance:vagrant deploy:redcap-6.18.1.tgz
+  fab instance:stage2 deploy:redcap-7.1.0.tgz
+
+
 Recipes
 
 When (re)deploying a new instance to a local vagrant, use this syntax to erase
-the dataase and recreate it:
+the database and recreate it:
 
   fab vagrant create_database deploy<:redcap-M.N.O.tgz>
 
