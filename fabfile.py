@@ -331,7 +331,7 @@ def add_db_upgrade_script():
     local('cp deploy/files/generate_upgrade_sql_from_php.php %s' % target_dir)
 
 def configure_redcap_cron():
-    crond_for_redcap = '/etc/cron.d/redcap'
+    crond_for_redcap = '/etc/cron.d/%s' % env.project_name
     sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
     sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' % (env.live_project_full_path, crond_for_redcap))
 
