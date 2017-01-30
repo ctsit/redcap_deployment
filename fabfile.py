@@ -184,6 +184,12 @@ def write_remote_my_cnf():
         put(file, '/home/%s/.my.cnf' % get_config('deploy_user'), use_sudo=False)
     os.unlink(file)
 
+def delete_remote_my_cnf():
+    my_cnf = '/home/%s/.my.cnf' % get_config('deploy_user')
+    with settings(user=env.deploy_user):
+        if run("test -e %s" % my_cnf).succeeded:
+            run('rm -rf %s' % my_cnf)
+
 def timestamp():
     return(datetime.now().strftime("%Y%m%dT%H%M%Z"))
 
@@ -201,6 +207,7 @@ def backup_database():
         run("mysqldump --skip-lock-tables -u %s -h %s %s > redcap-dump-%s.sql" % \
             (env.database_user, env.database_host, env.database_name, now))
         run("ln -sf redcap-dump-%s.sql redcap-dump-latest.sql" % now)
+    delete_remote_my_cnf()
 
 ##########################
 
@@ -269,7 +276,9 @@ def create_database():
 
     # run the DROP/CREATE command as root
     with settings(user=env.deploy_user):
+        write_remote_my_cnf()
         run('echo "%s" | mysql -u root -p%s' % (create_database_sql, env.database_root_password))
+        delete_remote_my_cnf()
 
 
 def is_affirmative(response):
@@ -414,11 +423,13 @@ def upgrade(name):
     make_upload_target()
     copy_running_code_to_backup_dir()
     upload_package_and_extract(name)
+    write_remote_my_cnf()
     offline()
     move_software_to_live()
     new = extract_version_from_string(name)
     old = get_current_redcap_version()
     apply_incremental_db_changes(old,new)
+    delete_remote_my_cnf()
     #online()
 
 def make_upload_target():
@@ -472,8 +483,7 @@ def offline():
     Take REDCap offline
     '''
 
-    set_redcap_config('system_offline', '1')
-    set_redcap_config('system_offline_message', 'System Offline')
+    change_online_status('Offline')
 
 def move_software_to_live():
     '''Replace the symbolic link to the old code with symbolic link to new code.'''
@@ -542,8 +552,31 @@ def online():
     '''
     Put REDCap back online
     '''
-    set_redcap_config('system_offline', '0')
-    set_redcap_config('system_offline_message', 'System Online')
+
+    change_online_status('Online')
+
+def change_online_status(state):
+    '''
+    Set the online/offline status with <state>.
+    '''
+
+    with settings(user=env.deploy_user):
+        if state == "Online":
+            offline_binary = 0
+            offline_message = 'The system is online.'
+        elif state == "Offline":
+            offline_binary = 1
+            offline_message = 'The system is offline.'
+        else:
+            abort("Invald state provided. Specify 'Online' or 'Offline'.")
+        if run('test -e ~/.my.cnf').failed:
+            write_remote_my_cnf()
+            set_redcap_config('system_offline', '%s' % offline_binary)
+            set_redcap_config('system_offline_message', '%s' % offline_message)
+            delete_remote_my_cnf()
+        else:
+            set_redcap_config('system_offline', '%s' % offline_binary)
+            set_redcap_config('system_offline_message', '%s' % offline_message)
 
 ##########################
 
@@ -647,6 +680,7 @@ def deploy(name,force=""):
     set_hook_functions_file()
     force_deployment_of_redcap_cron = is_affirmative(force)
     configure_redcap_cron(force_deployment_of_redcap_cron)
+    delete_remote_my_cnf()
     #TODO: Run tests
 
 
