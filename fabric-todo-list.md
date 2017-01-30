@@ -20,6 +20,7 @@
 * DONE Make 'stage' load settings/stage.ini much like 'vagrant' loads vagrant.ini
 * DONE Make 'prod'  load settings/prod.ini  much like 'vagrant' loads vagrant.ini
 * DONE Address the problem of 'deploy' requiring sudo perms in 'configure_redcap_cron'.
+* DONE Write delete_all_tables a command that can drop all tables in a DB without dropping the DB.
 
 
 ## Things Philip must do

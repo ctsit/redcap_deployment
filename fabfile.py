@@ -269,6 +269,31 @@ def create_database():
         run('echo "%s" | mysql -u root -p%s' % (create_database_sql, env.database_root_password))
 
 
+def is_affirmative(response):
+    """
+    Turn strings that mean 'yes' into a True value, else False
+    """
+
+    if  re.match("^(force|true|t|yes|y)$", response, re.IGNORECASE):
+        return(True)
+    else:
+        return(False)
+
+
+@task
+def delete_all_tables(confirm=""):
+    """
+    Delete all tables for the database specified in the instance. You must confirm this command.
+    """
+    if is_affirmative(confirm):
+        write_remote_my_cnf()
+        with settings(user=env.deploy_user):
+            run("mysqldump --add-drop-table --no-data --single-transaction --databases %s | grep -e '^DROP \| FOREIGN_KEY_CHECKS' | mysql %s" \
+                % (env.database_name, env.database_name))
+    else:
+        print "\nProvide a confirmation string (e.g. 'y', 'yes') if you want to delete all MySQL tables for this instance."
+
+
 def set_redcap_base_url():
     """
     Set the REDCap base url
