@@ -435,8 +435,8 @@ def upgrade(name):
     new = extract_version_from_string(name)
     old = get_current_redcap_version()
     apply_incremental_db_changes(old,new)
+    online()
     delete_remote_my_cnf()
-    #online()
 
 def make_upload_target():
     '''
