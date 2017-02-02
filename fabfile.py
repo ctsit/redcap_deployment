@@ -86,7 +86,10 @@ def extract_redcap(redcap_zip="."):
     match = re.search(r"(redcap)(\d+.\d+.\d+)(|_upgrade)(.zip)", redcap_path)
     print(match.group(2))
     env.redcap_version = match.group(2)
+    redcap_version_and_package_type = match.group(2) + match.group(3)
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
+    return(redcap_version_and_package_type)
+
 
 def deploy_hooks_framework_into_build_space(target_within_build_space="redcap/hooks/"):
     """
@@ -225,7 +228,7 @@ def package(redcap_zip="."):
     # Build the app
     clean(env.builddir)
     make_builddir(env.builddir)
-    extract_redcap(redcap_zip)
+    redcap_version_and_package_type = extract_redcap(redcap_zip)
     deploy_plugins_into_build_space()
     deploy_hooks_into_build_space()
     deploy_hooks_framework_into_build_space()
@@ -233,7 +236,7 @@ def package(redcap_zip="."):
     add_db_upgrade_script()
 
     # Get variables to tell us where to write the package
-    env.package_name = '%(project_name)s-%(redcap_version)s.tgz' % env
+    env.package_name = '%s-%s.tgz' % (env.project_name, redcap_version_and_package_type)
     cwd = os.getcwd()
     # create the package
     local("cd %s && tar -cz --exclude='.DS_Store' \
