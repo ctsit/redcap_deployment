@@ -369,13 +369,13 @@ def apply_patches():
         local('rm -rf %s' % tempdir)
 
 def add_db_upgrade_script():
-    target_dir = '/'.join([env.builddir, env.project_name, "redcap_v%s" % env.redcap_version])
+    target_dir = '/'.join([env.builddir, "redcap", "redcap_v%s" % env.redcap_version])
     print target_dir
     local('cp deploy/files/generate_upgrade_sql_from_php.php %s' % target_dir)
 
 
 def configure_redcap_cron(force_deployment_of_redcap_cron=False):
-    crond_for_redcap = '/etc/cron.d/%s' % env.project_name
+    crond_for_redcap = '/etc/cron.d/%s' % env.project_path
     with settings(warn_only=True):
         if run("test -e %s" % crond_for_redcap).failed or force_deployment_of_redcap_cron:
             sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
@@ -613,13 +613,15 @@ def define_env(settings_file_path=""):
         print("The secrets file path cannot be found. It is set to: %s" % settings_file_path)
         abort("Secrets File not set")
 
-    if get_config('deploy_user') != "":
-        env.user = get_config('deploy_user')
+    # if get_config('deploy_user') != "":
+    #     env.user = get_config('deploy_user')
 
     section="instance"
     for (name,value) in config.items(section):
         env[name] = value
     # Set variables that do not have corresponding values in vagrant.ini file
+    time = timestamp()
+    env.remote_project_name = '%s-%s' % (env.project_path,time)
     env.live_project_full_path = get_config('live_pre_path') + "/" + get_config('project_path') #
     env.backup_project_full_path = get_config('backup_pre_path') + "/" + get_config('project_path')
     env.upload_project_full_path = get_config('backup_pre_path')
@@ -815,5 +817,4 @@ def rebuild_authorized_keys():
 config = configparser.ConfigParser()
 default_settings_file_path = 'settings/defaults.ini' #path to where app is looking for settings.ini
 define_default_env(default_settings_file_path) # load default settings
-time = timestamp()
-env.remote_project_name = '%s-%s' % (env.project_name,time)
+
