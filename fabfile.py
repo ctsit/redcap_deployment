@@ -662,6 +662,8 @@ def instance(name = ""):
     settings_file_path = 'settings/%s.ini' % name
     if(name == 'vagrant'):
         env.vagrant_instance = True
+    else:
+        env.vagrant_instance = False
     define_env(settings_file_path)
 
 @task
