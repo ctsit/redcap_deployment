@@ -709,6 +709,8 @@ def setup_webspace():
     sudo("chmod -R 775 %s"  % (env.live_pre_path))
 
     sudo("mkdir -p %s" % env.edoc_path)
+    sudo("chown -R %s.%s %s" % (env.deploy_user, env.deploy_group, env.edoc_path))
+    sudo("chmod -R 775 %s"  % (env.edoc_path))
 
 @task
 def setup_server():
