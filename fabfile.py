@@ -349,20 +349,22 @@ def create_redcap_tables(resource_path = "Resources/sql"):
             print("Executing sql file %s" % file)
             run('mysql < %s' % file)
 
-def apply_upgrade_sql():
-    """
-    Copy upgrade.sql to the remote host and run upgrade.sql file
 
-    TODO: Delete this function?
+@task
+def apply_sql_to_db(sql_file=""):
     """
-    upgrade_file = "upgrade.sql"
-    with settings(user=env.deploy_user):
-        redcap_upgrade_sql_path = run('mktemp')
-    if local('test -e %s' % upgrade_file).succeeded:
+    Copy a local SQL file to the remote host and run it against mysql
+
+    """
+    if local('test -e %s' % sql_file).succeeded:
         with settings(user=env.deploy_user):
-            put(upgrade_file, redcap_upgrade_sql_path)
-            if run('mysql < %s' % redcap_upgrade_sql_path).succeeded:
-                run('rm %s' % redcap_upgrade_sql_path)
+            write_remote_my_cnf()
+            remote_sql_path = run('mktemp')
+            put(sql_file, remote_sql_path)
+            if run('mysql < %s' % remote_sql_path).succeeded:
+                run('rm %s' % remote_sql_path)
+            delete_remote_my_cnf()
+
 
 def apply_patches():
     for repo in json.loads(env.patch_repos):
