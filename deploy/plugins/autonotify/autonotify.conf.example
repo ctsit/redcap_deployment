@@ -1,0 +1,14 @@
+<Location /redcap/plugins/autonotify/det.php>
+  Order Allow,Deny
+  Allow from 10.4.117.100 159.178.62.115
+  Satisfy Any
+  AuthType None
+  Require all granted
+</Location>
+
+<Location /redcap/plugins/autonotify/index.php>
+AuthType shibboleth
+ShibRequireSession On
+ShibUseHeaders On
+require shibboleth
+</Location>

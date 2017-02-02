@@ -2,4 +2,10 @@
 .vagrant
 ~$*
 redcap*.zip
+redcap*.tgz
 redcap/
+build
+*.pyc
+.idea
+www/*
+!www/dummy
