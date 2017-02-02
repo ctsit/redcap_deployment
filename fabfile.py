@@ -182,7 +182,11 @@ def write_my_cnf():
     f.close()
     return(file)
 
+@task
 def write_remote_my_cnf():
+    """
+    Write a .my.cnf into the deploy user's home directory.
+    """
     file = write_my_cnf()
     with settings(user=env.deploy_user):
         target_path = '/home/%s/.my.cnf' % get_config('deploy_user')
@@ -190,7 +194,11 @@ def write_remote_my_cnf():
         run('chmod 600 %s' % target_path)
     os.unlink(file)
 
+@task
 def delete_remote_my_cnf():
+    """
+    Delete .my.cnf from the deploy user's home directory.
+    """
     my_cnf = '/home/%s/.my.cnf' % get_config('deploy_user')
     with settings(user=env.deploy_user):
         if run("test -e %s" % my_cnf).succeeded:
