@@ -735,30 +735,34 @@ def create_deploy_user_with_ssh():
             sudo('useradd -m -b /home -u 800 -g %s -s /bin/bash -c "deployment user" %s -p %s' \
                 % (env.deploy_group, env.deploy_user, random_password))
 
-    with settings(user=env.deploy_user):
-        with settings(warn_only=True):
-            if (run('test -d ~/.ssh/keys').failed):
-                run('mkdir -p ~/.ssh/keys')
-                if run("test -e ~/.ssh/authorized_keys").succeeded:
-                    run('cp ~/.ssh/authorized_keys ~/.ssh/keys/default.pub')
-                else:
-                    put(env.pubkey_filename,"~/.ssh/keys/%s.pub" % env.user)
+    with settings(warn_only=True):
+        if (sudo('test -d ~%s/.ssh/keys' % env.deploy_user).failed):
+            sudo('mkdir -p ~%s/.ssh/keys' % env.deploy_user)
+            if sudo("test -e ~%s/.ssh/authorized_keys" % env.deploy_user).succeeded:
+                sudo('cp ~%s/.ssh/authorized_keys ~%s/.ssh/keys/default.pub' % (env.deploy_user, env.deploy_user))
+            else:
+                sudo("touch ~%s/.ssh/authorized_keys" % env.deploy_user)
+                put(env.pubkey_filename,"/home/%(deploy_user)s/.ssh/keys/%(user)s.pub" % env, use_sudo=True)
 
-    update_ssh_permissions()
+    update_ssh_permissions(as_root=True)
 
     #TODO: automatically add ssh key or prompt
 
-def update_ssh_permissions():
+def update_ssh_permissions(as_root=False):
     """
     Adjust perms on the 'deploy' user's ssh keys
     """
 
-    #create SSH directory
-    with settings(user=env.deploy_user):
-        run('chmod 700 /home/%s/.ssh' % env.deploy_user)
-        run('chmod 644 /home/%s/.ssh/authorized_keys' % env.deploy_user)
-        run('chmod -R 700 /home/%s/.ssh/keys' % env.deploy_user)
-        #run('chown -R %s.%s /home/%s' % (env.deploy_user, env.deploy_group, env.deploy_user))
+    if as_root:
+        sudo('chmod 700 /home/%s/.ssh' % env.deploy_user)
+        sudo('chmod 644 /home/%s/.ssh/authorized_keys' % env.deploy_user)
+        sudo('chmod -R 700 /home/%s/.ssh/keys' % env.deploy_user)
+    else:
+        with settings(user=env.deploy_user):
+            run('chmod 700 /home/%s/.ssh' % env.deploy_user)
+            run('chmod 644 /home/%s/.ssh/authorized_keys' % env.deploy_user)
+            run('chmod -R 700 /home/%s/.ssh/keys' % env.deploy_user)
+            #run('chown -R %s.%s /home/%s' % (env.deploy_user, env.deploy_group, env.deploy_user))
 
 def add_new_ssh_key_as_string(ssh_public_key_string, name):
     """
