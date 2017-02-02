@@ -10,6 +10,8 @@
 --
 -- Please change passwords and email addresses on any system that is more than a isolated, local test system.
 -- Alternatively, just delete these accounts after the roles have been assigned to new accounts.
+-- Written for 6.18.1.
+-- TODO: Make this work for more generally so it won't fail with future REDCap versions
 REPLACE INTO `redcap_auth` VALUES ('admin','f00a29960d1108086c2d86742bfc5a89','6hgNrh8n%A3R4GwIuny@quxwHjVo7yu%B&4U@LmKd~n72UJzJ&xBEN-t4CYzIyxVzucwQm.vLK.N23S.Ltc@ZZq~$jFxhYU~bopz',0,0,NULL,NULL,NULL,NULL);
 REPLACE INTO `redcap_auth` VALUES ('alice','bea198176813848e6167cd43baaf5094','66~xW#mg3n@.jKb94!M..FXDTy&VMDUHmPILK4^GLBQ5mRj3%XW%YUaM8Wpyi7*iBtJvTrUcT8c&qmuyVqe&*ZUfWRae6&2BCY^A',0,0,NULL,NULL,NULL,NULL);
 REPLACE INTO `redcap_auth` VALUES ('bob','7fd2b57c81616c7123650eaa7355d9e9','z%QiWLyN@w3y9UQKdB%%GHDtS%@A9cYP*!oPXy4kkZR.&V@hJvpP.^udA5JWCg!mzYA6W.37$8mMWW.j$huhemeKrYFoTj@sSABz',0,0,NULL,NULL,NULL,NULL);
