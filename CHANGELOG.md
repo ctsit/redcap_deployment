@@ -2,6 +2,17 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [0.7.0] - 2017-02-02
+### Added
+- Packaging, deployment, upgrade and backup tools based on the Python Fabric API (Sreeja KannaGundla, Stewart Wehmeyer, Philip Chase)
+- Deployed REDCap Instance testing based on PyUnit (Philip Chase)
+- Add Expected Upgrade Workflow (Philip Chase)
+
+### Changed
+- Update README for focus on packaged deployment (Philip Chase)
+
+
 ## [0.6.1] - 2016-08-15
 ### Changed
 - Replace patching of default-ssl.conf with warning if there is no line to include ssl-includes/ (Philip Chase)

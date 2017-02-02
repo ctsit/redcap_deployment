@@ -53,7 +53,13 @@ apt-get install -y php-pear php5-curl
 
 # prep the /var/www directory
 log "Prep the /var/www file system"
-rm -rf /var/www/redcap/*
+if [ -d /var/www/redcap ]; then
+    rm -rf /var/www/redcap
+fi
+
+if [ -L /var/www/redcap ]; then
+    rm /var/www/redcap
+fi
 
 # extract a standard REDCap zip file as downloaded from Vanderbilt.
 unzip -o -q $REDCAP_ZIP -d /var/www/
@@ -89,4 +95,5 @@ check_redcap_status
 
 export PATH_TO_APP_IN_GUEST_FILESYSTEM
 
-/vagrant/deploy_extensions.sh
+/vagrant/deploy_hooks.sh
+/vagrant/deploy_plugins.sh
