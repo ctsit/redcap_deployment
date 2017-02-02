@@ -740,11 +740,16 @@ def create_deploy_user_with_ssh():
     with settings(warn_only=True):
         if (sudo('test -d ~%s/.ssh/keys' % env.deploy_user).failed):
             sudo('mkdir -p ~%s/.ssh/keys' % env.deploy_user)
-            if sudo("test -e ~%s/.ssh/authorized_keys" % env.deploy_user).succeeded:
-                sudo('cp ~%s/.ssh/authorized_keys ~%s/.ssh/keys/default.pub' % (env.deploy_user, env.deploy_user))
+            path_to_authorized_keys = "~%s/.ssh/authorized_keys" % env.deploy_user
+            if sudo("test -e %s" % path_to_authorized_keys).succeeded:
+                sudo('cp %s ~%s/.ssh/keys/default.pub' % (path_to_authorized_keys, env.deploy_user))
             else:
-                sudo("touch ~%s/.ssh/authorized_keys" % env.deploy_user)
-                put(env.pubkey_filename,"/home/%(deploy_user)s/.ssh/keys/%(user)s.pub" % env, use_sudo=True)
+                sudo("touch %s" % path_to_authorized_keys)
+            path_to_new_pub_key = "/home/%(deploy_user)s/.ssh/keys/%(user)s.pub" % env
+            put(env.pubkey_filename, path_to_new_pub_key, use_sudo=True)
+            sudo("cat %s >> %s" % (path_to_new_pub_key, path_to_authorized_keys))
+            sudo("chown -R %s.%s ~%s/.ssh" % (env.deploy_user, env.deploy_group, env.deploy_user))
+
 
     update_ssh_permissions(as_root=True)
 
