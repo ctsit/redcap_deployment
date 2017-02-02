@@ -169,19 +169,22 @@ def write_my_cnf():
     f = open(file, 'w')
     f.write("[mysqldump]" +"\n")
     f.write("user=" + env.database_user +"\n")
-    f.write("password=" + env.database_password +"\n")
+    f.write("password='" + env.database_password +"'\n")
     f.write("" +"\n")
     f.write("[client]" +"\n")
     f.write("user=" + env.database_user +"\n")
-    f.write("password=" + env.database_password +"\n")
+    f.write("password='" + env.database_password +"'\n")
     f.write("database=" + env.database_name +"\n")
+    f.write("host=" + env.database_host +"\n")
     f.close()
     return(file)
 
 def write_remote_my_cnf():
     file = write_my_cnf()
     with settings(user=env.deploy_user):
-        put(file, '/home/%s/.my.cnf' % get_config('deploy_user'), use_sudo=False)
+        target_path = '/home/%s/.my.cnf' % get_config('deploy_user')
+        put(file, target_path , use_sudo=False)
+        run('chmod 600 %s' % target_path)
     os.unlink(file)
 
 def delete_remote_my_cnf():
