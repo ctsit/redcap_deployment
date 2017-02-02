@@ -337,14 +337,14 @@ def create_redcap_tables(resource_path = "Resources/sql"):
     match = re.search('redcap_v(\d+.\d+.\d+)', redcap_name)
     version = match.group(1)
     with settings(user=env.deploy_user):
-        run('mysql -u%s -p%s %s < %s/install.sql' % (env.database_user, env.database_password, env.database_name, redcap_sql_dir))
-        run('mysql -u%s -p%s %s < %s/install_data.sql' % (env.database_user,env.database_password,env.database_name, redcap_sql_dir))
-        run('mysql -u%s -p%s %s -e "UPDATE %s.redcap_config SET value = \'%s\' WHERE field_name = \'redcap_version\' "' % (env.database_user,env.database_password,env.database_name, env.database_name,version))
+        run('mysql < %s/install.sql' % redcap_sql_dir)
+        run('mysql < %s/install_data.sql' % redcap_sql_dir)
+        run('mysql -e "UPDATE %s.redcap_config SET value = \'%s\' WHERE field_name = \'redcap_version\' "' % (env.database_name, version))
 
         files=run('ls -v1 %s/create_demo_db*.sql' % redcap_sql_dir)
         for file in files.splitlines():
             print("Executing sql file %s" % file)
-            run('mysql -u%s -p%s %s < %s' % (env.database_user, env.database_password,env.database_name,file))
+            run('mysql < %s' % file)
 
 def apply_upgrade_sql():
     """
