@@ -210,17 +210,17 @@ def timestamp():
 @task(alias='backup')
 def backup_database(options=""):
     '''
-    Backup a mysql database from the remote host with an optional *options* parameter.
+    Backup a mysql database from the remote host with mysqldump options in *options*.
 
-    The backup file will be time stamped with a name like 'redcap-dump-20170126T1620.sql'
-    The latest backup file will be linked to name 'redcap-dump-latest.sql'
+    The backup file will be time stamped with a name like 'redcap-dump-20170126T1620.sql.gz'
+    The latest backup file will be linked to name 'redcap-dump-latest.sql.gz'
     '''
     write_remote_my_cnf()
     now = timestamp()
     with settings(user=env.deploy_user):
-        run("mysqldump --skip-lock-tables %s -u %s -h %s %s > redcap-dump-%s.sql" % \
+        run("mysqldump --skip-lock-tables %s -u %s -h %s %s | gzip > redcap-dump-%s.sql.gz" % \
             (options, env.database_user, env.database_host, env.database_name, now))
-        run("ln -sf redcap-dump-%s.sql redcap-dump-latest.sql" % now)
+        run("ln -sf redcap-dump-%s.sql.gz redcap-dump-latest.sql.gz" % now)
     delete_remote_my_cnf()
 
 ##########################
