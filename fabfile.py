@@ -166,7 +166,16 @@ def deploy_extension_to_build_space(source_dir="", build_target=""):
         local("bash %s " % this_test_script)
 
 
-##########################
+def deploy_language_to_build_space():
+    target_dir = env.builddir + "/redcap/languages/"
+    for language in json.loads(env.languages):
+        if os.path.exists(language):
+            local("mkdir -p %s" % target_dir)
+            local('cp %s %s' % (language, target_dir))
+        else:
+            abort("the language file %s does not exist" % language)
+
+
 def write_my_cnf():
     _, file = mkstemp()
     f = open(file, 'w')
@@ -240,6 +249,7 @@ def package(redcap_zip="."):
     deploy_plugins_into_build_space()
     deploy_hooks_into_build_space()
     deploy_hooks_framework_into_build_space()
+    deploy_language_to_build_space()
     apply_patches()
     add_db_upgrade_script()
 
