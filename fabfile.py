@@ -390,13 +390,16 @@ def add_db_upgrade_script():
     local('cp deploy/files/generate_upgrade_sql_from_php.php %s' % target_dir)
 
 
-def configure_redcap_cron(force_deployment_of_redcap_cron=False):
+def configure_redcap_cron(deploy=False, force_deployment_of_redcap_cron=False):
     crond_for_redcap = '/etc/cron.d/%s' % env.project_path
     with settings(warn_only=True):
-        if run("test -e %s" % crond_for_redcap).failed or force_deployment_of_redcap_cron:
-            sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
-            sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' \
-                % (env.live_project_full_path, crond_for_redcap))
+        if deploy:
+            if run("test -e %s" % crond_for_redcap).failed or force_deployment_of_redcap_cron:
+                sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
+                sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' \
+                    % (env.live_project_full_path, crond_for_redcap))
+        else:
+            warn("Not deploying REDCap Cron. Set deploy_redcap_cron=True in instance's ini to deploy REDCap Cron.")
 
 
 def move_edocs_folder():
@@ -622,6 +625,9 @@ def define_env(settings_file_path=""):
     This function sets up some global variables
     """
 
+    #Set defaults
+    env.deploy_redcap_cron = False
+
     #first, copy the secrets file into the deploy directory
     if os.path.exists(settings_file_path):
         config.read(settings_file_path)
@@ -700,7 +706,7 @@ def deploy(name,force=""):
     set_redcap_base_url()
     set_hook_functions_file()
     force_deployment_of_redcap_cron = is_affirmative(force)
-    configure_redcap_cron(force_deployment_of_redcap_cron)
+    configure_redcap_cron(env.deploy_redcap_cron, force_deployment_of_redcap_cron)
     delete_remote_my_cnf()
     #TODO: Run tests
 
