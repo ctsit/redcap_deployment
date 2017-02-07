@@ -518,6 +518,20 @@ def get_current_redcap_version():
 def apply_incremental_db_changes(old, new):
     '''
     Upgrade the database from the <old> REDCap version to the <new> version.
+    Done by applying the needed upgarde_version.sql files in sequence. The arguments
+    old and new will be version numbers (i.e., 6.11.5)'''
+    # print ("%s.%02d.%02d" % (old.split(".")))
+    print (old.split("."))
+    redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
+    files = run('ls -1 %s/upgrade_*.sql %s/upgrade_*.php  | sort --version-sort | grep -A1000 %s | tail -n +2' % (redcap_sql_dir, redcap_sql_dir, old))
+    with settings(warn_only=True):
+        for file in files.splitlines():
+            if fnmatch.fnmatch(file, "*.php"):
+                print (file + " is a php file!")
+            else:
+                print("Executing sql file %s" % file)
+                run('echo "mysql < %s"' % file)
+                # run('mysql < %s' % file)
 
     Applying the needed upgrade_M.NN.OO.sql and upgrade_M.NN.OO.ph files in
     sequence. The arguments old and new must be version numbers (i.e., 6.11.5)
