@@ -44,7 +44,7 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         """Verify that we *can't* access the redcap / folder without login"""
         localpath = ""
         self.fullpath=self.redcap_root + localpath
-        expected_string = 'Welcome to REDCap!'
+        expected_string = 'Create New Project'
         self.assertNotIn(expected_string, self.weburl.get(self.fullpath))
 
     def testSurveysFolder(self):

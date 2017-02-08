@@ -608,6 +608,15 @@ def change_online_status(state):
                     set_redcap_config('system_offline', '%s' % offline_binary)
                     set_redcap_config('system_offline_message', '%s' % offline_message)
 
+
+@task
+def test():
+    """
+    Run all tests against a running REDCap instance
+    """
+    local("python tests/test.py")
+
+
 ##########################
 
 def get_config(key, section="instance"):
