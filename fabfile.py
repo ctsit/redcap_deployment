@@ -221,15 +221,15 @@ def backup_database(options=""):
     '''
     Backup a mysql database from the remote host with mysqldump options in *options*.
 
-    The backup file will be time stamped with a name like 'redcap-dump-20170126T1620.sql.gz'
-    The latest backup file will be linked to name 'redcap-dump-latest.sql.gz'
+    The backup file will be time stamped with a name like 'redcap-<instance_name>-20170126T1620.sql.gz'
+    The latest backup file will be linked to name 'redcap-<instance_name>-latest.sql.gz'
     '''
     write_remote_my_cnf()
     now = timestamp()
     with settings(user=env.deploy_user):
-        run("mysqldump --skip-lock-tables %s -u %s -h %s %s | gzip > redcap-dump-%s.sql.gz" % \
-            (options, env.database_user, env.database_host, env.database_name, now))
-        run("ln -sf redcap-dump-%s.sql.gz redcap-dump-latest.sql.gz" % now)
+        run("mysqldump --skip-lock-tables %s -u %s -h %s %s | gzip > redcap-%s-%s.sql.gz" % \
+            (options, env.database_user, env.database_host, env.database_name, env.instance_name, now))
+        run("ln -sf redcap-%s-%s.sql.gz redcap-%s-latest.sql.gz" % (env.instance_name, now, env.instance_name))
     delete_remote_my_cnf()
 
 ##########################
