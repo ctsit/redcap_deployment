@@ -601,17 +601,11 @@ def change_online_status(state):
             offline_message = 'The system is offline.'
         else:
             abort("Invald state provided. Specify 'Online' or 'Offline'.")
-        with settings(warn_only=True):
-            if run('test -e ~/.my.cnf').failed:
-                with settings(warn_only=False):
-                    write_remote_my_cnf()
-                    set_redcap_config('system_offline', '%s' % offline_binary)
-                    set_redcap_config('system_offline_message', '%s' % offline_message)
-                    delete_remote_my_cnf()
-            else:
-                with settings(warn_only=False):
-                    set_redcap_config('system_offline', '%s' % offline_binary)
-                    set_redcap_config('system_offline_message', '%s' % offline_message)
+
+        write_remote_my_cnf()
+        set_redcap_config('system_offline', '%s' % offline_binary)
+        set_redcap_config('system_offline_message', '%s' % offline_message)
+        delete_remote_my_cnf()
 
 
 @task
