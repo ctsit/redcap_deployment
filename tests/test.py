@@ -1,5 +1,6 @@
 import unittest
 import pycurl
+import sys
 from StringIO import StringIO
 
 class Weburl():
@@ -21,8 +22,8 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
 
     def setUp(self):
         """Call before every test case."""
-        self.redcap_root = "http://redcap.dev/redcap/"
-        self.redcap_version_path = "redcap_v6.18.1/"
+        self.redcap_root = str(redcap_url)
+        self.redcap_version_path = str(redcap_version)
         self.weburl = Weburl()
         self.rc_forbidden = '''<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
@@ -128,4 +129,9 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        sys.exit("ERROR: REDCap url and REDCap version directory parameters must be supplied for these tests. e.g.\n\npython tests/test.py http://redcap.dev/redcap/ redcap_v6.18.1/ ")
+    redcap_url = sys.argv[1]
+    redcap_version = sys.argv[2]
+    del sys.argv[1:]
     unittest.main() # run all tests
