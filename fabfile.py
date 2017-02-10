@@ -877,7 +877,7 @@ def rebuild_authorized_keys():
         run('rm tmpfile')
 
 config = configparser.ConfigParser()
-w_counter = 0;
+w_counter = 0
 default_settings_file_path = 'settings/defaults.ini' #path to where app is looking for settings.ini
 define_default_env(default_settings_file_path) # load default settings
 
