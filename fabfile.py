@@ -196,22 +196,27 @@ def write_remote_my_cnf():
     """
     Write a .my.cnf into the deploy user's home directory.
     """
+    global w_counter
     file = write_my_cnf()
     with settings(user=env.deploy_user):
         target_path = '/home/%s/.my.cnf' % get_config('deploy_user')
         put(file, target_path , use_sudo=False)
         run('chmod 600 %s' % target_path)
     os.unlink(file)
+    w_counter = w_counter+1
 
 @task
 def delete_remote_my_cnf():
     """
     Delete .my.cnf from the deploy user's home directory.
     """
-    my_cnf = '/home/%s/.my.cnf' % get_config('deploy_user')
-    with settings(user=env.deploy_user):
-        if run("test -e %s" % my_cnf).succeeded:
-            run('rm -rf %s' % my_cnf)
+    global w_counter
+    w_counter = w_counter-1
+    if w_counter == 0:
+        my_cnf = '/home/%s/.my.cnf' % get_config('deploy_user')
+        with settings(user=env.deploy_user):
+            if run("test -e %s" % my_cnf).succeeded:
+                run('rm -rf %s' % my_cnf)
 
 def timestamp():
     return(datetime.now().strftime("%Y%m%dT%H%M%Z"))
@@ -872,6 +877,7 @@ def rebuild_authorized_keys():
         run('rm tmpfile')
 
 config = configparser.ConfigParser()
+w_counter = 0;
 default_settings_file_path = 'settings/defaults.ini' #path to where app is looking for settings.ini
 define_default_env(default_settings_file_path) # load default settings
 
