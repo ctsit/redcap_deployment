@@ -614,7 +614,10 @@ def test():
     """
     Run all tests against a running REDCap instance
     """
-    local("python tests/test.py")
+    write_remote_my_cnf()
+    version = get_current_redcap_version()
+    delete_remote_my_cnf()
+    local("python tests/test.py %s/ redcap_v%s/" % (env.url_of_deployed_app,version))
 
 
 ##########################
