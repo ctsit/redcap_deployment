@@ -462,7 +462,13 @@ def upgrade(name):
     old = get_current_redcap_version()
     apply_incremental_db_changes(old,new)
     online()
+    # run the tests but take REDCap offline again and abort if they fail
+    if not test(warn_only=True):
+        offline()
+        delete_remote_my_cnf()
+        abort("One or more tests failed.  REDCap has been taken offline.")
     delete_remote_my_cnf()
+
 
 def make_upload_target():
     '''
@@ -736,6 +742,7 @@ def deploy(name,force=""):
     set_hook_functions_file()
     force_deployment_of_redcap_cron = is_affirmative(force)
     configure_redcap_cron(env.deploy_redcap_cron, force_deployment_of_redcap_cron)
+    test()
     delete_remote_my_cnf()
     #TODO: Run tests
 
