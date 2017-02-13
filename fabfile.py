@@ -686,6 +686,9 @@ def define_env(settings_file_path=""):
     env.hosts = [get_config('host')]
     env.port = get_config('host_ssh_port')
 
+    # Turn deploy_redcap_cron into a boolean
+    env.deploy_redcap_cron = is_affirmative(env.deploy_redcap_cron)
+
 @task(alias='dev')
 def vagrant():
     """
