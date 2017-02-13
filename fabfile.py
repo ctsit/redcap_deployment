@@ -609,14 +609,22 @@ def change_online_status(state):
 
 
 @task
-def test():
+def test(warn_only=False):
     """
     Run all tests against a running REDCap instance
     """
     write_remote_my_cnf()
     version = get_current_redcap_version()
     delete_remote_my_cnf()
-    local("python tests/test.py %s/ redcap_v%s/" % (env.url_of_deployed_app,version))
+    with settings(warn_only=True):
+        if local("python tests/test.py %s/ redcap_v%s/" % (env.url_of_deployed_app,version)).failed:
+            if warn_only:
+                warn("One or more tests failed.")
+                return(False)
+            else:
+                abort("One or more tests failed.")
+        else:
+            return(True)
 
 
 ##########################
