@@ -2,6 +2,7 @@ import unittest
 import pycurl
 import sys
 from StringIO import StringIO
+import re
 
 class Weburl():
 
@@ -22,7 +23,8 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
 
     def setUp(self):
         """Call before every test case."""
-        self.redcap_root = str(redcap_url)
+        # remove any doubled trailing slashes in redcap_url
+        self.redcap_root = re.sub('//$', '/', str(redcap_url))
         self.redcap_version_path = str(redcap_version)
         self.weburl = Weburl()
         self.rc_forbidden = '''<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
