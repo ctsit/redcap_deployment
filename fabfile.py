@@ -166,7 +166,16 @@ def deploy_extension_to_build_space(source_dir="", build_target=""):
         local("bash %s " % this_test_script)
 
 
-##########################
+def deploy_language_to_build_space():
+    target_dir = env.builddir + "/redcap/languages/"
+    for language in json.loads(env.languages):
+        if os.path.exists(language):
+            local("mkdir -p %s" % target_dir)
+            local('cp %s %s' % (language, target_dir))
+        else:
+            abort("the language file %s does not exist" % language)
+
+
 def write_my_cnf():
     _, file = mkstemp()
     f = open(file, 'w')
@@ -187,22 +196,27 @@ def write_remote_my_cnf():
     """
     Write a .my.cnf into the deploy user's home directory.
     """
+    global w_counter
     file = write_my_cnf()
     with settings(user=env.deploy_user):
         target_path = '/home/%s/.my.cnf' % get_config('deploy_user')
         put(file, target_path , use_sudo=False)
         run('chmod 600 %s' % target_path)
     os.unlink(file)
+    w_counter = w_counter+1
 
 @task
 def delete_remote_my_cnf():
     """
     Delete .my.cnf from the deploy user's home directory.
     """
-    my_cnf = '/home/%s/.my.cnf' % get_config('deploy_user')
-    with settings(user=env.deploy_user):
-        if run("test -e %s" % my_cnf).succeeded:
-            run('rm -rf %s' % my_cnf)
+    global w_counter
+    w_counter = w_counter-1
+    if w_counter == 0:
+        my_cnf = '/home/%s/.my.cnf' % get_config('deploy_user')
+        with settings(user=env.deploy_user):
+            if run("test -e %s" % my_cnf).succeeded:
+                run('rm -rf %s' % my_cnf)
 
 def timestamp():
     return(datetime.now().strftime("%Y%m%dT%H%M%Z"))
@@ -210,17 +224,17 @@ def timestamp():
 @task(alias='backup')
 def backup_database(options=""):
     '''
-    Backup a mysql database from the remote host with an optional *options* parameter.
+    Backup a mysql database from the remote host with mysqldump options in *options*.
 
-    The backup file will be time stamped with a name like 'redcap-dump-20170126T1620.sql'
-    The latest backup file will be linked to name 'redcap-dump-latest.sql'
+    The backup file will be time stamped with a name like 'redcap-<instance_name>-20170126T1620.sql.gz'
+    The latest backup file will be linked to name 'redcap-<instance_name>-latest.sql.gz'
     '''
     write_remote_my_cnf()
     now = timestamp()
     with settings(user=env.deploy_user):
-        run("mysqldump --skip-lock-tables %s -u %s -h %s %s > redcap-dump-%s.sql" % \
-            (options, env.database_user, env.database_host, env.database_name, now))
-        run("ln -sf redcap-dump-%s.sql redcap-dump-latest.sql" % now)
+        run("mysqldump --skip-lock-tables %s -u %s -h %s %s | gzip > redcap-%s-%s.sql.gz" % \
+            (options, env.database_user, env.database_host, env.database_name, env.instance_name, now))
+        run("ln -sf redcap-%s-%s.sql.gz redcap-%s-latest.sql.gz" % (env.instance_name, now, env.instance_name))
     delete_remote_my_cnf()
 
 ##########################
@@ -240,6 +254,7 @@ def package(redcap_zip="."):
     deploy_plugins_into_build_space()
     deploy_hooks_into_build_space()
     deploy_hooks_framework_into_build_space()
+    deploy_language_to_build_space()
     apply_patches()
     add_db_upgrade_script()
 
@@ -390,13 +405,16 @@ def add_db_upgrade_script():
     local('cp deploy/files/generate_upgrade_sql_from_php.php %s' % target_dir)
 
 
-def configure_redcap_cron(force_deployment_of_redcap_cron=False):
+def configure_redcap_cron(deploy=False, force_deployment_of_redcap_cron=False):
     crond_for_redcap = '/etc/cron.d/%s' % env.project_path
     with settings(warn_only=True):
-        if run("test -e %s" % crond_for_redcap).failed or force_deployment_of_redcap_cron:
-            sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
-            sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' \
-                % (env.live_project_full_path, crond_for_redcap))
+        if deploy:
+            if run("test -e %s" % crond_for_redcap).failed or force_deployment_of_redcap_cron:
+                sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
+                sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' \
+                    % (env.live_project_full_path, crond_for_redcap))
+        else:
+            warn("Not deploying REDCap Cron. Set deploy_redcap_cron=True in instance's ini to deploy REDCap Cron.")
 
 
 def move_edocs_folder():
@@ -444,7 +462,13 @@ def upgrade(name):
     old = get_current_redcap_version()
     apply_incremental_db_changes(old,new)
     online()
+    # run the tests but take REDCap offline again and abort if they fail
+    if not test(warn_only=True):
+        offline()
+        delete_remote_my_cnf()
+        abort("One or more tests failed.  REDCap has been taken offline.")
     delete_remote_my_cnf()
+
 
 def make_upload_target():
     '''
@@ -583,17 +607,31 @@ def change_online_status(state):
             offline_message = 'The system is offline.'
         else:
             abort("Invald state provided. Specify 'Online' or 'Offline'.")
-        with settings(warn_only=True):
-            if run('test -e ~/.my.cnf').failed:
-                with settings(warn_only=False):
-                    write_remote_my_cnf()
-                    set_redcap_config('system_offline', '%s' % offline_binary)
-                    set_redcap_config('system_offline_message', '%s' % offline_message)
-                    delete_remote_my_cnf()
+
+        write_remote_my_cnf()
+        set_redcap_config('system_offline', '%s' % offline_binary)
+        set_redcap_config('system_offline_message', '%s' % offline_message)
+        delete_remote_my_cnf()
+
+
+@task
+def test(warn_only=False):
+    """
+    Run all tests against a running REDCap instance
+    """
+    write_remote_my_cnf()
+    version = get_current_redcap_version()
+    delete_remote_my_cnf()
+    with settings(warn_only=True):
+        if local("python tests/test.py %s/ redcap_v%s/" % (env.url_of_deployed_app,version)).failed:
+            if warn_only:
+                warn("One or more tests failed.")
+                return(False)
             else:
-                with settings(warn_only=False):
-                    set_redcap_config('system_offline', '%s' % offline_binary)
-                    set_redcap_config('system_offline_message', '%s' % offline_message)
+                abort("One or more tests failed.")
+        else:
+            return(True)
+
 
 ##########################
 
@@ -621,6 +659,9 @@ def define_env(settings_file_path=""):
     """
     This function sets up some global variables
     """
+
+    #Set defaults
+    env.deploy_redcap_cron = False
 
     #first, copy the secrets file into the deploy directory
     if os.path.exists(settings_file_path):
@@ -700,7 +741,8 @@ def deploy(name,force=""):
     set_redcap_base_url()
     set_hook_functions_file()
     force_deployment_of_redcap_cron = is_affirmative(force)
-    configure_redcap_cron(force_deployment_of_redcap_cron)
+    configure_redcap_cron(env.deploy_redcap_cron, force_deployment_of_redcap_cron)
+    test()
     delete_remote_my_cnf()
     #TODO: Run tests
 
@@ -844,6 +886,7 @@ def rebuild_authorized_keys():
         run('rm tmpfile')
 
 config = configparser.ConfigParser()
+w_counter = 0
 default_settings_file_path = 'settings/defaults.ini' #path to where app is looking for settings.ini
 define_default_env(default_settings_file_path) # load default settings
 
