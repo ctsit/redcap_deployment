@@ -10,9 +10,6 @@
 
 * Improve the first doc string so 'fab --list' is *very* helpful.
 * Write a markdown file describing the fab tools and how they should be used for development, packaging, and deployments.
-* Write a fab function to run the tests against a particular instance.
-* Run tests at end of 'deploy'.
-* Run tests at end of upgrade just before 'online'.
 * Replace the bootstrap.sh redcap deployment with fabric packaging and deployment and remove the related dead code.
 * Add the new and updated plugins for our customers.
 
