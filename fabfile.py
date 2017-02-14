@@ -572,7 +572,7 @@ def apply_incremental_db_changes(old, new):
                 print("Executing sql file %s" % file)
                 run('echo "mysql < %s"' % file)
                 # run('mysql < %s' % file)
-
+    '''
     Applying the needed upgrade_M.NN.OO.sql and upgrade_M.NN.OO.ph files in
     sequence. The arguments old and new must be version numbers (i.e., 6.11.5)
     '''
