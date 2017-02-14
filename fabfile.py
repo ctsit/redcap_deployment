@@ -512,6 +512,8 @@ def upload_package_and_extract(name):
             if run('test -d %s/webtools2/pdf/font/unifont' % env.upload_target_backup_dir).succeeded:
                 run('chmod ug+w %s/webtools2/pdf/font/unifont/*' % env.upload_target_backup_dir)
         run('rsync -rc %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
+        # make sure the temp file directory in redcap web space will be writeable
+        run('chmod g+w %s/temp' % env.upload_target_backup_dir)
         # Remove the temp directories
         run('rm -rf %s %s' % (temp1, temp2))
 
