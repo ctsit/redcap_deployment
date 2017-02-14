@@ -86,7 +86,10 @@ def extract_redcap(redcap_zip="."):
     match = re.search(r"(redcap)(\d+.\d+.\d+)(|_upgrade)(.zip)", redcap_path)
     print(match.group(2))
     env.redcap_version = match.group(2)
+    redcap_version_and_package_type = match.group(2) + match.group(3)
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
+    return(redcap_version_and_package_type)
+
 
 def deploy_hooks_framework_into_build_space(target_within_build_space="redcap/hooks/"):
     """
@@ -163,50 +166,75 @@ def deploy_extension_to_build_space(source_dir="", build_target=""):
         local("bash %s " % this_test_script)
 
 
-##########################
+def deploy_language_to_build_space():
+    target_dir = env.builddir + "/redcap/languages/"
+    for language in json.loads(env.languages):
+        if os.path.exists(language):
+            local("mkdir -p %s" % target_dir)
+            local('cp %s %s' % (language, target_dir))
+        else:
+            abort("the language file %s does not exist" % language)
+
+
 def write_my_cnf():
     _, file = mkstemp()
     f = open(file, 'w')
     f.write("[mysqldump]" +"\n")
     f.write("user=" + env.database_user +"\n")
-    f.write("password=" + env.database_password +"\n")
+    f.write("password='" + env.database_password +"'\n")
     f.write("" +"\n")
     f.write("[client]" +"\n")
     f.write("user=" + env.database_user +"\n")
-    f.write("password=" + env.database_password +"\n")
+    f.write("password='" + env.database_password +"'\n")
     f.write("database=" + env.database_name +"\n")
+    f.write("host=" + env.database_host +"\n")
     f.close()
     return(file)
 
+@task
 def write_remote_my_cnf():
+    """
+    Write a .my.cnf into the deploy user's home directory.
+    """
+    global w_counter
     file = write_my_cnf()
     with settings(user=env.deploy_user):
-        put(file, '/home/%s/.my.cnf' % get_config('deploy_user'), use_sudo=False)
+        target_path = '/home/%s/.my.cnf' % get_config('deploy_user')
+        put(file, target_path , use_sudo=False)
+        run('chmod 600 %s' % target_path)
     os.unlink(file)
+    w_counter = w_counter+1
 
+@task
 def delete_remote_my_cnf():
-    my_cnf = '/home/%s/.my.cnf' % get_config('deploy_user')
-    with settings(user=env.deploy_user):
-        if run("test -e %s" % my_cnf).succeeded:
-            run('rm -rf %s' % my_cnf)
+    """
+    Delete .my.cnf from the deploy user's home directory.
+    """
+    global w_counter
+    w_counter = w_counter-1
+    if w_counter == 0:
+        my_cnf = '/home/%s/.my.cnf' % get_config('deploy_user')
+        with settings(user=env.deploy_user):
+            if run("test -e %s" % my_cnf).succeeded:
+                run('rm -rf %s' % my_cnf)
 
 def timestamp():
     return(datetime.now().strftime("%Y%m%dT%H%M%Z"))
 
 @task(alias='backup')
-def backup_database():
+def backup_database(options=""):
     '''
-    Backup a mysql database from the remote host.
+    Backup a mysql database from the remote host with mysqldump options in *options*.
 
-    The backup file will be time stamped with a name like 'redcap-dump-20170126T1620.sql'
-    The latest backup file will be linked to name 'redcap-dump-latest.sql'
+    The backup file will be time stamped with a name like 'redcap-<instance_name>-20170126T1620.sql.gz'
+    The latest backup file will be linked to name 'redcap-<instance_name>-latest.sql.gz'
     '''
     write_remote_my_cnf()
     now = timestamp()
     with settings(user=env.deploy_user):
-        run("mysqldump --skip-lock-tables -u %s -h %s %s > redcap-dump-%s.sql" % \
-            (env.database_user, env.database_host, env.database_name, now))
-        run("ln -sf redcap-dump-%s.sql redcap-dump-latest.sql" % now)
+        run("mysqldump --skip-lock-tables %s -u %s -h %s %s | gzip > redcap-%s-%s.sql.gz" % \
+            (options, env.database_user, env.database_host, env.database_name, env.instance_name, now))
+        run("ln -sf redcap-%s-%s.sql.gz redcap-%s-latest.sql.gz" % (env.instance_name, now, env.instance_name))
     delete_remote_my_cnf()
 
 ##########################
@@ -222,15 +250,16 @@ def package(redcap_zip="."):
     # Build the app
     clean(env.builddir)
     make_builddir(env.builddir)
-    extract_redcap(redcap_zip)
+    redcap_version_and_package_type = extract_redcap(redcap_zip)
     deploy_plugins_into_build_space()
     deploy_hooks_into_build_space()
     deploy_hooks_framework_into_build_space()
+    deploy_language_to_build_space()
     apply_patches()
     add_db_upgrade_script()
 
     # Get variables to tell us where to write the package
-    env.package_name = '%(project_name)s-%(redcap_version)s.tgz' % env
+    env.package_name = '%s-%s.tgz' % (env.project_name, redcap_version_and_package_type)
     cwd = os.getcwd()
     # create the package
     local("cd %s && tar -cz --exclude='.DS_Store' \
@@ -337,29 +366,31 @@ def create_redcap_tables(resource_path = "Resources/sql"):
     match = re.search('redcap_v(\d+.\d+.\d+)', redcap_name)
     version = match.group(1)
     with settings(user=env.deploy_user):
-        run('mysql -u%s -p%s %s < %s/install.sql' % (env.database_user, env.database_password, env.database_name, redcap_sql_dir))
-        run('mysql -u%s -p%s %s < %s/install_data.sql' % (env.database_user,env.database_password,env.database_name, redcap_sql_dir))
-        run('mysql -u%s -p%s %s -e "UPDATE %s.redcap_config SET value = \'%s\' WHERE field_name = \'redcap_version\' "' % (env.database_user,env.database_password,env.database_name, env.database_name,version))
+        run('mysql < %s/install.sql' % redcap_sql_dir)
+        run('mysql < %s/install_data.sql' % redcap_sql_dir)
+        run('mysql -e "UPDATE %s.redcap_config SET value = \'%s\' WHERE field_name = \'redcap_version\' "' % (env.database_name, version))
 
         files=run('ls -v1 %s/create_demo_db*.sql' % redcap_sql_dir)
         for file in files.splitlines():
             print("Executing sql file %s" % file)
-            run('mysql -u%s -p%s %s < %s' % (env.database_user, env.database_password,env.database_name,file))
+            run('mysql < %s' % file)
 
-def apply_upgrade_sql():
-    """
-    Copy upgrade.sql to the remote host and run upgrade.sql file
 
-    TODO: Delete this function?
+@task
+def apply_sql_to_db(sql_file=""):
     """
-    upgrade_file = "upgrade.sql"
-    with settings(user=env.deploy_user):
-        redcap_upgrade_sql_path = run('mktemp')
-    if local('test -e %s' % upgrade_file).succeeded:
+    Copy a local SQL file to the remote host and run it against mysql
+
+    """
+    if local('test -e %s' % sql_file).succeeded:
         with settings(user=env.deploy_user):
-            put(upgrade_file, redcap_upgrade_sql_path)
-            if run('mysql < %s' % redcap_upgrade_sql_path).succeeded:
-                run('rm %s' % redcap_upgrade_sql_path)
+            write_remote_my_cnf()
+            remote_sql_path = run('mktemp')
+            put(sql_file, remote_sql_path)
+            if run('mysql < %s' % remote_sql_path).succeeded:
+                run('rm %s' % remote_sql_path)
+            delete_remote_my_cnf()
+
 
 def apply_patches():
     for repo in json.loads(env.patch_repos):
@@ -369,18 +400,21 @@ def apply_patches():
         local('rm -rf %s' % tempdir)
 
 def add_db_upgrade_script():
-    target_dir = '/'.join([env.builddir, env.project_name, "redcap_v%s" % env.redcap_version])
+    target_dir = '/'.join([env.builddir, "redcap", "redcap_v%s" % env.redcap_version])
     print target_dir
     local('cp deploy/files/generate_upgrade_sql_from_php.php %s' % target_dir)
 
 
-def configure_redcap_cron(force_deployment_of_redcap_cron=False):
-    crond_for_redcap = '/etc/cron.d/%s' % env.project_name
+def configure_redcap_cron(deploy=False, force_deployment_of_redcap_cron=False):
+    crond_for_redcap = '/etc/cron.d/%s' % env.project_path
     with settings(warn_only=True):
-        if run("test -e %s" % crond_for_redcap).failed or force_deployment_of_redcap_cron:
-            sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
-            sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' \
-                % (env.live_project_full_path, crond_for_redcap))
+        if deploy:
+            if run("test -e %s" % crond_for_redcap).failed or force_deployment_of_redcap_cron:
+                sudo('echo "# REDCap Cron Job (runs every minute)" > %s' % crond_for_redcap)
+                sudo('echo "* * * * * root /usr/bin/php %s/cron.php > /dev/null" >> %s' \
+                    % (env.live_project_full_path, crond_for_redcap))
+        else:
+            warn("Not deploying REDCap Cron. Set deploy_redcap_cron=True in instance's ini to deploy REDCap Cron.")
 
 
 def move_edocs_folder():
@@ -427,8 +461,14 @@ def upgrade(name):
     new = extract_version_from_string(name)
     old = get_current_redcap_version()
     apply_incremental_db_changes(old,new)
+    online()
+    # run the tests but take REDCap offline again and abort if they fail
+    if not test(warn_only=True):
+        offline()
+        delete_remote_my_cnf()
+        abort("One or more tests failed.  REDCap has been taken offline.")
     delete_remote_my_cnf()
-    #online()
+
 
 def make_upload_target():
     '''
@@ -581,17 +621,31 @@ def change_online_status(state):
             offline_message = 'The system is offline.'
         else:
             abort("Invald state provided. Specify 'Online' or 'Offline'.")
-        with settings(warn_only=True):
-            if run('test -e ~/.my.cnf').failed:
-                with settings(warn_only=False):
-                    write_remote_my_cnf()
-                    set_redcap_config('system_offline', '%s' % offline_binary)
-                    set_redcap_config('system_offline_message', '%s' % offline_message)
-                    delete_remote_my_cnf()
+
+        write_remote_my_cnf()
+        set_redcap_config('system_offline', '%s' % offline_binary)
+        set_redcap_config('system_offline_message', '%s' % offline_message)
+        delete_remote_my_cnf()
+
+
+@task
+def test(warn_only=False):
+    """
+    Run all tests against a running REDCap instance
+    """
+    write_remote_my_cnf()
+    version = get_current_redcap_version()
+    delete_remote_my_cnf()
+    with settings(warn_only=True):
+        if local("python tests/test.py %s/ redcap_v%s/" % (env.url_of_deployed_app,version)).failed:
+            if warn_only:
+                warn("One or more tests failed.")
+                return(False)
             else:
-                with settings(warn_only=False):
-                    set_redcap_config('system_offline', '%s' % offline_binary)
-                    set_redcap_config('system_offline_message', '%s' % offline_message)
+                abort("One or more tests failed.")
+        else:
+            return(True)
+
 
 ##########################
 
@@ -620,6 +674,9 @@ def define_env(settings_file_path=""):
     This function sets up some global variables
     """
 
+    #Set defaults
+    env.deploy_redcap_cron = False
+
     #first, copy the secrets file into the deploy directory
     if os.path.exists(settings_file_path):
         config.read(settings_file_path)
@@ -627,19 +684,24 @@ def define_env(settings_file_path=""):
         print("The secrets file path cannot be found. It is set to: %s" % settings_file_path)
         abort("Secrets File not set")
 
-    if get_config('deploy_user') != "":
-        env.user = get_config('deploy_user')
+    # if get_config('deploy_user') != "":
+    #     env.user = get_config('deploy_user')
 
     section="instance"
     for (name,value) in config.items(section):
         env[name] = value
     # Set variables that do not have corresponding values in vagrant.ini file
+    time = timestamp()
+    env.remote_project_name = '%s-%s' % (env.project_path,time)
     env.live_project_full_path = get_config('live_pre_path') + "/" + get_config('project_path') #
     env.backup_project_full_path = get_config('backup_pre_path') + "/" + get_config('project_path')
     env.upload_project_full_path = get_config('backup_pre_path')
 
     env.hosts = [get_config('host')]
     env.port = get_config('host_ssh_port')
+
+    # Turn deploy_redcap_cron into a boolean
+    env.deploy_redcap_cron = is_affirmative(env.deploy_redcap_cron)
 
 @task(alias='dev')
 def vagrant():
@@ -674,6 +736,8 @@ def instance(name = ""):
     settings_file_path = 'settings/%s.ini' % name
     if(name == 'vagrant'):
         env.vagrant_instance = True
+    else:
+        env.vagrant_instance = False
     define_env(settings_file_path)
 
 @task
@@ -694,7 +758,8 @@ def deploy(name,force=""):
     set_redcap_base_url()
     set_hook_functions_file()
     force_deployment_of_redcap_cron = is_affirmative(force)
-    configure_redcap_cron(force_deployment_of_redcap_cron)
+    configure_redcap_cron(env.deploy_redcap_cron, force_deployment_of_redcap_cron)
+    test()
     delete_remote_my_cnf()
     #TODO: Run tests
 
@@ -719,6 +784,8 @@ def setup_webspace():
     sudo("chmod -R 775 %s"  % (env.live_pre_path))
 
     sudo("mkdir -p %s" % env.edoc_path)
+    sudo("chown -R %s.%s %s" % (env.deploy_user, env.deploy_group, env.edoc_path))
+    sudo("chmod -R 775 %s"  % (env.edoc_path))
 
 @task
 def setup_server():
@@ -747,30 +814,39 @@ def create_deploy_user_with_ssh():
             sudo('useradd -m -b /home -u 800 -g %s -s /bin/bash -c "deployment user" %s -p %s' \
                 % (env.deploy_group, env.deploy_user, random_password))
 
-    with settings(user=env.deploy_user):
-        with settings(warn_only=True):
-            if (run('test -d ~/.ssh/keys').failed):
-                run('mkdir -p ~/.ssh/keys')
-                if run("test -e ~/.ssh/authorized_keys").succeeded:
-                    run('cp ~/.ssh/authorized_keys ~/.ssh/keys/default.pub')
-                else:
-                    put(env.pubkey_filename,"~/.ssh/keys/%s.pub" % env.user)
+    with settings(warn_only=True):
+        if (sudo('test -d ~%s/.ssh/keys' % env.deploy_user).failed):
+            sudo('mkdir -p ~%s/.ssh/keys' % env.deploy_user)
+            path_to_authorized_keys = "~%s/.ssh/authorized_keys" % env.deploy_user
+            if sudo("test -e %s" % path_to_authorized_keys).succeeded:
+                sudo('cp %s ~%s/.ssh/keys/default.pub' % (path_to_authorized_keys, env.deploy_user))
+            else:
+                sudo("touch %s" % path_to_authorized_keys)
+            path_to_new_pub_key = "/home/%(deploy_user)s/.ssh/keys/%(user)s.pub" % env
+            put(env.pubkey_filename, path_to_new_pub_key, use_sudo=True)
+            sudo("cat %s >> %s" % (path_to_new_pub_key, path_to_authorized_keys))
+            sudo("chown -R %s.%s ~%s/.ssh" % (env.deploy_user, env.deploy_group, env.deploy_user))
 
-    update_ssh_permissions()
+
+    update_ssh_permissions(as_root=True)
 
     #TODO: automatically add ssh key or prompt
 
-def update_ssh_permissions():
+def update_ssh_permissions(as_root=False):
     """
     Adjust perms on the 'deploy' user's ssh keys
     """
 
-    #create SSH directory
-    with settings(user=env.deploy_user):
-        run('chmod 700 /home/%s/.ssh' % env.deploy_user)
-        run('chmod 644 /home/%s/.ssh/authorized_keys' % env.deploy_user)
-        run('chmod -R 700 /home/%s/.ssh/keys' % env.deploy_user)
-        #run('chown -R %s.%s /home/%s' % (env.deploy_user, env.deploy_group, env.deploy_user))
+    if as_root:
+        sudo('chmod 700 /home/%s/.ssh' % env.deploy_user)
+        sudo('chmod 644 /home/%s/.ssh/authorized_keys' % env.deploy_user)
+        sudo('chmod -R 700 /home/%s/.ssh/keys' % env.deploy_user)
+    else:
+        with settings(user=env.deploy_user):
+            run('chmod 700 /home/%s/.ssh' % env.deploy_user)
+            run('chmod 644 /home/%s/.ssh/authorized_keys' % env.deploy_user)
+            run('chmod -R 700 /home/%s/.ssh/keys' % env.deploy_user)
+            #run('chown -R %s.%s /home/%s' % (env.deploy_user, env.deploy_group, env.deploy_user))
 
 def add_new_ssh_key_as_string(ssh_public_key_string, name):
     """
@@ -827,7 +903,7 @@ def rebuild_authorized_keys():
         run('rm tmpfile')
 
 config = configparser.ConfigParser()
+w_counter = 0
 default_settings_file_path = 'settings/defaults.ini' #path to where app is looking for settings.ini
 define_default_env(default_settings_file_path) # load default settings
-time = timestamp()
-env.remote_project_name = '%s-%s' % (env.project_name,time)
+

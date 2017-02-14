@@ -6,14 +6,14 @@ This guide will define the fabric functions and show you how to use fabric to Pa
 
 ## Command definitions - Public Commands  
 
-    add_ssh_key(path, name)
-path: the path to the file with the public key. name: the name of the user this key is tied to. This command is used to add a public key to the deploy user's list of keys. The added key should be named, in order to keep track of its user. The key must be a pub file. The list of available keys is then recreated. If any keys were removed from the deploy users ssh directory, they will no longer work for ssh.  
 
-    backup_database()
+`add_ssh_key(path, name)`  
+path: the path to the file with the public key. name: the name of the user this key is tied to. This command is used to add a public key to the deploy user's list of keys. The added key should be named, in order to keep track of its user. The key must be a pub file. The list of available keys is then recreated. If any keys were removed from the deploy users ssh directory, they will no longer work for ssh.
+
+`backup_database()`  
 Create a backup mysql database from the remote host. The backup is also stored on the remote host (in the /home/<user>/ directory). The backup file will be time stamped with a name like 'redcap-dump-20170126T1620.sql' The latest backup file will be linked to name 'redcap-dump-latest.sql'.
 
-    clean(builddir)  
-
+`clean(builddir)`  
 Delete the local build directory in order to avoid duplicates or any complications when creating a new redcap build. Builddir defualts to "build".
 
 `delete_all_tables(confirm)`  

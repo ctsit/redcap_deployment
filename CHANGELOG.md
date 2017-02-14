@@ -2,6 +2,30 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.0] - 2017-02-13
+### Added
+- Add support for configurable language module deployment (Philip Chase)
+- Add redcap-custom-dashboard plugin (Philip Chase)
+
+### Changed
+- Add state for write_remote_my_cnf and delete_remote_my_cnf functions (Sreeja Kannagundla)
+- Write the instance name into the backup file name in backup_database (Philip Chase)
+- Run tests from fabric during upgrade, deploy and as a standalone method (Philip Chase, Sreeja Kannagundla)
+- Compress database backups to reduce storage and write time (Philip Chase)
+- Require a configuration switch to deploy REDCap cron (Philip Chase)
+- Look for 'Create New Project' in testRedcapRootFolder to determine if we are logged in (Philip Chase)
+
+
+## [0.7.0] - 2017-02-02
+### Added
+- Packaging, deployment, upgrade and backup tools based on the Python Fabric API (Sreeja KannaGundla, Stewart Wehmeyer, Philip Chase)
+- Deployed REDCap Instance testing based on PyUnit (Philip Chase)
+- Add Expected Upgrade Workflow (Philip Chase)
+
+### Changed
+- Update README for focus on packaged deployment (Philip Chase)
+
+
 ## [0.6.1] - 2016-08-15
 ### Changed
 - Replace patching of default-ssl.conf with warning if there is no line to include ssl-includes/ (Philip Chase)

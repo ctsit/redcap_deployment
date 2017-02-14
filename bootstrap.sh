@@ -55,7 +55,9 @@ apt-get install -y php-pear php5-curl
 log "Prep the /var/www file system"
 if [ -d /var/www/redcap ]; then
     rm -rf /var/www/redcap
-elif [[ -e /var/www/redcap ]]; then
+fi
+
+if [ -L /var/www/redcap ]; then
     rm /var/www/redcap
 fi
 
