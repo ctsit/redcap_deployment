@@ -512,6 +512,8 @@ def upload_package_and_extract(name):
             if run('test -d %s/webtools2/pdf/font/unifont' % env.upload_target_backup_dir).succeeded:
                 run('chmod ug+w %s/webtools2/pdf/font/unifont/*' % env.upload_target_backup_dir)
         run('rsync -rc %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
+        # make sure the temp file directory in redcap web space will be writeable
+        run('chmod g+w %s/temp' % env.upload_target_backup_dir)
         # Remove the temp directories
         run('rm -rf %s %s' % (temp1, temp2))
 
@@ -558,9 +560,8 @@ def get_current_redcap_version():
 def apply_incremental_db_changes(old, new):
     '''
     Upgrade the database from the <old> REDCap version to the <new> version.
-
-    Applying the needed upgrade_M.NN.OO.sql and upgrade_M.NN.OO.ph files in
-    sequence. The arguments old and new must be version numbers (i.e., 6.11.5)
+    Done by applying the needed upgrade_M.NN.OO.sql and upgrade_M.NN.OO.php
+    files in sequence. The arguments old and new must be version numbers (i.e., 6.11.5)
     '''
     old = convert_version_to_int(old)
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
