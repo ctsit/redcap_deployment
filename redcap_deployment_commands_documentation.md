@@ -68,4 +68,3 @@ name: name of the tgz package of the REDCap software of the version of choice.
 `vagrant()`  
 * Declare a development instance. It specifies vagrant.ini to be used as the settings file. This is the same as calling instance(vagrant).
 
-Declare a vagrant instance. It specifies that the settings file used will be vagrant.ini.
