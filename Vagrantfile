@@ -29,6 +29,11 @@ Vagrant.configure(2) do |config|
     group: "www-data",
     mount_options: ["dmode=775,fmode=664"]
 
+  config.vm.synced_folder ".", "/vagrant",
+    owner: "vagrant",
+    group: "www-data",
+    mount_options: ["dmode=775,fmode=664"]
+
   config.vm.provider "virtualbox" do |vb|
     # vb.memory = "1024"
     # Get virtual box name vagrant env plugin
