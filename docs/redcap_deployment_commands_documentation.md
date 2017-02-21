@@ -1,4 +1,4 @@
-# How to Deploy or Upgrade REDCap
+# REDCap Deployment Tools
 
 This guide will define the fabric functions and show you how to use fabric to Package, Deploy or Upgrade REDCap.
 
