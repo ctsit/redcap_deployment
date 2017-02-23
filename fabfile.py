@@ -47,150 +47,26 @@ from datetime import datetime
 import configparser, string, random, os
 from tempfile import mkstemp
 import re
-import json
 import fnmatch
 import server_setup
-
-def make_builddir(builddir="build"):
-    '''
-    Create the local build directory.
-    '''
-
-    with settings(warn_only=True):
-        if local("test -e %s" % builddir).failed:
-            local("mkdir %s" % builddir)
-        else:
-            print ("Directory %s already exists!" % builddir)
-
-@task
-def clean(builddir="build"):
-    '''
-    Clean the local build directory.
-    '''
-    local("rm -rf %s" % builddir)
-
-def latest_redcap(sourcedir="."):
-    env.latest_redcap = local("ls %s/redcap*.zip | grep 'redcap[0-9]\{1,2\}\.[0-9]\{1,2\}\.[0-9]\{1,2\}\.zip' | sort -n | tail -n 1" % sourcedir, capture=True).stdout
-    return (env.latest_redcap)
-
-def extract_redcap(redcap_zip="."):
-    print (redcap_zip)
-    #TODO determine if redcap_zip is a RC.zip or a path
-    with settings(warn_only=True):
-        if local("test -d %s" % redcap_zip).succeeded:
-            redcap_path = latest_redcap(redcap_zip)
-        elif local("test -e %s" % redcap_zip).succeeded:
-            redcap_path = redcap_zip
-        else:
-            abort("The redcap version specified is neither a zip file nor a path.")
-    print (redcap_path)
-    match = re.search(r"(redcap)(\d+.\d+.\d+)(|_upgrade)(.zip)", redcap_path)
-    print(match.group(2))
-    env.redcap_version = match.group(2)
-    redcap_version_and_package_type = match.group(2) + match.group(3)
-    local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
-    return(redcap_version_and_package_type)
-
-
-def deploy_hooks_framework_into_build_space(target_within_build_space="redcap/hooks/"):
-    """
-    Deploy UF's REDCap hooks framework
-    """
-    # make sure the target directory exists
-    source_dir = env.hook_framework_deployment_source
-    this_target ='/'.join([env.builddir, target_within_build_space])
-    deploy_extension_to_build_space(source_dir, this_target)
-
-
-def deploy_hooks_into_build_space(target_within_build_space="redcap/hooks/library"):
-    """
-    Deploy each extension into build space by running its own deploy.sh.
-    Lacking a deploy.sh, copy the extension files to the build space.
-    For each extension run test.sh if it exists.
-    """
-    # make sure the target directory exists
-    extension_dir_in_build_space='/'.join([env.builddir, target_within_build_space])
-    with settings(warn_only=True):
-        if local("test -d %s" % extension_dir_in_build_space).failed:
-            local("mkdir -p %s" % extension_dir_in_build_space)
-
-    # For each type of hook, make the target directory and deploy its children
-    for hooktype in os.listdir(env.hooks_deployment_source):
-        # make the target directory
-        hooktype_fp_in_src = '/'.join([env.hooks_deployment_source, hooktype])
-        if os.path.isdir(hooktype_fp_in_src):
-            # file is a hook type
-            hooktype_fp_in_target = '/'.join([extension_dir_in_build_space, hooktype])
-            if not os.path.exists(hooktype_fp_in_target):
-                os.mkdir(hooktype_fp_in_target)
-
-            # locate every directory in the source that matches the pattern hooks_deployment_source/<hooktype>/*
-            for hook in os.listdir(hooktype_fp_in_src):
-                hook_fp_in_src = '/'.join([hooktype_fp_in_src,hook])
-                if os.path.isdir(hook_fp_in_src):
-                    deploy_extension_to_build_space(hook_fp_in_src, hooktype_fp_in_target)
-
-def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins"):
-    """
-    Deploy each extension into build space by running its own deploy.sh.
-    Lacking a deploy.sh, copy the extension files to the build space.
-    For each extension run test.sh if it exists.
-    """
-    # make sure the target directory exists
-    extension_dir_in_build_space=env.builddir + target_within_build_space
-    with settings(warn_only=True):
-        if local("test -d %s" % extension_dir_in_build_space).failed:
-            local("mkdir -p %s" % extension_dir_in_build_space)
-
-    # locate every directory plugins_deployment_source/*
-    for (dirpath, dirnames, filenames) in os.walk(env.plugins_deployment_source):
-        for dir in dirnames:
-            source_dir = '/'.join([dirpath,dir])
-            this_target = os.path.join(extension_dir_in_build_space, dir)
-            deploy_extension_to_build_space(source_dir, this_target)
-
-def deploy_extension_to_build_space(source_dir="", build_target=""):
-    if not os.path.exists(build_target):
-        os.mkdir(build_target)
-
-    # run the deployment script
-    this_deploy_script = os.path.join(source_dir,'deploy.sh')
-    if os.path.isfile(this_deploy_script):
-        local("bash %s %s" % (this_deploy_script, build_target))
-    else:
-        # copy files to target
-        local("cp %s/* %s" % (source_dir, build_target))
-
-    # run test deployment script
-    this_test_script = os.path.join(source_dir,'test.sh')
-    if os.path.isfile(this_test_script):
-        local("bash %s " % this_test_script)
-
-
-def deploy_language_to_build_space():
-    target_dir = env.builddir + "/redcap/languages/"
-    for language in json.loads(env.languages):
-        if os.path.exists(language):
-            local("mkdir -p %s" % target_dir)
-            local('cp %s %s' % (language, target_dir))
-        else:
-            abort("the language file %s does not exist" % language)
+import package
 
 
 def write_my_cnf():
     _, file = mkstemp()
     f = open(file, 'w')
-    f.write("[mysqldump]" +"\n")
-    f.write("user=" + env.database_user +"\n")
-    f.write("password='" + env.database_password +"'\n")
-    f.write("" +"\n")
-    f.write("[client]" +"\n")
-    f.write("user=" + env.database_user +"\n")
-    f.write("password='" + env.database_password +"'\n")
-    f.write("database=" + env.database_name +"\n")
-    f.write("host=" + env.database_host +"\n")
+    f.write("[mysqldump]" + "\n")
+    f.write("user=" + env.database_user + "\n")
+    f.write("password='" + env.database_password + "'\n")
+    f.write("" + "\n")
+    f.write("[client]" + "\n")
+    f.write("user=" + env.database_user + "\n")
+    f.write("password='" + env.database_password + "'\n")
+    f.write("database=" + env.database_name + "\n")
+    f.write("host=" + env.database_host + "\n")
     f.close()
-    return(file)
+    return file
+
 
 @task
 def write_remote_my_cnf():
@@ -206,6 +82,7 @@ def write_remote_my_cnf():
     os.unlink(file)
     w_counter = w_counter+1
 
+
 @task
 def delete_remote_my_cnf():
     """
@@ -219,17 +96,19 @@ def delete_remote_my_cnf():
             if run("test -e %s" % my_cnf).succeeded:
                 run('rm -rf %s' % my_cnf)
 
+
 def timestamp():
-    return(datetime.now().strftime("%Y%m%dT%H%M%Z"))
+    return datetime.now().strftime("%Y%m%dT%H%M%Z")
+
 
 @task(alias='backup')
 def backup_database(options=""):
-    '''
+    """
     Backup a mysql database from the remote host with mysqldump options in *options*.
 
     The backup file will be time stamped with a name like 'redcap-<instance_name>-20170126T1620.sql.gz'
     The latest backup file will be linked to name 'redcap-<instance_name>-latest.sql.gz'
-    '''
+    """
     write_remote_my_cnf()
     now = timestamp()
     with settings(user=env.deploy_user):
@@ -240,32 +119,6 @@ def backup_database(options=""):
 
 ##########################
 
-@task
-def package(redcap_zip="."):
-    """
-    Create a REDCap package from a redcapM.N.O.zip or redcapM.N.O_upgrade.zip
-
-    The resulting file will be named redcap-M.N.O.tgz
-    """
-
-    # Build the app
-    clean(env.builddir)
-    make_builddir(env.builddir)
-    redcap_version_and_package_type = extract_redcap(redcap_zip)
-    deploy_plugins_into_build_space()
-    deploy_hooks_into_build_space()
-    deploy_hooks_framework_into_build_space()
-    deploy_language_to_build_space()
-    apply_patches()
-    add_db_upgrade_script()
-
-    # Get variables to tell us where to write the package
-    env.package_name = '%s-%s.tgz' % (env.project_name, redcap_version_and_package_type)
-    cwd = os.getcwd()
-    # create the package
-    local("cd %s && tar -cz --exclude='.DS_Store' \
-    -f %s/%s \
-    redcap" % (env.builddir, cwd, env.package_name))
 
 def update_redcap_connection(db_settings_file="database.php", salt="abc"):
     """
@@ -280,10 +133,11 @@ def update_redcap_connection(db_settings_file="database.php", salt="abc"):
         run('echo \'$password   = "%s";\' >> %s' % (env.database_password, redcap_database_settings_path))
         run('echo \'$salt   = "%s";\' >> %s' % (salt, redcap_database_settings_path))
 
+
 def create_database():
-    '''
+    """
     Create an empty database in MySQL dropping the existing database if need be.
-    '''
+    """
 
     # Only run on a local testing environment
     if not env.vagrant_instance:
@@ -314,9 +168,9 @@ def is_affirmative(response):
     """
 
     if  re.match("^(force|true|t|yes|y)$", response, re.IGNORECASE):
-        return(True)
+        return True
     else:
-        return(False)
+        return False
 
 
 @task
@@ -341,6 +195,7 @@ def set_redcap_base_url():
 
     set_redcap_config('redcap_base_url', env.url_of_deployed_app)
 
+
 def set_redcap_config(field_name="", value=""):
     """
     Update a single values in the redcap config table
@@ -348,12 +203,14 @@ def set_redcap_config(field_name="", value=""):
     with settings(user=env.deploy_user):
         run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
 
+
 def set_hook_functions_file():
     """
     Sets the hook_functions_file
     """
     value = '%s/%s' % (env.live_project_full_path,env.hooks_framework_path)
     set_redcap_config('hook_functions_file',value)
+
 
 def create_redcap_tables(resource_path = "Resources/sql"):
     """
@@ -371,7 +228,7 @@ def create_redcap_tables(resource_path = "Resources/sql"):
         run('mysql < %s/install_data.sql' % redcap_sql_dir)
         run('mysql -e "UPDATE %s.redcap_config SET value = \'%s\' WHERE field_name = \'redcap_version\' "' % (env.database_name, version))
 
-        files=run('ls -v1 %s/create_demo_db*.sql' % redcap_sql_dir)
+        files = run('ls -v1 %s/create_demo_db*.sql' % redcap_sql_dir)
         for file in files.splitlines():
             print("Executing sql file %s" % file)
             run('mysql < %s' % file)
@@ -391,19 +248,6 @@ def apply_sql_to_db(sql_file=""):
             if run('mysql < %s' % remote_sql_path).succeeded:
                 run('rm %s' % remote_sql_path)
             delete_remote_my_cnf()
-
-
-def apply_patches():
-    for repo in json.loads(env.patch_repos):
-        tempdir = local('mktemp -d 2>&1', capture = True)
-        local('git clone %s %s' % (repo,tempdir))
-        local('%s/deploy.sh %s/redcap %s' % (tempdir, env.builddir, env.redcap_version))
-        local('rm -rf %s' % tempdir)
-
-def add_db_upgrade_script():
-    target_dir = '/'.join([env.builddir, "redcap", "redcap_v%s" % env.redcap_version])
-    print target_dir
-    local('cp deploy/files/generate_upgrade_sql_from_php.php %s' % target_dir)
 
 
 def configure_redcap_cron(deploy=False, force_deployment_of_redcap_cron=False):
@@ -435,23 +279,24 @@ def move_edocs_folder():
 
 
 def extract_version_from_string(string):
-    '''
+    """
     extracts version number from string
-    '''
+    """
     match = re.search(r"(\d+\.\d+\.\d+)", string)
     version=match.group(1)
     return version
 
 ######################
 
+
 @task
 def upgrade(name):
-    '''
+    """
     Upgrade an existing redcap instance using the <name> package.
 
     This input file should be in the TGZ format
     as packaged by this fabfile
-    '''
+    """
 
     make_upload_target()
     copy_running_code_to_backup_dir()
@@ -465,32 +310,35 @@ def upgrade(name):
     online()
     delete_remote_my_cnf()
 
+
 def make_upload_target():
-    '''
+    """
     Make the directory from which new software will be deployed,
     e.g., /var/www.backup/redcap-20160117T1543/
-    '''
+    """
     env.upload_target_backup_dir = '/'.join([env.upload_project_full_path, env.remote_project_name])
     with settings(user=env.deploy_user):
         run("mkdir -p %(upload_target_backup_dir)s" % env)
 
+
 def copy_running_code_to_backup_dir():
-    '''
+    """
     Copy the running code e.g. /var/www/redcap/* to the directory from which the
     the new software will be deployed, e.g., /var/www.backup/redcap-20160117T1543/.
     This will allow the new software to be overlain on the old software without
     risk of corrupting the old software.
-    '''
+    """
     with settings(user=env.deploy_user):
         with settings(warn_only=True):
             if run("test -e %(live_project_full_path)s/cron.php" % env).succeeded:
                 run("cp -r -P %(live_project_full_path)s/* %(upload_target_backup_dir)s" % env)
 
+
 def upload_package_and_extract(name):
-    '''
+    """
     Upload the redcap package and extract it into the directory from which new
     software will be deployed, e.g., /var/www.backup/redcap-20160117T1543/
-    '''
+    """
     # NOTE: run as $ fab <env> package make_upload_target upe ...necessary env
     # variables are set by package and make_upload_target funcitons
     with settings(user=env.deploy_user):
@@ -510,13 +358,15 @@ def upload_package_and_extract(name):
         # Remove the temp directories
         run('rm -rf %s %s' % (temp1, temp2))
 
+
 @task
 def offline():
-    '''
+    """
     Take REDCap offline
-    '''
+    """
 
     change_online_status('Offline')
+
 
 def move_software_to_live():
     '''Replace the symbolic link to the old code with symbolic link to new code.'''
@@ -533,6 +383,7 @@ def move_software_to_live():
         # now switch the new code to live
         run('ln -s %s %s' % (env.upload_target_backup_dir,env.live_project_full_path))
 
+
 def convert_version_to_int(version):
     """
     Convert a redcap version number to integer
@@ -542,21 +393,22 @@ def convert_version_to_int(version):
 
 
 def get_current_redcap_version():
-    '''
+    """
     gets the current redcap version from database
-    '''
+    """
     with settings(user=env.deploy_user):
         with hide('output'):
             current_version = run('mysql -s -N -e "SELECT value from redcap_config WHERE field_name=\'redcap_version\'"')
     return current_version
 
+
 def apply_incremental_db_changes(old, new):
-    '''
+    """
     Upgrade the database from the <old> REDCap version to the <new> version.
 
     Applying the needed upgrade_M.NN.OO.sql and upgrade_M.NN.OO.ph files in
     sequence. The arguments old and new must be version numbers (i.e., 6.11.5)
-    '''
+    """
     old = convert_version_to_int(old)
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
     with settings(user=env.deploy_user):
@@ -580,18 +432,20 @@ def apply_incremental_db_changes(old, new):
     set_redcap_config('redcap_last_install_date', datetime.now().strftime("%Y-%m-%d"))
     set_redcap_config('redcap_version', new)
 
+
 @task
 def online():
-    '''
+    """
     Put REDCap back online
-    '''
+    """
 
     change_online_status('Online')
 
+
 def change_online_status(state):
-    '''
+    """
     Set the online/offline status with <state>.
-    '''
+    """
 
     with settings(user=env.deploy_user):
         if state == "Online":
@@ -624,6 +478,7 @@ def test():
 
 def get_config(key, section="instance"):
     return config.get(section, key)
+
 
 def define_default_env(settings_file_path="settings/defaults.ini"):
     """
@@ -673,6 +528,7 @@ def define_env(settings_file_path=""):
     env.hosts = [get_config('host')]
     env.port = get_config('host_ssh_port')
 
+
 @task(alias='dev')
 def vagrant():
     """
@@ -688,12 +544,14 @@ def stage():
     """
     instance('stage')
 
+
 @task
 def prod():
     """
     Set up deployment for production server
     """
     instance('prod')
+
 
 @task
 def instance(name = ""):
@@ -709,6 +567,7 @@ def instance(name = ""):
     else:
         env.vagrant_instance = False
     define_env(settings_file_path)
+
 
 @task
 def deploy(name,force=""):
