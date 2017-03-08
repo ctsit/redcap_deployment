@@ -1,17 +1,9 @@
 # Things Fabric must do to provide the functionality we need for REDCap packaging, deployment, and upgrade.
 
-## Things we must do before using this on prod
-
-* Write settings/prod.ini
-* Curate configuration for staging and prod.
-
-
 ## Things we should do soon:
 
-* Improve the first doc string so 'fab --list' is *very* helpful.
-* Write a markdown file describing the fab tools and how they should be used for development, packaging, and deployments.
+* Curate configuration for staging and prod.
 * Replace the bootstrap.sh redcap deployment with fabric packaging and deployment and remove the related dead code.
-* Add the new and updated plugins for our customers.
 
 
 ## Things we would like Fabric to do but might delay
