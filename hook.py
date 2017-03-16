@@ -33,7 +33,7 @@ def activate(hook_function, hook_name, redcap_root, pid):
     if not hook_function in valid_hook_functions:
         print ("Hook_function parameter not recognized. Please choose from " + str(valid_hook_functions))
         abort("Try again with a valid hook function.")
-    if not re.match('\.php$', hook_name):
+    if not re.match('.*\.php$', hook_name):
         hook_name = hook_name + '.php'
     hook_source_path = "/".join([redcap_root, env.hooks_library_path, hook_function, hook_name])
     with settings(warn_only=True):
@@ -51,14 +51,20 @@ def activate(hook_function, hook_name, redcap_root, pid):
 
 
 @task
-def test_hook(hook_function, hook_path):
+def test(hook_function, hook_path):
     """
-    Symbolically link a host file that contains a redcap hook into the hooks library space and activate that hook globally  
+    Symbolically link a host file that contains a redcap hook into the hooks library space and activate that hook globally
 
     :param hook_function: one of the 13 named REDCap 'hook functions'
     :param hook_path: path to hook file relative to VagrantFile
     :return:
     """
+    if not os.path.exists(hook_path):
+        abort("The file %s does not exist.  Please provide a relative path to a hook you would like to test in the local vm" % hook_path)
+    hook_name = hook_path.rsplit('/').pop()
+    redcap_root = env.live_project_full_path
+    hook_source_path = "/vagrant/" + hook_path
+    hook_target_folder = "/".join([redcap_root, env.hooks_library_path, hook_function])
 
-    # Create symbolic links in the VM to make the file at /vagrant/hook_path appear at "redcap/hooks/library"/`hook_function`/hook_name.php
-    # run activate_hook(hook_function, "redcap/hooks/library"/`hook_function`/hook_name.php)
+    run("ln -sf %s %s" % (hook_source_path, hook_target_folder))
+    activate(hook_function, hook_name, redcap_root, "")

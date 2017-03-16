@@ -10,6 +10,4 @@
 
 * make_twilio_features_visible - see redcap\_deployment\_functions.sh
 * Read remote database.php to get credentials for DB operations.
-* Make required directories for hook deployment - deployment_functions.sh and docs/deprecated/README-hooks.md
-* Create sym links for hooks to be executed - deployment_functions.sh
 * move '    sudo("mkdir -p %s" % env.edoc_path)' out of setup webspace as it is too specific to redcap.

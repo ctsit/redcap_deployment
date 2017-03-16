@@ -101,7 +101,7 @@ def online():
     """
 
     upgrade.online()
-    
+
 
 @task
 def activate_hook(hook_function="", hook_name="", pid=""):
@@ -118,6 +118,17 @@ def activate_hook(hook_function="", hook_name="", pid=""):
     redcap_root = env.live_project_full_path
     hook.activate(hook_function, hook_name, redcap_root, pid)
 
+
+@task
+def test_hook(hook_function="", hook_path=""):
+    """
+    Symbolically link a host file that contains a redcap hook into the hooks library space and activate that hook globally
+
+    :param hook_function: one of the 13 named REDCap 'hook functions'
+    :param hook_path: path to hook file relative to VagrantFile
+    :return:
+    """
+    hook.test(hook_function, hook_path)
 
 @task
 def test(warn_only=False):
