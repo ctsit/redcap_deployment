@@ -2,6 +2,18 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.1] - 2017-03-17
+### Added
+- Add documentation about the fabric tools in README.md and ./docs/ (Stewart Wehmeyer, Philip Chase)
+
+### Changed
+- Refactor upgrade, deployment, packaging and utility and utility_redcap tasks into their own modules (Sreeja)
+- Make the /vagrant folder in the VM accessible to the web server (Philip Chase)
+- Change source repo for redcap-custom-dashboard (Philip Chase)
+- Make redcap temp space writeable in upload_package_and_extract (Philip Chase)
+- Turn deploy_redcap_cron into a boolean to assure cron will not inadvertently deploy (Philip Chase)
+
+
 ## [0.8.0] - 2017-02-13
 ### Added
 - Add support for configurable language module deployment (Philip Chase)
