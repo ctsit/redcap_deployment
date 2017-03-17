@@ -35,19 +35,24 @@ def activate(hook_function, hook_name, redcap_root, pid):
         abort("Try again with a valid hook function.")
     if not re.match('.*\.php$', hook_name):
         hook_name = hook_name + '.php'
-    hook_source_path = "/".join([redcap_root, env.hooks_library_path, hook_function, hook_name])
-    with settings(warn_only=True):
-        if run(" test -e %s" % hook_source_path).failed:
-            abort("Check your parameters. The hook was not found at %s" % hook_source_path)
+    hook_source_path = "/".join([env.hooks_library_path, hook_function, hook_name])
+
     hooks_dir = "/".join(env.hooks_framework_path.rsplit('/')[:-1])
     if len(pid)==0:
-        hook_target_folder = "/".join([redcap_root, hooks_dir, hook_function])
+        hook_source_relative_path = "/".join(['..', env.hooks_library_path.rsplit('/').pop(), hook_function, hook_name])
+        hook_target_folder = "/".join([hooks_dir, hook_function])
     elif re.match('^[0-9]+$', pid):
-        hook_target_folder = "/".join([redcap_root, hooks_dir, 'pid'+pid, hook_function])
+        hook_source_relative_path = "/".join(['..', '..', env.hooks_library_path.rsplit('/').pop(), hook_function, hook_name])
+        hook_target_folder = "/".join([hooks_dir, 'pid'+pid, hook_function])
     else:
         abort("pid must be a numeric REDCap project id. '%s' is not a valid pid" % pid)
-    run("mkdir -p %s" % hook_target_folder)
-    run("ln -sf %s %s" % (hook_source_path, hook_target_folder))
+
+    with cd("%s" % redcap_root):
+        with settings(warn_only=True):
+            if run(" test -e %s" % hook_source_path).failed:
+                abort("Check your parameters. The hook was not found at %s" % hook_source_path)
+        run("mkdir -p %s" % hook_target_folder)
+        run("ln -sf %s %s" % (hook_source_relative_path, hook_target_folder))
 
 
 @task
