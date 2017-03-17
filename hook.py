@@ -66,5 +66,6 @@ def test(hook_function, hook_path):
     hook_source_path = "/vagrant/" + hook_path
     hook_target_folder = "/".join([redcap_root, env.hooks_library_path, hook_function])
 
+    run("mkdir -p %s" % hook_target_folder)
     run("ln -sf %s %s" % (hook_source_path, hook_target_folder))
     activate(hook_function, hook_name, redcap_root, "")
