@@ -2,6 +2,15 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.0] - 2017-03-17
+### Added
+- Add the hook.py module with activate and test methods (Stewart Wehmeyer, Philip Chase)
+
+### Changed
+- Configure apache to follow symbolic links to simplify use and testing of hook framework (Philip Chase)
+- Switch hook framework to a different fork, https://github.com/pbchase/extensible-redcap-hooks.git (Philip Chase)
+
+
 ## [0.8.1] - 2017-03-17
 ### Added
 - Add documentation about the fabric tools in README.md and ./docs/ (Stewart Wehmeyer, Philip Chase)
