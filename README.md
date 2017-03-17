@@ -84,14 +84,22 @@ With the above requirements and configuration completed, start the VM with the c
 After about two minutes, the VM should be accessible at the value you set for _URL\_OF\_DEPLOYED\_APP_ is set to in _.env_  By default this is [http://redcap.dev/redcap/](http://redcap.dev/redcap/)
 
 
-## Hook and Plugin Deployment
+## (Re)deploying REDCap with Fabric Tools
 
-The VM provisioning scripts will automatically deploy all hooks and plugins described in the sub directories of ./deploy/hooks, ./deploy/hook-framework, and ./deploy/plugins as long as those extensions comply with the specification defined in ./docs/redcap_extension_deployment_specification.md
+In addition to the REDCap deployed by the Vagrant provisioning scripts, this repository includes a suite of deployment and upgrade tools that can configure a host for deployment, package REDCap with numerous extensions, deploy a new REDCap instance and upgrade an existing one.  You can use these commands any host where you have sufficient privileges or against this vagrant-deployed VM.  If you had a REDCap zip file, say redcap7.2.2.zip, you could deploy it to the local Vagrant REDCap instance with these commands:
 
+    fab vagrant setup_server
+    fab vagrant package:redcap7.2.2.zip
+    fab vagrant delete_all_tables deploy:redcap-7.2.2.tgz
 
-## Hook and Plugin Development
+Any upgrade to 7.3.0 would be as simple as
 
-The directories of deployed hooks and plugins are accessible from the host computer in this project directory at ./www/redcap/hooks and ./www/redcap/plugins.  Indeed, the entire deployed REDCap code base is accessible.  This allows the deployed code base to be modified on the fly. Use the aid development and expermentation, but beware that these files will be erased if you destroy the VM.
+    fab vagrant package:redcap7.3.0_upgrade.zip
+    fab vagrant upgrade:redcap-7.3.0_upgrade.tgz
+
+If the tests fail and the server is offline, you can put it back online with
+
+    fab vagrant online
 
 
 ## Contributions

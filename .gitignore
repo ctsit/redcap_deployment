@@ -7,5 +7,3 @@ redcap/
 build
 *.pyc
 .idea
-www/*
-!www/dummy
