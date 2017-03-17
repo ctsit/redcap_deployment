@@ -26,7 +26,7 @@ You must name the hook_function and the filename of the hook.  The .php extensio
 
 ## Developing and Testing Hooks
 
-If you are developing a hook you can easily test it within a local REDCap instance by using the test\_hook task. It's not strictly required, but strongly recommended that the hook by placed in a new subdirectory of this redcap\_deployment repository. This makes it easier to version control the hook separately from the redcap\_deployment repo.
+If you are developing a hook you can easily test it within a local REDCap instance by using the test\_hook task. It's not strictly required, but strongly recommended that the hook be placed in a new subdirectory of this redcap\_deployment repository. This makes it easier to version control the hook separately from the redcap\_deployment repo.
 
 This series of commands will get you started on a new hook.
 
