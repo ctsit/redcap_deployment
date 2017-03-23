@@ -234,3 +234,14 @@ config = configparser.ConfigParser()
 default_settings_file_path = 'settings/defaults.ini'
 # load default settings
 define_default_env(default_settings_file_path)
+
+
+@task
+def copy(filepath):
+    """ just to test fabric put functionality for hooks -SW """
+    # Make sure the destination exists.
+    if('test -e /var/www/redcap/hooks'):
+        # Transfer our file to the destination.
+        put(filepath, '/var/www/redcap/hooks')
+
+
