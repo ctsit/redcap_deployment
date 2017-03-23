@@ -238,10 +238,26 @@ define_default_env(default_settings_file_path)
 
 @task
 def copy(filepath):
-    """ just to test fabric put functionality for hooks -SW """
+    """ 
+    Copy a local file from <filepath> to /var/www/redcap/hooks (on the remote).
+    To test fabric put functionality for hooks -SW 3/22/17
+    """
     # Make sure the destination exists.
     if('test -e /var/www/redcap/hooks'):
         # Transfer our file to the destination.
         put(filepath, '/var/www/redcap/hooks')
 
 
+@task
+def retrieve(remote_file, local_path="."):
+    """
+    Copy file from path <remote_file> to destination, <local_path>. Local path defaults to current directory.
+    For testing, pull hooks edited on the virtual machine -SW 3/23/17
+    """
+    # Make sure the remote file exists
+    if('test -e /var/www/redcap/hooks/%s' % remote_file):
+        # NOTE keyword args can only be followed by other keyword args, 
+        # and %s is done immediately after the string. 
+        get(remote_path='/var/www/redcap/hooks/%s' % remote_file, local_path=local_path)
+
+        
