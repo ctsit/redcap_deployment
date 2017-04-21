@@ -2,6 +2,15 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [0.9.1] - 2017-04-21
+### Added
+- Specify fields written in test_with_table_based_authentication.sql to support a broader range of REDCap versions including 7.2.x (Philip Chase)
+- Update project description in README (Philip Chase)
+- Switch extensible-redcap-hooks back to production repo (Philip Chase)
+- Add deployment script for modify_contact_admin_button (Philip Chase)
+
+
 ## [0.9.0] - 2017-03-17
 ### Added
 - Add the hook.py module with activate and test methods (Stewart Wehmeyer, Philip Chase)

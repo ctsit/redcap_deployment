@@ -8,11 +8,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # get source files
 TEMPDIR=`mktemp -d`
-git clone https://github.com/ctsit/extensible-redcap-hooks.git $TEMPDIR
+git clone ssh://git@ctsit-forge.ctsi.ufl.edu/modify_contact_admin_button.git $TEMPDIR
 
 # copy files to the correct target locations
 mkdir -p $MYTARGETDIR
-cp $TEMPDIR/redcap_hooks.php $MYTARGETDIR
-cp $TEMPDIR/README.md $MYTARGETDIR
+cp $TEMPDIR/modify_contact_admin_button.php $MYTARGETDIR
 
 rm -rf $TEMPDIR
