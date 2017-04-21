@@ -1,8 +1,8 @@
-# REDCap Deployment Scripts
+# REDCap Packaging and Deployment Toolset
 
 ## Overview
 
-This project provides tools for scripted deployments of REDCap instances and the extensions installed within them. The tools achieve this through scripted building of packages of the REDCap with extensions and scripted deployment of those packages to hosts. The goal of the project is to build packages rapidly and consistently across REDCap version numbers and deployed instances. This will reduce the cost of testing, the variability in test environments, and the costs of upgrading REDCap instances.
+This project provides tools for scripted deployments and upgrades of REDCap instances and the extensions installed within them. The toolset achieves this through scripted building of packages of the REDCap with extensions as well as the scripted deployment of those packages to hosts. The goal of the project is to provide a tool set that can build packages rapidly and consistently across REDCap version numbers and deploy those packages to new and existing REDCap instances. This will reduce the variability between development, testing, and production environments. This in turn will reduce the error rates, the cost of testing, and the costs of upgrading REDCap instances.
 
 Ancillary to this goal, this project provides a local REDCap instance that can be used as an educational REDCap tool and/or a software development test bed. You can use this project for any or all of these goals.
 
