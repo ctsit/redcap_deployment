@@ -50,6 +50,7 @@ import upgrade
 import utility
 import utility_redcap
 import hook
+import plugins
 
 @task(alias='backup')
 def backup_database(options=""):
@@ -129,6 +130,18 @@ def test_hook(hook_function="", hook_path=""):
     :return:
     """
     hook.test(hook_function, hook_path)
+
+
+@task
+def test_plugin(plugin_path=""):
+    """
+    Symbolically link a host file that contains a redcap plugin into the ./redcap/plugins folder
+
+    :param plugin_path: path to plugin folder relative to VagrantFile
+    :return:
+    """
+    plugins.test(plugin_path)
+
 
 @task
 def test(warn_only=False):
