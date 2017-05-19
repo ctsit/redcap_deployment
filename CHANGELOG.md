@@ -2,6 +2,12 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [1.0.1] - 2017-05-19
+### Added
+- Add DOI to README (Philip Chase)
+
+
 ## [1.0.0] - 2017-05-19
 ### Changed
 - Replace Vagrant-based REDCap deployment with Fabric-based deployment (Philip Chase)

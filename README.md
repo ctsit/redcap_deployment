@@ -1,5 +1,7 @@
 # REDCap Packaging and Deployment Toolset
 
+[![DOI](https://zenodo.org/badge/57070252.svg)](https://zenodo.org/badge/latestdoi/57070252)
+
 ## Overview
 
 This project provides tools for scripted deployments and upgrades of REDCap instances and the extensions installed within them. The toolset achieves this through scripted building of packages of the REDCap with extensions as well as the scripted deployment of those packages to hosts. The goal of the project is to provide a tool set that can build packages rapidly and consistently across REDCap version numbers and deploy those packages to new and existing REDCap instances. This reduces the variability between development, testing, and production environments. This in turn reduces the error rates, the cost of testing, and the costs of upgrading REDCap instances.
