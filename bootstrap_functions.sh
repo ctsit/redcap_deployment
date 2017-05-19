@@ -25,14 +25,7 @@ function install_utils() {
     apt-get install -y git vim ack-grep unzip \
         tree colordiff libxml2-utils xmlstarlet nmap
 
-    cp /vagrant/dot_files/bash_aliases  /home/vagrant/.bash_aliases
-    cp /vagrant/dot_files/bashrc        /home/vagrant/.bashrc
-    cp /vagrant/dot_files/vimrc         /home/vagrant/.vimrc
     chown -R vagrant.vagrant /home/vagrant
-
-    cp /vagrant/dot_files/bash_aliases  /root/.bash_aliases
-    cp /vagrant/dot_files/bashrc        /root/.bashrc
-    cp /vagrant/dot_files/vimrc         /root/.vimrc
 }
 
 function install_prereqs() {
