@@ -3,7 +3,6 @@
 ## Things we should do soon:
 
 * Curate configuration for staging and prod.
-* Replace the bootstrap.sh redcap deployment with fabric packaging and deployment and remove the related dead code.
 
 
 ## Things we would like Fabric to do but might delay

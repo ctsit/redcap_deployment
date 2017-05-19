@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project provides tools for scripted deployments and upgrades of REDCap instances and the extensions installed within them. The toolset achieves this through scripted building of packages of the REDCap with extensions as well as the scripted deployment of those packages to hosts. The goal of the project is to provide a tool set that can build packages rapidly and consistently across REDCap version numbers and deploy those packages to new and existing REDCap instances. This will reduce the variability between development, testing, and production environments. This in turn will reduce the error rates, the cost of testing, and the costs of upgrading REDCap instances.
+This project provides tools for scripted deployments and upgrades of REDCap instances and the extensions installed within them. The toolset achieves this through scripted building of packages of the REDCap with extensions as well as the scripted deployment of those packages to hosts. The goal of the project is to provide a tool set that can build packages rapidly and consistently across REDCap version numbers and deploy those packages to new and existing REDCap instances. This reduces the variability between development, testing, and production environments. This in turn reduces the error rates, the cost of testing, and the costs of upgrading REDCap instances.
 
 Ancillary to this goal, this project provides a local REDCap instance that can be used as an educational REDCap tool and/or a software development test bed. You can use this project for any or all of these goals.
 
@@ -17,11 +17,11 @@ root folder of this project. It should not be renamed.
 
 ### Virtual Machine
 
-This project provides a virtual machine wherein it hosts the local REDCap instance. Creating the virtual machine (VM) the software packages Vagrant, VirtualBox, the vagrant-hostsupdater plugin and the vagrant-env plugin be installed on the host system.
+This project provides a virtual machine wherein it hosts the local REDCap instance. Creating the virtual machine (VM) required the software packages Vagrant, VirtualBox, the vagrant-hostsupdater plugin and the vagrant-env plugin be installed on the host system.
 
 ### Packaging and Deployment
 
-The packaging and deployment tools are designed to deploy REDCap to Debian Linux hosts. They may or may not work with non-Debian REDCap hosts and cannot deploy REDCap to Windows hosts. The packaging and deployment tools written using the [Fabric](http://www.fabfile.org/) system. Fabric is written in Python, so both Python 2.7 and Fabric must be installed to do packaging and deployment.
+The packaging and deployment tools are designed to deploy REDCap to Debian Linux hosts. They may or may not work with non-Debian REDCap hosts.  They cannot deploy REDCap to Windows hosts. The packaging and deployment tools are written using the [Fabric](http://www.fabfile.org/) system. Fabric is written in Python, so both Python 2.7 and Fabric must be installed to do packaging and deployment.
 
 
 ## Installing dependencies
@@ -41,8 +41,8 @@ On a Mac OSX machine:
 On Mac OSX users using [Homebrew](http://brew.sh/) can install these packages
 using the _brew_ command.  Run these commands at a shell:
 
-    brew install virtualbox
-    brew install vagrant
+    brew cask install virtualbox
+    brew cask install vagrant
 
 
 ### Install Vagrant plugins
@@ -52,7 +52,7 @@ Vagrant will need a few plugins for this VM. On any platform, run these commands
     vagrant plugin install vagrant-hostsupdater
     vagrant plugin install vagrant-env
 
-Mac OSX users might enjoy the functionality of the vagrant-triggers plugin.  CTS-IT used it to open the Chrome browser to the just -deployed REDCap instance. Run this command at a shell to install it.
+Mac OSX users might enjoy the functionality of the vagrant-triggers plugin.  CTS-IT uses it to open the Chrome browser to the root of the web site. Run this command at a shell to install it.
 
     vagrant plugin install vagrant-triggers
 
@@ -61,9 +61,7 @@ For more details about Vagrant software you can go to [why-vagrant](https://docs
 
 ### Get your REDCap zip file
 
-You must provide a copy of the REDCap software from https://projectredcap.org/. Save the .zip file with its default name to the root of this repository. This ensures the packaging and provisioning scripts can locate the REDCap code when needed.
-
-If you put multiple redcap\*.zip files in the root folder, the provisioning script will default to using the one with the highest version number.
+You must provide a copy of the REDCap software from <https://projectredcap.org/>. Save the .zip file with its default name to the root of this repository. This ensures the packaging and provisioning scripts can locate the REDCap code when needed.
 
 
 ## Configure the Virtual Machine
@@ -81,16 +79,47 @@ With the above requirements and configuration completed, start the VM with the c
 
     vagrant up
 
-After about two minutes, the VM should be accessible at the value you set for _URL\_OF\_DEPLOYED\_APP_ is set to in _.env_  By default this is [http://redcap.dev/redcap/](http://redcap.dev/redcap/)
+The vagrant-hostsupdater plugin will make modifications to your hosts file as the VM starts.  If it prompts you for a password, provide the password you use to login to your computer.
+
+After about two minutes, the VM should be accessible at the value of the variable _URL\_OF\_DEPLOYED\_APP_ set in _.env_  By default this is [http://redcap.dev/redcap/](http://redcap.dev/redcap/)
 
 
 ## (Re)deploying REDCap with Fabric Tools
 
-In addition to the REDCap deployed by the Vagrant provisioning scripts, this repository includes a suite of deployment and upgrade tools that can configure a host for deployment, package REDCap with numerous extensions, deploy a new REDCap instance and upgrade an existing one.  You can use these commands any host where you have sufficient privileges or against this vagrant-deployed VM.  If you had a REDCap zip file, say redcap7.2.2.zip, you could deploy it to the local Vagrant REDCap instance with these commands:
+In addition to the REDCap deployed by the Vagrant provisioning scripts, this repository includes a suite of deployment and upgrade tools that can configure a host for deployment, package REDCap with numerous extensions, deploy a new REDCap instance and upgrade an existing one.  You can use these commands any host where you have sufficient privileges or against this vagrant-deployed VM.
 
-    fab vagrant setup_server
+### Fabric Prerequisites
+
+The Fabric tools require a few python libraries that might not be installed on your computer.  To install them run these commands:
+
+    pip install fabric
+    pip install configparser
+    pip install pycurl
+    pip install cryptography
+
+If you have problems install or using these libraries, you might be well-served to setup a Python _virtual environment_. For more information on that see [Virtual Environment Notes](docs/virtual_env_notes.md)
+
+
+### Configure Fabric for the Virtual Machine
+
+The Fabric tools need to be configured for the Vagrant VM before they can be used.
+Copy the file settings/example.vagrant.ini to the name settings/vagrant.ini customize it to your needs.
+
+    cp settings/example.vagrant.ini settings/vagrant.ini
+
+Customization is not _required_ but it is useful to add patches and language modules.
+
+
+### REDCap Deployment
+
+If you have a REDCap zip file, say redcap7.2.2.zip, you can deploy it to the local Vagrant REDCap instance with these commands:
+
+    fab vagrant server_setup
     fab vagrant package:redcap7.2.2.zip
     fab vagrant delete_all_tables deploy:redcap-7.2.2.tgz
+
+
+### REDCap upgrade
 
 Any upgrade to 7.3.0 would be as simple as
 

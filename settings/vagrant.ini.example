@@ -1,0 +1,57 @@
+# This file defines variables used by REDCap upgrade and deployment tools
+# written with the Fabric API. These tools are defined in the REDCap
+# Deployment fabfile.py. For documentation on how to use them see README.md.
+
+# The values provided here are approproate for use with the local development
+# instance provided in the REDCap Deployment software repository.
+
+[DEFAULT]
+project_name = redcap
+secret_key = AVeryLongRandomValueThisIsNotARandomValue
+database_root_user = root
+database_port = 3306
+builddir = build
+plugins_deployment_source= deploy/plugins
+hooks_deployment_source= deploy/hooks
+hook_framework_deployment_source=deploy/hook_framework
+hooks_library_path = hooks/library
+plugins_path = plugins
+pubkey_filename = ~/.ssh/id_rsa.pub
+deploy_redcap_cron = False
+patch_repos = []
+languages = []
+
+[instance]
+instance_name=vagrant
+user = vagrant
+database_root_password = 123
+database_name = redcap
+database_user = redcap
+database_password = password
+database_host = localhost
+deploy_user = vagrant
+deploy_group = www-data
+key_filename = .vagrant/machines/default/virtualbox/private_key
+host = redcap.dev
+host_ssh_port = 22
+admin_user = admin
+live_pre_path = /var/www
+backup_pre_path = /var/www.backup
+edoc_path = /var/edocs
+project_path = redcap
+salt = abc
+url_of_deployed_app = http://redcap.dev/redcap
+hooks_framework_path = hooks/redcap_hooks.php
+plugins_path = plugins
+deploy_redcap_cron = True
+
+# List the URL to git repos with patch files as quoted strings. Separate multiple repos with commas.  e.g.
+#   patch_repos = [ "git@ctsit-forge.ctsi.ufl.edu:redcap_security_settings.git",
+#                   "https://github.org/ctsit/some_cool_redcap_patch.git" ]
+# Each repo needs files BASH script named deploy.sh at the root that will install the patch into a unzipped REDCap installation
+patch_repos = [  ]
+
+
+# List REDCap language file names as quoted strings. Separate multiple language files with commas.  e.g.
+#   languages = [ "Chinese.6.4.3.ini", "German.ini" ]
+languages = [  ]

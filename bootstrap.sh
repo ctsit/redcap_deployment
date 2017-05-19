@@ -26,12 +26,8 @@ echo "Import environment variables from /vagrant/.env"
 # Indicate where the vagrant folder is mounted in the guest file system
 SHARED_FOLDER=/vagrant
 
-# Use the latest redcap*.zip file in $SHARED_FOLDER
-REDCAP_ZIP=`ls $SHARED_FOLDER/redcap*.zip | grep "redcap[0-9]\{1,2\}\.[0-9]\{1,2\}\.[0-9]\{1,2\}\.zip" | sort -n | tail -n 1`
-
 # import helper functions
 . $SHARED_FOLDER/bootstrap_functions.sh
-. $SHARED_FOLDER/redcap_deployment_functions.sh
 
 # Pick a fast mirror...or at least one that works
 log "Picking a fast mirror in the US..."
@@ -61,39 +57,14 @@ if [ -L /var/www/redcap ]; then
     rm /var/www/redcap
 fi
 
-# extract a standard REDCap zip file as downloaded from Vanderbilt.
-unzip -o -q $REDCAP_ZIP -d /var/www/
+mkdir /var/www/redcap
+cp /vagrant/files/prompt_to_install.html /var/www/redcap/index.html
 
-# adjust ownership so apache can write to the temp folders
-chown -R www-data.root $PATH_TO_APP_IN_GUEST_FILESYSTEM/edocs/
-chown -R www-data.root $PATH_TO_APP_IN_GUEST_FILESYSTEM/temp/
-
-REDCAP_VERSION_DETECTED=`ls $PATH_TO_APP_IN_GUEST_FILESYSTEM | grep redcap_v | cut -d 'v' -f2 | sort -n | tail -n 1`
-log "$REDCAP_ZIP content indicates REDCap version: $REDCAP_VERSION_DETECTED"
-
-# create the empty databases and update the cake configuration
+# create the empty databases
 create_database $DB $DB_APP_USER $DB_APP_PASSWORD $DB_HOST $DB_ROOT_PASS
-
-# Configure REDCap to use this database
-update_redcap_connection_settings $PATH_TO_APP_IN_GUEST_FILESYSTEM $DB $DB_APP_USER $DB_APP_PASSWORD $DB_HOST $SALT
 
 # make a config file for the mysql clients
 write_dot_mysql_dot_cnf $DB $DB_APP_USER $DB_APP_PASSWORD $DB_ROOT_PASS
 
-create_redcap_tables $DB $DB_APP_USER $DB_APP_PASSWORD $PATH_TO_APP_IN_GUEST_FILESYSTEM $REDCAP_VERSION_DETECTED
-
-configure_redcap
-configure_php_for_redcap
-configure_redcap_cron
-move_edocs_folder
-set_hook_functions_file
-make_twilio_features_visible
+# configure the mail server
 configure_exim4
-check_redcap_status
-
-# deploy extensions with developer settings
-
-export PATH_TO_APP_IN_GUEST_FILESYSTEM
-
-/vagrant/deploy_hooks.sh
-/vagrant/deploy_plugins.sh
