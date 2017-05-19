@@ -79,16 +79,47 @@ With the above requirements and configuration completed, start the VM with the c
 
     vagrant up
 
-After about two minutes, the VM should be accessible at the value you set for _URL\_OF\_DEPLOYED\_APP_ is set to in _.env_  By default this is [http://redcap.dev/redcap/](http://redcap.dev/redcap/)
+The vagrant-hostsupdater plugin will make modifications to your hosts file as the VM starts.  If it prompts you for a password, provide the password you use to login to your computer.
+
+After about two minutes, the VM should be accessible at the value of the variable _URL\_OF\_DEPLOYED\_APP_ set in _.env_  By default this is [http://redcap.dev/redcap/](http://redcap.dev/redcap/)
 
 
 ## (Re)deploying REDCap with Fabric Tools
 
-In addition to the REDCap deployed by the Vagrant provisioning scripts, this repository includes a suite of deployment and upgrade tools that can configure a host for deployment, package REDCap with numerous extensions, deploy a new REDCap instance and upgrade an existing one.  You can use these commands any host where you have sufficient privileges or against this vagrant-deployed VM.  If you had a REDCap zip file, say redcap7.2.2.zip, you could deploy it to the local Vagrant REDCap instance with these commands:
+In addition to the REDCap deployed by the Vagrant provisioning scripts, this repository includes a suite of deployment and upgrade tools that can configure a host for deployment, package REDCap with numerous extensions, deploy a new REDCap instance and upgrade an existing one.  You can use these commands any host where you have sufficient privileges or against this vagrant-deployed VM.
 
-    fab vagrant setup_server
+### Fabric Prerequisites
+
+The Fabric tools require a few python libraries that might not be installed on your computer.  To install them run these commands:
+
+    pip install fabric
+    pip install configparser
+    pip install pycurl
+    pip install cryptography
+
+If you have problems install or using these libraries, you might be well-served to setup a Python _virtual environment_. For more information on that see [Virtual Environment Notes](docs/virtual_env_notes.md)
+
+
+### Configure Fabric for the Virtual Machine
+
+The Fabric tools need to be configured for the Vagrant VM before they can be used.
+Copy the file settings/example.vagrant.ini to the name settings/vagrant.ini customize it to your needs.
+
+    cp settings/example.vagrant.ini settings/vagrant.ini
+
+Customization is not _required_ but it is useful to add patches and language modules.
+
+
+### REDCap Deployment
+
+If you have a REDCap zip file, say redcap7.2.2.zip, you can deploy it to the local Vagrant REDCap instance with these commands:
+
+    fab vagrant server_setup
     fab vagrant package:redcap7.2.2.zip
     fab vagrant delete_all_tables deploy:redcap-7.2.2.tgz
+
+
+### REDCap upgrade
 
 Any upgrade to 7.3.0 would be as simple as
 
