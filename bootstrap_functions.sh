@@ -89,7 +89,7 @@ END
 
     log "Link config files for apache port 443"
     find /etc/apache2/sites-* | xargs -i ls -l {}
-    cp /vagrant/apache-ssl.conf /etc/apache2/sites-available/default-ssl.conf
+    cp /vagrant/files/apache-ssl.conf /etc/apache2/sites-available/default-ssl.conf
     ln -sfv /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/apache-ssl.conf
 
     log "Link config files for apache port 80"
@@ -99,7 +99,7 @@ END
     OLD_APACHE_DEFAULT=/etc/apache2/sites-available/000-default.conf
     if [ -e $OLD_APACHE_DEFAULT ]; then rm $OLD_APACHE_DEFAULT; fi
 
-    cp /vagrant/apache-default.conf /etc/apache2/sites-available/000-default.conf
+    cp /vagrant/files/apache-default.conf /etc/apache2/sites-available/000-default.conf
     ln -sfv /etc/apache2/sites-available/000-default.conf  /etc/apache2/sites-enabled/000-default.conf
 
     log "Enable apache modules"
