@@ -2,6 +2,19 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.0] - 2017-05-19
+### Changed
+- Replace Vagrant-based REDCap deployment with Fabric-based deployment (Philip Chase)
+- Clean up files on the root of the project (Philip Chase)
+- Add test_plugin task to fabfile to test a plugin under development in the host OS (Philip Chase)
+- Moved settings/*.ini files to *.example
+
+### Added
+- Add Authors file (Philip Chase)
+
+### Removed
+- Remove old hooks, plugins, and config files (Philip Chase)
+
 
 ## [0.9.1] - 2017-04-21
 ### Added
