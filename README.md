@@ -41,8 +41,8 @@ On a Mac OSX machine:
 On Mac OSX users using [Homebrew](http://brew.sh/) can install these packages
 using the _brew_ command.  Run these commands at a shell:
 
-    brew install virtualbox
-    brew install vagrant
+    brew cask install virtualbox
+    brew cask install vagrant
 
 
 ### Install Vagrant plugins
@@ -61,7 +61,7 @@ For more details about Vagrant software you can go to [why-vagrant](https://docs
 
 ### Get your REDCap zip file
 
-You must provide a copy of the REDCap software from https://projectredcap.org/. Save the .zip file with its default name to the root of this repository. This ensures the packaging and provisioning scripts can locate the REDCap code when needed.
+You must provide a copy of the REDCap software from <https://projectredcap.org/>. Save the .zip file with its default name to the root of this repository. This ensures the packaging and provisioning scripts can locate the REDCap code when needed.
 
 If you put multiple redcap\*.zip files in the root folder, the provisioning script will default to using the one with the highest version number.
 
