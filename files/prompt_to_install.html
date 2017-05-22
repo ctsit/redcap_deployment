@@ -1,8 +1,13 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html>
 
 <head>
+
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>prompt_to_install</title>
+
+
 <style type="text/css">
 body {
   font-family: Helvetica, arial, sans-serif;
@@ -284,6 +289,21 @@ sup {
     vertical-align: super;
     line-height: 0;
 }
+
+kbd {
+  display: inline-block;
+  padding: 3px 5px;
+  font-size: 11px;
+  line-height: 10px;
+  color: #555;
+  vertical-align: middle;
+  background-color: #fcfcfc;
+  border: solid 1px #ccc;
+  border-bottom-color: #bbb;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #bbb
+}
+
 * {
 	-webkit-print-color-adjust: exact;
 }
@@ -302,8 +322,12 @@ sup {
 	}
 }
 </style>
+
+
 </head>
+
 <body>
+
 <h2 id="toc_0">Time to install REDCap!</h2>
 
 <p>Congratulations!  Your webserver is up.  It&#39;s time to install REDCap using the Fabric tools.</p>
@@ -312,10 +336,15 @@ sup {
 They show a sample deployment for REDCap 7.2.2. Change the export command to install
 the redcap zip you have copied into the root of the repository.</p>
 
-<pre><code class="language-none">export REDCAP_VERSION=7.2.2
+<div><pre><code class="language-none">export REDCAP_VERSION=7.2.2
+cp settings/vagrant.ini.example settings/vagrant.ini
 fab vagrant server_setup
 fab vagrant package:redcap$REDCAP_VERSION.zip
-fab vagrant delete_all_tables deploy:redcap-$REDCAP_VERSION.tgz</code></pre>
+fab vagrant delete_all_tables deploy:redcap-$REDCAP_VERSION.tgz</code></pre></div>
+
+<p>Once you are finished, reload this page and you will be taken to your instance of REDCap.</p>
+
+
 
 
 </body>
