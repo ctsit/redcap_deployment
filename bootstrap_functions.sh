@@ -25,14 +25,7 @@ function install_utils() {
     apt-get install -y git vim ack-grep unzip \
         tree colordiff libxml2-utils xmlstarlet nmap
 
-    cp /vagrant/dot_files/bash_aliases  /home/vagrant/.bash_aliases
-    cp /vagrant/dot_files/bashrc        /home/vagrant/.bashrc
-    cp /vagrant/dot_files/vimrc         /home/vagrant/.vimrc
     chown -R vagrant.vagrant /home/vagrant
-
-    cp /vagrant/dot_files/bash_aliases  /root/.bash_aliases
-    cp /vagrant/dot_files/bashrc        /root/.bashrc
-    cp /vagrant/dot_files/vimrc         /root/.vimrc
 }
 
 function install_prereqs() {
@@ -96,7 +89,7 @@ END
 
     log "Link config files for apache port 443"
     find /etc/apache2/sites-* | xargs -i ls -l {}
-    cp /vagrant/apache-ssl.conf /etc/apache2/sites-available/default-ssl.conf
+    cp /vagrant/files/apache-ssl.conf /etc/apache2/sites-available/default-ssl.conf
     ln -sfv /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/apache-ssl.conf
 
     log "Link config files for apache port 80"
@@ -106,7 +99,7 @@ END
     OLD_APACHE_DEFAULT=/etc/apache2/sites-available/000-default.conf
     if [ -e $OLD_APACHE_DEFAULT ]; then rm $OLD_APACHE_DEFAULT; fi
 
-    cp /vagrant/apache-default.conf /etc/apache2/sites-available/000-default.conf
+    cp /vagrant/files/apache-default.conf /etc/apache2/sites-available/000-default.conf
     ln -sfv /etc/apache2/sites-available/000-default.conf  /etc/apache2/sites-enabled/000-default.conf
 
     log "Enable apache modules"

@@ -7,3 +7,5 @@ redcap/
 build
 *.pyc
 .idea
+settings/*.ini
+v

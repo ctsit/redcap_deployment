@@ -50,6 +50,7 @@ import upgrade
 import utility
 import utility_redcap
 import hook
+import plugins
 
 @task(alias='backup')
 def backup_database(options=""):
@@ -129,6 +130,18 @@ def test_hook(hook_function="", hook_path=""):
     :return:
     """
     hook.test(hook_function, hook_path)
+
+
+@task
+def test_plugin(plugin_path=""):
+    """
+    Symbolically link a host file that contains a redcap plugin into the ./redcap/plugins folder
+
+    :param plugin_path: path to plugin folder relative to VagrantFile
+    :return:
+    """
+    plugins.test(plugin_path)
+
 
 @task
 def test(warn_only=False):
@@ -234,30 +247,3 @@ config = configparser.ConfigParser()
 default_settings_file_path = 'settings/defaults.ini'
 # load default settings
 define_default_env(default_settings_file_path)
-
-
-@task
-def copy(filepath):
-    """ 
-    Copy a local file from <filepath> to /var/www/redcap/hooks (on the remote).
-    To test fabric put functionality for hooks -SW 3/22/17
-    """
-    # Make sure the destination exists.
-    if('test -e /var/www/redcap/hooks'):
-        # Transfer our file to the destination.
-        put(filepath, '/var/www/redcap/hooks')
-
-
-@task
-def retrieve(remote_file, local_path="."):
-    """
-    Copy file from path <remote_file> to destination, <local_path>. Local path defaults to current directory.
-    For testing, pull hooks edited on the virtual machine -SW 3/23/17
-    """
-    # Make sure the remote file exists
-    if('test -e /var/www/redcap/hooks/%s' % remote_file):
-        # NOTE keyword args can only be followed by other keyword args, 
-        # and %s is done immediately after the string. 
-        get(remote_path='/var/www/redcap/hooks/%s' % remote_file, local_path=local_path)
-
-        
