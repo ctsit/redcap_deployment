@@ -130,16 +130,19 @@ def deploy_extension_to_build_space(source_dir="", build_target=""):
 def deploy_language_to_build_space():
     source_dir = env.languages
     target_dir = env.builddir + "/redcap/languages"
-    if  local('find %s/*.ini -maxdepth 1 -type f | wc -l' % source_dir, capture = True) != '0':
+
+    if re.match(r'^\[.+\]$', source_dir) is not None:
+        for language in json.loads(env.languages):
+            if os.path.exists(language):
+                local("mkdir -p %s" % target_dir)
+                local('cp %s %s' % (language, target_dir))
+            else:
+                abort("the language file %s does not exist" % language)
+    elif local('find %s/*.ini -maxdepth 1 -type f | wc -l' % source_dir, capture = True) != '0':
         if os.path.exists(source_dir) and os.path.exists(target_dir):
             local('find %s/*.ini -maxdepth 1 -type f -exec rsync {} %s \;' %(source_dir, target_dir))
-            #local('find %s/*.ini -maxdepth 1 -type f -exec cp {} %s \\' % source_dir)
-            #find myDir -name "*.html" -exec cp {} ~/otherDir \;
-            #local('cp %s %s' % (source_dir + "/*.ini", target_dir))
-        elif os.path.exists(source_dir):
-            abort("the languages folder %s does not exist" % target_dir)
-        else:
-            abort("the languages folder %s does not exist" % source_dir)
+    else:
+        print("Warning: The languages where not provided. English will be used by default.")
 
 def apply_patches():
     for repo in json.loads(env.patch_repos):
