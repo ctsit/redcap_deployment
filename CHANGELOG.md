@@ -3,6 +3,17 @@ All notable changes to the REDCap Deployment project will be documented in this 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [1.0.2] - 2017-05-25
+### Added
+- Add DOI to README (Philip Chase)
+
+### Removed
+- Remove the Condensed PDF Plugin because it is buggy and we have no funds to rewrite it (Philip Chase)
+
+### Changed
+- Revise instructions in prompt_to_install.md (Stewart Wehmeyer)
+
+
 ## [1.0.1] - 2017-05-19
 ### Added
 - Add DOI to README (Philip Chase)
