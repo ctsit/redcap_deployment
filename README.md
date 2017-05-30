@@ -105,9 +105,9 @@ If you have problems install or using these libraries, you might be well-served 
 ### Configure Fabric for the Virtual Machine
 
 The Fabric tools need to be configured for the Vagrant VM before they can be used.
-Copy the file settings/example.vagrant.ini to the name settings/vagrant.ini customize it to your needs.
+Copy the file settings/vagrant.ini.example to the name settings/vagrant.ini customize it to your needs.
 
-    cp settings/example.vagrant.ini settings/vagrant.ini
+    cp settings/vagrant.ini.example settings/vagrant.ini
 
 Customization is not _required_ but it is useful to add patches and language modules.
 
@@ -131,6 +131,12 @@ Any upgrade to 7.3.0 would be as simple as
 If the tests fail and the server is offline, you can put it back online with
 
     fab vagrant online
+
+## Language Configuration
+
+REDCap languages can be provided by modifying the _languages_ variable accordingly:
+as a json list, e.g., languages = ["Chinese.6.4.3.ini", "German.ini"], or
+as a file, i.e., languages = <languageFolder>, in which case the language files *.ini must be located inside the specified folder
 
 
 ## Contributions
