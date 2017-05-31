@@ -42,7 +42,12 @@ or database credentials will not be preserved.
 
 from fabric.api import *
 from fabric.utils import abort
-import configparser, string, random, os
+# import configparser, string, random, os
+try:
+    import configparser
+except:
+    from six.moves import configparser
+import string, random, os
 import server_setup
 import package
 import deploy
