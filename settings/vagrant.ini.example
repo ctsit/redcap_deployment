@@ -51,7 +51,7 @@ deploy_redcap_cron = True
 # Each repo needs files BASH script named deploy.sh at the root that will install the patch into a unzipped REDCap installation
 patch_repos = [  ]
 
-
-# List REDCap language file names as quoted strings. Separate multiple language files with commas.  e.g.
-#   languages = [ "Chinese.6.4.3.ini", "German.ini" ]
-languages = [  ]
+# REDCap languages can be provided by modifying the 'languages' variable accordingly:
+# as a json list, e.g., languages = ["Chinese.6.4.3.ini", "German.ini"], or
+# as a file, i.e., languages = <language_folder>, in which case the language files *.ini must be located inside the specified folder
+languages = languages

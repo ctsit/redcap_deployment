@@ -54,6 +54,7 @@ def apply_incremental_db_changes(old, new):
     files in sequence. The arguments old and new must be version numbers (i.e., 6.11.5)
     """
     old = utility.convert_version_to_int(old)
+    new_as_an_int = utility.convert_version_to_int(new)
     redcap_sql_dir = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'Resources/sql'])
     with settings(user=env.deploy_user):
         with hide('output'):
@@ -63,7 +64,7 @@ def apply_incremental_db_changes(old, new):
         match = re.search(r"(upgrade_)(\d+.\d+.\d+)(.)(php|sql)", file)
         version = match.group(2)
         version = utility.convert_version_to_int(version)
-        if version > old:
+        if version > old and version <= new_as_an_int:
             if fnmatch.fnmatch(file, "*.php"):
                 print (file + " is a php file!\n")
                 with settings(user=env.deploy_user):
