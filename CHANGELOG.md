@@ -2,6 +2,13 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0] - 2017-05-31
+### Added
+- Add documentation for language configuration (marlycormar)
+- Modify deploy_language_to_build_space function to allow either a list or a folder as a language configuration (marlycormar)
+
+### Changed
+- Don't load any database upgrade scripts with a version number higher than the version you are upgrading to (Philip Chase)
 
 ## [1.0.2] - 2017-05-25
 ### Added
