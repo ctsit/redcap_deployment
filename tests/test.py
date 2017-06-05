@@ -9,12 +9,13 @@ class Weburl():
     def __init__(self):
         self.URL = ""
 
-    def get(self, URL):
+    def get(self, URL, FOLLOWLOCATION = False):
         self.URL = URL
         buffer = StringIO()
         c = pycurl.Curl()
         c.setopt(c.URL, URL)
         c.setopt(c.WRITEDATA, buffer)
+        c.setopt(pycurl.FOLLOWLOCATION, FOLLOWLOCATION)
         c.perform()
         c.close()
         return buffer.getvalue().replace('\r\n', '').replace('\n', '')
