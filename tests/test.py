@@ -58,13 +58,19 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         expected_string = 'Please enter your access code to begin the survey'
         self.assertIn(expected_string, self.weburl.get(self.fullpath))
 
-    # Deactivate SendIt tests until its role in REDCap is better understood
-    # def testSendItFolder(self):
-    #     """Verify that we can access the REDCap SendIt/ folder"""
-    #     localpath = "SendIt/"
-    #     self.fullpath=self.redcap_root + self.redcap_version_path + localpath
-    #     expected_string = 'download.php'
-    #     self.assertIn(expected_string, self.weburl.get(self.fullpath))
+    def testSendItDownload(self):
+        """Verify that we can access the REDCap SendIt/download page"""
+        localpath = "SendIt/download.php?abcdef"
+        self.fullpath=self.redcap_root + self.redcap_version_path + localpath
+        expected_string = 'Send-It:'
+        self.assertIn(expected_string, self.weburl.get(self.fullpath))
+
+    def testRouteToSendItController(self):
+        """Verify the router can route us to SendIt Download"""
+        localpath = "index.php?route=SendItController:download&abcdef"
+        self.fullpath=self.redcap_root + self.redcap_version_path + localpath
+        expected_string = 'Send-It:'
+        self.assertIn(expected_string, self.weburl.get(self.fullpath, True))
 
     def testApiFolder(self):
         """Verify that we can access the REDCap api/ folder"""
