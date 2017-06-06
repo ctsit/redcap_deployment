@@ -42,7 +42,6 @@ or database credentials will not be preserved.
 
 from fabric.api import *
 from fabric.utils import abort
-# import configparser, string, random, os
 try:
     import configparser
 except:
