@@ -6,7 +6,7 @@
  * 11-May-2017
  **/
  
-#require_once "../../redcap_connect.php";
+#require_once "../../redcap_connect.php"; # non-UF setting -6/15/2017
 require_once("/var/www/redcap/redcap_connect.php");
 
 $hash = REDCap::escapeHtml($_REQUEST['hash']);
