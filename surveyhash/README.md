@@ -1,4 +1,5 @@
-# Surveyhash Plugin *Created by Luke Stevens*
+# Survey Hash Plugin *Created by Luke Stevens*
+#### Stewart Wehmeyer, UF CTS-IT
 
 ## Description
 
