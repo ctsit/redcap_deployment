@@ -2,8 +2,10 @@ from fabric.api import *
 from tempfile import mkstemp
 from datetime import datetime
 import os, re
-import configparser
-
+try:
+    import configparser
+except:
+    from six.moves import configparser
 
 __all__ = []
 
