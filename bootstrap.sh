@@ -35,7 +35,7 @@ apt-get install -y netselect-apt
 cd /etc/apt/
 netselect-apt -c US > ~/netselect-apt.log 2>&1
 
-# Incliding jessie branch of debian repository
+# Including jessie branch of debian repository
 echo "deb http://debian.gtisc.gatech.edu/debian/ jessie main contrib" > /etc/apt/sources.list
 echo "deb http://security.debian.org/ stable/updates main contrib" >> /etc/apt/sources.list
 
