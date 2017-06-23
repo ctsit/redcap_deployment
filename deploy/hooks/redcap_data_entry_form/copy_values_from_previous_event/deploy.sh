@@ -15,8 +15,6 @@ git clone ssh://git@ctsit-forge.ctsi.ufl.edu/linear_data_entry_workflow.git $TEM
 
 # copy files to the correct target locations
 mkdir -p $MYTARGETDIR
-cp $TEMPDIR/frsl_data_collection_instruments.php $MYTARGETDIR
-cp $TEMPDIR/frsl_record_home_page.php $MYTARGETDIR
-cp $TEMPDIR/frsl_dashboard.php $MYTARGETDIR
+cp $TEMPDIR/copy_values_from_previous_event.php $MYTARGETDIR
 
 rm -rf $TEMPDIR
