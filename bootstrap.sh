@@ -35,7 +35,7 @@ apt-get install -y netselect-apt
 cd /etc/apt/
 netselect-apt -c US > ~/netselect-apt.log 2>&1
 
-# Including jessie branch of debian repository
+# Setting oldstable debian repository
 echo "deb http://debian.gtisc.gatech.edu/debian/ oldstable main contrib" > /etc/apt/sources.list
 echo "deb-src http://debian.gtisc.gatech.edu/debian/ oldstable main contrib" >> /etc/apt/sources.list
 echo "deb http://security.debian.org/ oldstable/updates main contrib" >> /etc/apt/sources.list
