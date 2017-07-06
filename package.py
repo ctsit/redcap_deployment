@@ -73,20 +73,16 @@ def deploy_hooks_into_build_space(target_within_build_space="redcap/hooks/librar
             local("mkdir -p %s" % extension_dir_in_build_space)
 
     # For each type of hook, make the target directory and deploy its children
-    for hooktype in os.listdir(env.hooks_deployment_source):
+    for feature in os.listdir(env.hooks_deployment_source):
         # make the target directory
-        hooktype_fp_in_src = '/'.join([env.hooks_deployment_source, hooktype])
-        if os.path.isdir(hooktype_fp_in_src):
+        feature_fp_in_src = '/'.join([env.hooks_deployment_source, feature])
+        if os.path.isdir(feature_fp_in_src):
             # file is a hook type
-            hooktype_fp_in_target = '/'.join([extension_dir_in_build_space, hooktype])
-            if not os.path.exists(hooktype_fp_in_target):
-                os.mkdir(hooktype_fp_in_target)
+            feature_fp_in_target = extension_dir_in_build_space
+            if not os.path.exists(feature_fp_in_target):
+                os.mkdir(feature_fp_in_target)
 
-            # locate every directory in the source that matches the pattern hooks_deployment_source/<hooktype>/*
-            for hook in os.listdir(hooktype_fp_in_src):
-                hook_fp_in_src = '/'.join([hooktype_fp_in_src,hook])
-                if os.path.isdir(hook_fp_in_src):
-                    deploy_extension_to_build_space(hook_fp_in_src, hooktype_fp_in_target)
+            deploy_extension_to_build_space(feature_fp_in_src, feature_fp_in_target)
 
 
 def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins"):
