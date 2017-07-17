@@ -8,7 +8,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # get source files
 TEMPDIR=`mktemp -d`
-git clone ssh://git@ctsit-forge.ctsi.ufl.edu/form_render_skip_logic.git $TEMPDIR
+git clone https://github.com/ctsit/form_render_skip_logic.git $TEMPDIR
 
 # If you need to checkout code from another branch, uncomment and adjust this line
 # git --git-dir=$TEMPDIR/.git --work-tree=$TEMPDIR checkout develop
