@@ -74,3 +74,6 @@ write_dot_mysql_dot_cnf $DB $DB_APP_USER $DB_APP_PASSWORD $DB_ROOT_PASS
 
 # configure the mail server
 configure_exim4
+
+# install pdf toolkit
+install_pdftk
