@@ -2,21 +2,22 @@
 set -e
 
 export MYTARGETDIR=$1
+MYHOOK=$MYTARGETDIR/redcap_every_page_top
+
 
 # determine the directory where this script resides
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # get source files
 TEMPDIR=`mktemp -d`
-git clone ssh://git@ctsit-forge.ctsi.ufl.edu/form_render_skip_logic.git $TEMPDIR
+git clone git@github.com:ctsit/custom_project_settings.git $TEMPDIR
+
 
 # If you need to checkout code from another branch, uncomment and adjust this line
 # git --git-dir=$TEMPDIR/.git --work-tree=$TEMPDIR checkout develop
 
 # copy files to the correct target locations
-mkdir -p $MYTARGETDIR
-cp $TEMPDIR/frsl_data_collection_instruments.php $MYTARGETDIR
-cp $TEMPDIR/frsl_record_home_page.php $MYTARGETDIR
-cp $TEMPDIR/frsl_dashboard.php $MYTARGETDIR
+mkdir -p $MYHOOK
+cp $TEMPDIR/cps_hook.php $MYHOOK
 
 rm -rf $TEMPDIR

@@ -405,3 +405,8 @@ function configure_php_mail() {
     sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php5/apache2/php.ini
 }
 
+function install_pdftk() {
+    echo "Installing PDF Toolkit..."
+    apt-get install -y pdftk
+}
+
