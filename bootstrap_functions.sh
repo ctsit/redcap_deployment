@@ -102,6 +102,8 @@ END
     cp /vagrant/files/apache-default.conf /etc/apache2/sites-available/000-default.conf
     ln -sfv /etc/apache2/sites-available/000-default.conf  /etc/apache2/sites-enabled/000-default.conf
 
+    cp /vagrant/files/ssl.conf /etc/apache2/mods-available/ssl.conf
+
     log "Enable apache modules"
     a2enmod ssl
     a2enmod rewrite
