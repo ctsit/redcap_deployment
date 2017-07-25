@@ -19,11 +19,11 @@ mkdir -p $HOOK_FUNCTION_DIR
 cp $TEMPDIR/copy_values_from_previous_event.php $HOOK_FUNCTION_DIR
 cp $TEMPDIR/force_data_entry_constraints.php $HOOK_FUNCTION_DIR
 cp $TEMPDIR/default_from_field.php $HOOK_FUNCTION_DIR
+cp $TEMPDIR/rfio_data_entry.php $HOOK_FUNCTION_DIR
 
 HOOK_FUNCTION_DIR=$MYTARGETDIR/redcap_every_page_top
 mkdir -p $HOOK_FUNCTION_DIR
 cp $TEMPDIR/rfio_dashboard.php $HOOK_FUNCTION_DIR
-cp $TEMPDIR/rfio_data_entry.php $HOOK_FUNCTION_DIR
 cp $TEMPDIR/rfio_record_home.php $HOOK_FUNCTION_DIR
 cp $TEMPDIR/default_from_field_help.php $HOOK_FUNCTION_DIR
 
