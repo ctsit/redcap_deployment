@@ -187,6 +187,8 @@ def define_env(settings_file_path=""):
         print("The secrets file path cannot be found. It is set to: %s" % settings_file_path)
         abort("Secrets File not set")
 
+    utility.get_config('deploy_user', settings_file_path)
+
     section="instance"
     for (name,value) in config.items(section):
         env[name] = value
