@@ -9,3 +9,5 @@ build
 .idea
 settings/*.ini
 v
+extensions
+!extensions/.gitignore

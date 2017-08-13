@@ -154,6 +154,13 @@ def test(warn_only=False):
     """
     return(utility_redcap.test(warn_only))
 
+@task
+def develop():
+    """
+    Replace redcap/xman/extensions with a symlink to /vagrant/extensions to simplify development of extensions.
+    """
+    utility_redcap.symlink_extensions_folder_inside_vm()
+
 
 def define_default_env(settings_file_path="settings/defaults.ini"):
     """
