@@ -87,7 +87,7 @@ def apply_sql_to_db(sql_file=""):
     Copy a local SQL file to the remote host and run it against mysql
 
     """
-    utility.apply_sql_to_db(sql_file)
+    utility.apply_local_sql_to_db(sql_file)
 
 
 @task

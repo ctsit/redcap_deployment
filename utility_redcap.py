@@ -51,6 +51,7 @@ def upload_package_and_extract(name):
             if run('test -d %s/webtools2/pdf/font/unifont' % env.upload_target_backup_dir).succeeded:
                 run('chmod ug+w %s/webtools2/pdf/font/unifont/*' % env.upload_target_backup_dir)
         run('rsync -rc %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
+        run('rsync -rc %s/redcap/.* %s' % (temp2, env.upload_target_backup_dir))
         # make sure the temp file directory in redcap web space will be writeable
         run('chmod g+w %s/temp' % env.upload_target_backup_dir)
         # Remove the temp directories
@@ -117,4 +118,9 @@ def test(warn_only=False):
         else:
             return(True)
 
-
+def deploy_xman(relative_path_to_install_sql="xman/install.sql"):
+    """
+    Run the xman/install.sql file to build its tables
+    """
+    absolute_path_to_install_sql = '/'.join([env.live_project_full_path, relative_path_to_install_sql])
+    utility.apply_remote_sql_to_db(absolute_path_to_install_sql)

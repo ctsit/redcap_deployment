@@ -41,7 +41,7 @@ edoc_path = /var/edocs
 project_path = redcap
 salt = abc
 url_of_deployed_app = http://redcap.dev/redcap
-hooks_framework_path = hooks/redcap_hooks.php
+hooks_framework_path = xman/includes/hooks.inc
 plugins_path = plugins
 deploy_redcap_cron = True
 

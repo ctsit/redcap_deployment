@@ -168,7 +168,7 @@ def package(redcap_zip="."):
     redcap_version_and_package_type = extract_redcap(redcap_zip)
     deploy_plugins_into_build_space()
     deploy_hooks_into_build_space()
-    deploy_hooks_framework_into_build_space()
+    deploy_hooks_framework_into_build_space("redcap/")
     deploy_language_to_build_space()
     apply_patches()
     add_db_upgrade_script()
