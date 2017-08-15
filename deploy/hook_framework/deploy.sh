@@ -8,12 +8,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # get source files
 TEMPDIR=`mktemp -d`
-git clone https://github.com/tbembersimeao/xman.git $TEMPDIR
-git --git-dir=$TEMPDIR/.git --work-tree=$TEMPDIR checkout develop
+git clone https://github.com/vanderbilt/redcap-external-modules.git $TEMPDIR
 
 # copy files to the correct target locations
-mkdir -p $MYTARGETDIR/xman
-cp $TEMPDIR/.htaccess $MYTARGETDIR
-cp -r $TEMPDIR/* $MYTARGETDIR/xman
+mkdir -p $MYTARGETDIR/external_modules
+cp -r $TEMPDIR/* $MYTARGETDIR/external_modules
 
 rm -rf $TEMPDIR
