@@ -157,9 +157,9 @@ def test(warn_only=False):
 @task
 def develop():
     """
-    Replace redcap/xman/extensions with a symlink to /vagrant/extensions to simplify development of extensions.
+    Replace modules folder with a symlink to /vagrant/modules to simplify modules development.
     """
-    utility_redcap.symlink_extensions_folder_inside_vm()
+    utility_redcap.symlink_modules_folder_inside_vm()
 
 
 def define_default_env(settings_file_path="settings/defaults.ini"):

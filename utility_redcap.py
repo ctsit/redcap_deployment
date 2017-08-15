@@ -118,20 +118,20 @@ def test(warn_only=False):
         else:
             return(True)
 
-def deploy_xman(relative_path_to_install_sql="xman/install.sql"):
+def deploy_external_modules(relative_path_to_install_sql="external_modules/sql/create\ tables.sql"):
     """
-    Run the xman/install.sql file to build its tables
+    Run the external_modules/create tables.sql file to build its tables
     """
     absolute_path_to_install_sql = '/'.join([env.live_project_full_path, relative_path_to_install_sql])
     utility.apply_remote_sql_to_db(absolute_path_to_install_sql)
 
-def symlink_extensions_folder_inside_vm(relative_path_to_extensions_folder="xman/extensions"):
+def symlink_modules_folder_inside_vm(relative_path_to_extensions_folder="modules"):
     """
-    Replace redcap/xman/extensions with a symlink to /vagrant/extensions to simplify development of extensions.
+    Replace modules directory with a symlink to /vagrant/modules to simplify modules development.
     """
     with settings(user=env.deploy_user):
         absolute_path_to_live_extensions_folder = '/'.join([env.live_project_full_path, relative_path_to_extensions_folder])
         run("rm -rf %s" % absolute_path_to_live_extensions_folder)
-        absolute_path_to_dev_extension_folder = "/vagrant/extensions"
+        absolute_path_to_dev_extension_folder = "/vagrant/modules"
         run("ln -s %s %s" % (absolute_path_to_dev_extension_folder, absolute_path_to_live_extensions_folder))
 
