@@ -2,6 +2,27 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [1.2.0] - 2017-08-15
+### Added
+- Add new users and change passwords to 'password' in test_with_table_based_authentication.sql (Philip Chase)
+- Add scripts to deploy `ssl.conf` (marlycormar)
+- Add `ssl.conf` file containing the required cipher suites to comply with the NIST document on server security (marlycormar)
+- Add pdf toolkit installation to the provisioning scripts (marlycormar)
+- Add a SQL file that can be used to fix busted PRMIS credentials (Philip Chase)
+- Add script to disable Messenger (marlycormar)
+- Add deployment of linear work flow deploy script (suryayalla)
+- Add deployment of find_survey_from_survey_hash plugin (Stewart Wehmeyer)
+- Add deployment of custom_project_settings_plugin (suryayalla)
+- Add test methods testSendItDownload and testRouteToSendItController (Philip Chase)
+- Add option to follow redirects in tests (Philip Chase)
+
+### Changed
+- Remove lines that were changing env.user to deploy_user (Philip Chase)
+- Fix PHP 5 installation by using oldstable debian repos as sources. (Tiago Bember Simeao)
+- Import configparser from six.moves to address fabric import failures when fabric is installed using brew (suryayalla)
+
+
 ## [1.1.0] - 2017-05-31
 ### Added
 - Add documentation for language configuration (marlycormar)
