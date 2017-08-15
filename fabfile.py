@@ -42,7 +42,11 @@ or database credentials will not be preserved.
 
 from fabric.api import *
 from fabric.utils import abort
-import configparser, string, random, os
+try:
+    import configparser
+except:
+    from six.moves import configparser
+import string, random, os
 import server_setup
 import package
 import deploy
@@ -183,8 +187,7 @@ def define_env(settings_file_path=""):
         print("The secrets file path cannot be found. It is set to: %s" % settings_file_path)
         abort("Secrets File not set")
 
-    if utility.get_config('deploy_user', settings_file_path) != "":
-        env.user = utility.get_config('deploy_user',settings_file_path)
+    utility.get_config('deploy_user', settings_file_path)
 
     section="instance"
     for (name,value) in config.items(section):

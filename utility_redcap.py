@@ -1,9 +1,11 @@
 from fabric.api import *
 from tempfile import mkstemp
 import os
-import configparser
 import utility
-
+try:
+    import configparser
+except:
+    from six.moves import configparser
 
 __all__ = []
 

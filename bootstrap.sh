@@ -35,6 +35,12 @@ apt-get install -y netselect-apt
 cd /etc/apt/
 netselect-apt -c US > ~/netselect-apt.log 2>&1
 
+# Setting oldstable debian repository
+echo "deb http://debian.gtisc.gatech.edu/debian/ oldstable main contrib" > /etc/apt/sources.list
+echo "deb-src http://debian.gtisc.gatech.edu/debian/ oldstable main contrib" >> /etc/apt/sources.list
+echo "deb http://security.debian.org/ oldstable/updates main contrib" >> /etc/apt/sources.list
+echo "deb-src http://security.debian.org/ oldstable/updates main contrib" >> /etc/apt/sources.list
+
 # Update our repos
 log "Updating apt package indicies..."
 apt-get update
@@ -68,3 +74,6 @@ write_dot_mysql_dot_cnf $DB $DB_APP_USER $DB_APP_PASSWORD $DB_ROOT_PASS
 
 # configure the mail server
 configure_exim4
+
+# install pdf toolkit
+install_pdftk

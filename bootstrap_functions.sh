@@ -102,6 +102,8 @@ END
     cp /vagrant/files/apache-default.conf /etc/apache2/sites-available/000-default.conf
     ln -sfv /etc/apache2/sites-available/000-default.conf  /etc/apache2/sites-enabled/000-default.conf
 
+    cp /vagrant/files/ssl.conf /etc/apache2/mods-available/ssl.conf
+
     log "Enable apache modules"
     a2enmod ssl
     a2enmod rewrite
@@ -403,5 +405,10 @@ function configure_php_mail() {
     echo "Configuring php mail..."
     sed -e "sX.*sendmail_path.*Xsendmail_path = /usr/sbin/sendmail -t -iX;" -i /etc/php5/apache2/php.ini
     sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php5/apache2/php.ini
+}
+
+function install_pdftk() {
+    echo "Installing PDF Toolkit..."
+    apt-get install -y pdftk
 }
 
