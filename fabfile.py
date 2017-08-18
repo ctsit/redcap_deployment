@@ -155,11 +155,15 @@ def test(warn_only=False):
     return(utility_redcap.test(warn_only))
 
 @task
-def develop():
+def develop_module(module_name):
     """
-    Replace modules folder with a symlink to /vagrant/modules to simplify modules development.
+    Creates a symbolic link from the given host's module folder to guest's /redcap/modules.
     """
-    utility_redcap.symlink_modules_folder_inside_vm()
+    with settings(user=env.deploy_user):
+        dest = '/'.join([env.live_project_full_path, "modules/%s" % module_name])
+        if not os.path.exists(dest):
+            src = "/vagrant/modules/%s" % module_name
+            run("ln -s %s %s" % (src, dest))
 
 
 def define_default_env(settings_file_path="settings/defaults.ini"):

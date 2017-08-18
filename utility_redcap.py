@@ -51,7 +51,6 @@ def upload_package_and_extract(name):
             if run('test -d %s/webtools2/pdf/font/unifont' % env.upload_target_backup_dir).succeeded:
                 run('chmod ug+w %s/webtools2/pdf/font/unifont/*' % env.upload_target_backup_dir)
         run('rsync -rc %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
-        run('rsync -rc %s/redcap/.* %s' % (temp2, env.upload_target_backup_dir))
         # make sure the temp file directory in redcap web space will be writeable
         run('chmod g+w %s/temp' % env.upload_target_backup_dir)
         # Remove the temp directories
@@ -118,6 +117,7 @@ def test(warn_only=False):
         else:
             return(True)
 
+
 def deploy_external_modules(relative_path_to_install_sql="external_modules/sql/create\ tables.sql"):
     """
     Run the external_modules/create tables.sql file to build its tables
@@ -125,13 +125,11 @@ def deploy_external_modules(relative_path_to_install_sql="external_modules/sql/c
     absolute_path_to_install_sql = '/'.join([env.live_project_full_path, relative_path_to_install_sql])
     utility.apply_remote_sql_to_db(absolute_path_to_install_sql)
 
-def symlink_modules_folder_inside_vm(relative_path_to_extensions_folder="modules"):
+
+def run_composer():
     """
-    Replace modules directory with a symlink to /vagrant/modules to simplify modules development.
+    Run composer
     """
-    with settings(user=env.deploy_user):
-        absolute_path_to_live_extensions_folder = '/'.join([env.live_project_full_path, relative_path_to_extensions_folder])
-        run("rm -rf %s" % absolute_path_to_live_extensions_folder)
-        absolute_path_to_dev_extension_folder = "/vagrant/modules"
-        run("ln -s %s %s" % (absolute_path_to_dev_extension_folder, absolute_path_to_live_extensions_folder))
+    run("COMPOSER=%s/composer.json composer install -d %s" % (env.live_project_full_path, env.live_project_full_path))
+
 
