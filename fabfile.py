@@ -155,9 +155,9 @@ def test(warn_only=False):
     return(utility_redcap.test(warn_only))
 
 @task
-def develop_module(module_name):
+def test_module(module_name):
     """
-    Creates a symbolic link from the given host's module folder to guest's /redcap/modules.
+    Adds a local module located under "modules/" directory to the list of available modules on REDCap.
     """
     with settings(user=env.deploy_user):
         dest = '/'.join([env.live_project_full_path, "modules/%s" % module_name])
