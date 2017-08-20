@@ -113,8 +113,7 @@ def deploy(name,force=""):
     utility_redcap.move_software_to_live()
     move_edocs_folder()
     utility_redcap.set_redcap_base_url()
-    if utility.convert_version_to_int(utility_redcap.get_current_redcap_version()) >= 70601:
-        utility_redcap.set_hook_functions_file()
+    utility_redcap.set_hook_functions_file()
     utility_redcap.deploy_external_modules()
     utility_redcap.run_composer()
     force_deployment_of_redcap_cron = utility.is_affirmative(force)

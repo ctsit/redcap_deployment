@@ -2,7 +2,6 @@ from fabric.api import *
 from fabric.contrib.files import exists
 from fabric.utils import abort
 import string, random, os
-import utility
 import json
 import re
 
@@ -197,9 +196,8 @@ def package(redcap_zip="."):
     deploy_plugins_into_build_space()
     deploy_modules_into_build_space()
     deploy_modules_framework_into_build_space()
-    if utility.convert_version_to_int(env.redcap_version) >= 70601:
-        deploy_hooks_into_build_space()
-        deploy_hooks_framework_into_build_space()
+    deploy_hooks_into_build_space()
+    deploy_hooks_framework_into_build_space()
     deploy_language_to_build_space()
     apply_patches()
     set_composer_file()
