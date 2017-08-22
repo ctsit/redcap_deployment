@@ -55,6 +55,7 @@ import utility
 import utility_redcap
 import hook
 import plugins
+import module
 
 @task(alias='backup')
 def backup_database(options=""):
