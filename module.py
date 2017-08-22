@@ -3,10 +3,6 @@ import os
 import re
 import utility
 
-#todo: add explanation of methods
-# add delete if exists before
-
-
 @task
 def enable(module_name, module_version="", pid=""):
     utility.write_remote_my_cnf()
@@ -40,6 +36,17 @@ def add_module_to_tables(module_name, module_version, pid):
         run('mysql -e "%s"' %add_to_redcap_external_modules)
         external_module_id = run('mysql -s -N -e "%s"' %find_id)
 
+    insert_version = """
+        INSERT INTO redcap_external_module_settings
+        SELECT * FROM (SELECT %s, NULL, 'version', 'string', '%s') AS tmp
+        WHERE NOT EXISTS (
+        SELECT external_module_id, project_id FROM redcap_external_module_settings WHERE external_module_id = %s AND type = 'string'
+        ) LIMIT 1;
+        """ %(external_module_id, module_version, external_module_id)
+            
+    with settings(user=env.deploy_user):
+        run('mysql -e "%s"' %insert_version)
+
     # Activate module for an specific project
     if pid != "":
         insert_pid = """
@@ -53,23 +60,13 @@ def add_module_to_tables(module_name, module_version, pid):
         with settings(user=env.deploy_user):
             run('mysql -e "%s"' %insert_pid)
     # Activate module for all the projects
-    else:
-        insert_version = """
-            INSERT INTO redcap_external_module_settings
-            SELECT * FROM (SELECT %s, NULL, 'version', 'string', '%s') AS tmp
-            WHERE NOT EXISTS (
-            SELECT external_module_id, project_id FROM redcap_external_module_settings WHERE external_module_id = %s AND type = 'string'
-            ) LIMIT 1;
-            """ %(external_module_id, module_version, external_module_id)
-        
-        with settings(user=env.deploy_user):
-            run('mysql -e "%s"' %insert_version)
+
 
 
 
 def remove_module_from_tables(module_name, module_version, pid):
     """
-        Update redcap tables
+        Deletes modules from redcap tables
         """
     add_to_redcap_external_modules = """
         INSERT INTO redcap_external_modules (directory_prefix)
