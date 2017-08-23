@@ -69,7 +69,7 @@ For more details about Vagrant software you can go to [why-vagrant](https://docs
 ### Install REDCap Modules
 REDCap Deployment supports [REDCap Modules](https://github.com/vanderbilt/redcap-external-modules). In order to deploy external modules, you need to set up `deploy/modules.json` file.
 
-This project provides an example file, which contains a test module provided by REDCap team. You may copy the file `deploy/modules.json.example` to the name `deploy/modules.json`, and customize it to your needs.
+This project provides an example file, which references a module provided by CTS-IT team. You may copy the file `deploy/modules.json.example` to the name `deploy/modules.json`, and customize it to your needs.
 ```bash
 cp deploy/modules.json.example deploy/modules.json
 ```
@@ -78,10 +78,10 @@ Here is how `deploy/modules.json` should look like:
 ```json
 [
     {
-        "name": "vanderbilt_example",
-        "version": "1.0",
-        "repo": "https://github.com/mmcev106/redcap-external-module-example.git",
-        "branch": "master"
+        "name": "linear_data_entry_workflow",
+        "version": "2.0.0",
+        "repo": "https://github.com/ctsit/linear_data_entry_workflow.git",
+        "branch": "develop"
     }
 ]
 ```
