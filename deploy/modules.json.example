@@ -1,0 +1,8 @@
+[
+    {
+        "name": "vanderbilt_example",
+        "version": "1.0",
+        "repo": "https://github.com/mmcev106/redcap-external-module-example.git",
+        "branch": "master"
+    }
+]

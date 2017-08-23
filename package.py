@@ -99,6 +99,8 @@ def deploy_modules_into_build_space():
     """
     Deploy each module into build space.
     """
+    if not os.path.exists(env.modules_deployment_source):
+        return
     with open(env.modules_deployment_source) as f:
         for module in json.load(f):
             tempdir = local("mktemp -d 2>&1", capture = True)
