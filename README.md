@@ -33,8 +33,8 @@ The packaging and deployment tools are designed to deploy REDCap to Debian Linux
 On a Linux machine run these commands in a shell:
 
 ```bash
-    sudo apt-get install vagrant
-    sudo apt-get install virtualbox
+sudo apt-get install vagrant
+sudo apt-get install virtualbox
 ```
 
 On a Mac OSX machine:
@@ -46,8 +46,8 @@ On Mac OSX users using [Homebrew](http://brew.sh/) can install these packages
 using the _brew_ command.  Run these commands at a shell:
 
 ```bash
-    brew cask install virtualbox
-    brew cask install vagrant
+brew cask install virtualbox
+brew cask install vagrant
 ```
 
 
@@ -56,8 +56,8 @@ using the _brew_ command.  Run these commands at a shell:
 Vagrant will need a few plugins for this VM. On any platform, run these commands in a shell:
 
 ```bash
-    vagrant plugin install vagrant-hostsupdater
-    vagrant plugin install vagrant-env
+vagrant plugin install vagrant-hostsupdater
+vagrant plugin install vagrant-env
 ```
 
 Mac OSX users might enjoy the functionality of the vagrant-triggers plugin.  CTS-IT uses it to open the Chrome browser to the root of the web site. Run this command at a shell to install it.
@@ -71,7 +71,7 @@ REDCap Deployment supports [REDCap Modules](https://github.com/vanderbilt/redcap
 
 This project provides an example file, which contains a test module provided by REDCap team. You may copy the file `deploy/modules.json.example` to the name `deploy/modules.json`, and customize it to your needs.
 ```bash
-    cp deploy/modules.json.example deploy/modules.json
+cp deploy/modules.json.example deploy/modules.json
 ```
 
 Here is how `deploy/modules.json` should look like:
@@ -106,7 +106,7 @@ better test features that send email.
 With the above requirements and configuration completed, start the VM with the command
 
 ```bash
-    vagrant up
+vagrant up
 ```
 
 The vagrant-hostsupdater plugin will make modifications to your hosts file as the VM starts.  If it prompts you for a password, provide the password you use to login to your computer.
@@ -123,10 +123,10 @@ In addition to the REDCap deployed by the Vagrant provisioning scripts, this rep
 The Fabric tools require a few python libraries that might not be installed on your computer.  To install them run these commands:
 
 ```bash
-    pip install fabric
-    pip install configparser
-    pip install pycurl
-    pip install cryptography
+pip install fabric
+pip install configparser
+pip install pycurl
+pip install cryptography
 ```
 
 If you have problems install or using these libraries, you might be well-served to setup a Python _virtual environment_. For more information on that see [Virtual Environment Notes](docs/virtual_env_notes.md)
@@ -138,7 +138,7 @@ The Fabric tools need to be configured for the Vagrant VM before they can be use
 Copy the file `settings/vagrant.ini.example` to the name `settings/vagrant.ini`, and customize it to your needs.
 
 ```bash
-    cp settings/vagrant.ini.example settings/vagrant.ini
+cp settings/vagrant.ini.example settings/vagrant.ini
 ```
 
 Customization is not _required_ but it is useful to add patches and language modules.
@@ -149,9 +149,9 @@ Customization is not _required_ but it is useful to add patches and language mod
 If you have a REDCap zip file, say redcap7.2.2.zip, you can deploy it to the local Vagrant REDCap instance with these commands:
 
 ```bash
-    fab vagrant server_setup
-    fab vagrant package:redcap7.2.2.zip
-    fab vagrant delete_all_tables deploy:redcap-7.2.2.tgz
+fab vagrant server_setup
+fab vagrant package:redcap7.2.2.zip
+fab vagrant delete_all_tables deploy:redcap-7.2.2.tgz
 ```
 
 
@@ -160,14 +160,14 @@ If you have a REDCap zip file, say redcap7.2.2.zip, you can deploy it to the loc
 Any upgrade to 7.3.0 would be as simple as
 
 ```bash
-    fab vagrant package:redcap7.3.0_upgrade.zip
-    fab vagrant upgrade:redcap-7.3.0_upgrade.tgz
+fab vagrant package:redcap7.3.0_upgrade.zip
+fab vagrant upgrade:redcap-7.3.0_upgrade.tgz
 ```
 
 If the tests fail and the server is offline, you can put it back online with
 
 ```bash
-    fab vagrant online
+fab vagrant online
 ```
 
 ## Language Configuration
