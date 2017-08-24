@@ -126,10 +126,3 @@ def deploy_external_modules(relative_path_to_install_sql="external_modules/sql/c
     utility.apply_remote_sql_to_db(absolute_path_to_install_sql)
 
 
-def run_composer():
-    """
-    Run composer
-    """
-    run("COMPOSER=%s/composer.json composer install -d %s" % (env.live_project_full_path, env.live_project_full_path))
-
-
