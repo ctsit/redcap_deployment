@@ -60,6 +60,16 @@ def deploy_hooks_framework_into_build_space(target_within_build_space="redcap/ho
     deploy_extension_to_build_space(source_dir, this_target)
 
 
+def deploy_third_party_dependencies_into_build_space(target_within_build_space="redcap/"):
+    """
+    Deploy third-party dependencies with Composer
+    """
+    # make sure the target directory exists
+    source_dir = env.composer_deployment_source
+    this_target ='/'.join([env.builddir, target_within_build_space])
+    deploy_extension_to_build_space(source_dir, this_target)
+
+
 def deploy_modules_framework_into_build_space(target_within_build_space="redcap/external_modules/"):
     """
     Deploy UF's REDCap modules framework
@@ -173,10 +183,6 @@ def apply_patches():
         local('rm -rf %s' % tempdir)
 
 
-def set_composer_file():
-    local('cp composer.json %s/redcap' % env.builddir)
-
-
 def add_db_upgrade_script():
     target_dir = '/'.join([env.builddir, "redcap", "redcap_v%s" % env.redcap_version])
     print target_dir
@@ -201,8 +207,8 @@ def package(redcap_zip="."):
     deploy_hooks_into_build_space()
     deploy_hooks_framework_into_build_space()
     deploy_language_to_build_space()
+    deploy_third_party_dependencies_into_build_space()
     apply_patches()
-    set_composer_file()
     add_db_upgrade_script()
 
     # Get variables to tell us where to write the package

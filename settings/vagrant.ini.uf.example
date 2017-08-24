@@ -16,6 +16,7 @@ hooks_deployment_source= deploy/hooks
 modules_deployment_source= deploy/modules.json
 hook_framework_deployment_source= deploy/hook_framework
 module_framework_deployment_source= deploy/module_framework
+composer_deployment_source= deploy/composer
 hooks_library_path = hooks/library
 plugins_path = plugins
 pubkey_filename = ~/.ssh/id_rsa.pub
