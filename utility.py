@@ -61,18 +61,29 @@ def delete_all_tables(confirm=""):
         print "\nProvide a confirmation string (e.g. 'y', 'yes') if you want to delete all MySQL tables for this instance."
 
 
-def apply_sql_to_db(sql_file=""):
+def apply_local_sql_to_db(sql_file=""):
     """
     Copy a local SQL file to the remote host and run it against mysql
 
     """
     if local('test -e %s' % sql_file).succeeded:
         with settings(user=env.deploy_user):
-            write_remote_my_cnf()
             remote_sql_path = run('mktemp')
             put(sql_file, remote_sql_path)
-            if run('mysql < %s' % remote_sql_path).succeeded:
-                run('rm %s' % remote_sql_path)
+            apply_remote_sql_to_db(remote_sql_path)
+            run('rm %s' % remote_sql_path)
+
+
+def apply_remote_sql_to_db(sql_file=""):
+    """
+    Apply a SQL file on a remote host against the mysql DB
+
+    """
+    with settings(user=env.deploy_user):
+        remote_sql_path = sql_file
+        if run('test -e %s' % remote_sql_path).succeeded:
+            write_remote_my_cnf()
+            run('mysql < %s' % remote_sql_path)
             delete_remote_my_cnf()
 
 
