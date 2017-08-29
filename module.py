@@ -5,6 +5,9 @@ import utility
 
 @task
 def enable(module_name, module_version="", pid=""):
+    """
+    Enables a REDCap module.
+    """
     utility.write_remote_my_cnf()
     enable_module = """
         namespace ExternalModules\ExternalModules; require '/var/www/redcap/external_modules/classes/ExternalModules.php';
@@ -22,13 +25,15 @@ def enable(module_name, module_version="", pid=""):
 
 
 @task
-def disable(module_name, module_version="", pid=""):
+def disable(module_name, pid=""):
+    """
+    Disables a REDCap module.
+    """
     utility.write_remote_my_cnf()
-    moduleDirectoryPrefix = module_name + '_' + module_version
     if pid != "":
         disable_module_for_pid = """
             namespace ExternalModules\ExternalModules; require '/var/www/redcap/external_modules/classes/ExternalModules.php';
-            \\ExternalModules\\ExternalModules::setProjectSetting('%s', %s, 'enable', false);
+            \\ExternalModules\\ExternalModules::setProjectSetting('%s', %s, 'enabled', false);
             """ %(module_name, pid)
         run ('php -r \"%s\"' %disable_module_for_pid)
     else:
