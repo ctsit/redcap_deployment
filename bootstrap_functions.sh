@@ -52,6 +52,11 @@ deb http://repo.mysql.com/apt//debian/ jessie $MYSQL_REPO
 deb-src http://repo.mysql.com/apt//debian/ jessie $MYSQL_REPO
 END
 
+    log "Adding php7 repo to prepare for installation..."
+    echo 'deb http://packages.dotdeb.org jessie all' >> /etc/apt/sources.list
+    echo 'deb-src http://packages.dotdeb.org jessie all' >> /etc/apt/sources.list
+    wget --no-check-certificate -q -O - https://www.dotdeb.org/dotdeb.gpg | sudo apt-key add -
+
     apt-get update
 
     log "Preparing to install mysql-community-server with root password: '$DATABASE_ROOT_PASS'..."
@@ -64,7 +69,12 @@ END
 
     apt-get install -y apache2
     apt-get install -y mysql-community-server
-    apt-get install -y php5 php5-mysql php5-mcrypt php5-gd
+
+    log "Installing php7 and required dependencies..."
+    apt-get -y install php7.0
+    apt-get -y install php7.0-xml
+    apt-get -y install libapache2-mod-php7.0 php7.0-mysql php7.0-curl php7.0-json
+    service apache2 restart
 
     # Configure mysqld to be more permissive
     log "Configure mysqld to be more permissive..."
@@ -78,9 +88,9 @@ END
     update-rc.d mysql defaults
 
     # Increase the default upload size limit to allow ginormous files
-    sed -i 's/upload_max_filesize =.*/upload_max_filesize = 20M/' /etc/php5/apache2/php.ini
-    sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php5/apache2/php.ini
-    sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php5/cli/php.ini
+    sed -i 's/upload_max_filesize =.*/upload_max_filesize = 20M/' /etc/php/7.0/apache2/php.ini
+    sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php/7.0/apache2/php.ini
+    sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php/7.0/cli/php.ini
 
     log "Stop apache..."
     service apache2 stop
