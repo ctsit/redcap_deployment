@@ -55,6 +55,7 @@ import utility
 import utility_redcap
 import hook
 import plugins
+import module
 
 @task(alias='backup')
 def backup_database(options=""):
@@ -87,7 +88,7 @@ def apply_sql_to_db(sql_file=""):
     Copy a local SQL file to the remote host and run it against mysql
 
     """
-    utility.apply_sql_to_db(sql_file)
+    utility.apply_local_sql_to_db(sql_file)
 
 
 @task
@@ -153,6 +154,17 @@ def test(warn_only=False):
     Run all tests against a running REDCap instance
     """
     return(utility_redcap.test(warn_only))
+
+@task
+def test_module(module_name):
+    """
+    Adds a local module located under "modules/" directory to the list of available modules on REDCap.
+    """
+    with settings(user=env.deploy_user):
+        dest = '/'.join([env.live_project_full_path, "modules/%s" % module_name])
+        if not os.path.exists(dest):
+            src = "/vagrant/modules/%s" % module_name
+            run("ln -s %s %s" % (src, dest))
 
 
 def define_default_env(settings_file_path="settings/defaults.ini"):

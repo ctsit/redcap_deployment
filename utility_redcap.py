@@ -118,3 +118,11 @@ def test(warn_only=False):
             return(True)
 
 
+def deploy_external_modules(relative_path_to_install_sql="external_modules/sql/create\ tables.sql"):
+    """
+    Run the external_modules/create tables.sql file to build its tables
+    """
+    absolute_path_to_install_sql = '/'.join([env.live_project_full_path, relative_path_to_install_sql])
+    utility.apply_remote_sql_to_db(absolute_path_to_install_sql)
+
+

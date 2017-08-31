@@ -76,3 +76,6 @@ configure_exim4
 
 # install pdf toolkit
 install_pdftk
+
+# install composer
+install_composer

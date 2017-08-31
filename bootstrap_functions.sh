@@ -422,3 +422,8 @@ function install_pdftk() {
     apt-get install -y pdftk
 }
 
+function install_composer() {
+  curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
+  mv /usr/local/bin/composer.phar /usr/local/bin/composer
+  chmod 755 /usr/local/bin/composer
+}
