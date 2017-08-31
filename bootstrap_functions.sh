@@ -32,7 +32,7 @@ function install_prereqs() {
     log "Executing ${FUNCNAME[0]}"
     REQUIRED_PARAMETER_COUNT=2
     if [ $# != $REQUIRED_PARAMETER_COUNT ]; then
-        echo "${FUNCNAME[0]} Installs and configures MySQL, Apache and php5"
+        echo "${FUNCNAME[0]} Installs and configures MySQL, Apache and php7"
         echo "${FUNCNAME[0]} requires these $REQUIRED_PARAMETER_COUNT parameters in this order:"
         echo "MYSQL_REPO           The MySQL Repo to install from.  E.g., mysql-5.6"
         echo "DATABASE_ROOT_PASS   Password of the MySQL root user."
@@ -301,7 +301,7 @@ function create_tables() {
 function install_xdebug() {
     # Install XDebug for enabling code coverage
     log "Executing: install_xdebug()"
-    apt-get install -y php5-xdebug
+    apt-get install php7.0-xdebug
 
     echo 'Restarting apache server'
     service apache2 restart
@@ -326,9 +326,9 @@ function install_composer_deps() {
         # silence the deprecation notice
         # The Composer\Package\LinkConstraint\VersionConstraint class is deprecated,
         # use Composer\Semver\Constraint\Constraint instead. in phar:///usr/local/bin/composer/src/Composer/Package/LinkConstraint/VersionConstraint.php:17
-        php5dismod xdebug
+        phpdismod xdebug
         composer install 2>&1 | tee ~/log_install_composer_deps
-        php5enmod xdebug
+        phpenmod xdebug
     popd
     log "Done with install_composer_deps()"
 }
@@ -413,8 +413,8 @@ service exim4 restart
 
 function configure_php_mail() {
     echo "Configuring php mail..."
-    sed -e "sX.*sendmail_path.*Xsendmail_path = /usr/sbin/sendmail -t -iX;" -i /etc/php5/apache2/php.ini
-    sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php5/apache2/php.ini
+    sed -e "sX.*sendmail_path.*Xsendmail_path = /usr/sbin/sendmail -t -iX;" -i /etc/php/7.0/apache2/php.ini
+    sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php/7.0/apache2/php.ini
 }
 
 function install_pdftk() {
