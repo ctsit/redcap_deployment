@@ -45,7 +45,7 @@ function install_prereqs() {
 
     # Try two different keyservers to get the MySQL repository key
     gpg --keyserver pgp.mit.edu --recv-keys 5072E1F5 || gpg --keyserver sks-keyservers.net --recv-keys 5072E1F5
-    gpg -a --export 5072E1F5 | sudo apt-key add -
+    gpg -a --export 5072E1F5 | apt-key add -
 
 cat << END > /etc/apt/sources.list.d/mysql.list
 deb http://repo.mysql.com/apt//debian/ jessie $MYSQL_REPO
@@ -55,7 +55,7 @@ END
     log "Adding php7 repo to prepare for installation..."
     echo 'deb http://packages.dotdeb.org jessie all' >> /etc/apt/sources.list
     echo 'deb-src http://packages.dotdeb.org jessie all' >> /etc/apt/sources.list
-    wget --no-check-certificate -q -O - https://www.dotdeb.org/dotdeb.gpg | sudo apt-key add -
+    wget --no-check-certificate -q -O - https://www.dotdeb.org/dotdeb.gpg | apt-key add -
 
     apt-get update
 
