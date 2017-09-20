@@ -160,6 +160,18 @@ IDENTIFIED BY
     '$DATABASE_PASSWORD';
 SQL
 
+    # grant access to $DATABASE_USER@% so the VM host can access mysql on port 3306
+    mysql -u root -p$DATABASE_ROOT_PASS mysql <<SQL
+GRANT
+    SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, EXECUTE, CREATE VIEW, SHOW VIEW
+ON
+    $DATABASE_NAME.*
+TO
+    '$DATABASE_USER'@'%'
+IDENTIFIED BY
+    '$DATABASE_PASSWORD';
+SQL
+
 }
 
 function update_cake_connection_settings() {
