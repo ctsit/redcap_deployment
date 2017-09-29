@@ -3,6 +3,23 @@ import os
 import re
 import utility
 
+
+@task
+def config(module_name, file_name, pid):
+    """
+    Configures a REDCap module.
+    """
+    utility.write_remote_my_cnf()
+    local ("scp %s vagrant@redcap-deployment:/tmp/" % (file_name));
+    configure_module = """
+        \\ExternalModules\\ExternalModules::saveSettingsFromPost('%s','%s','%s');
+        """ %(module_name,pid,file_name)
+
+    run ('php -r \'namespace ExternalModules\ExternalModules; require "/var/www/redcap/external_modules/classes/ExternalModules.php"; $_POST = json_decode(file_get_contents(\"/tmp/%s\")); %s\'' % (file_name,configure_module));
+    run ('rm -r /tmp/%s' % (file_name))
+    utility.delete_remote_my_cnf()
+
+
 @task
 def enable(module_name, module_version="", pid=""):
     """
