@@ -4,7 +4,7 @@
     "fields____0____0":"first_name",
     "fields____0____1":"last_name",
     "copy-values-from-previous-event____1":"true",
-    "form-name____1":"medications",
+    "form-name____1":"demographics",
     "fields____1____0":"record_id",
     "fields____1____1":"first_name",
     "fields____1____1":"last_name"
