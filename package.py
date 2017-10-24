@@ -115,7 +115,7 @@ def deploy_modules_into_build_space():
         for module in json.load(f):
             tempdir = local("mktemp -d 2>&1", capture = True)
             local("git clone -b %s %s %s" % (module['branch'],module['repo'],tempdir))
-            local("mkdir %s/redcap/modules/%s_v%s" % (env.builddir,module['name'],module['version']))
+            local("mkdir -p %s/redcap/modules/%s_v%s" % (env.builddir,module['name'],module['version']))
             local("cp -r %s/* %s/redcap/modules/%s_v%s" % (tempdir,env.builddir,module['name'],module['version']))
             local("rm -rf %s" % tempdir)
 
