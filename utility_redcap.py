@@ -2,6 +2,7 @@ from fabric.api import *
 from tempfile import mkstemp
 import os
 import utility
+import re
 try:
     import configparser
 except:
@@ -118,3 +119,18 @@ def test(warn_only=False):
             return(True)
 
 
+def deploy_external_modules(relative_path_to_install_sql="external_modules/sql/create\ tables.sql"):
+    """
+        Run the external_modules/create tables.sql file to build its tables.
+        This method will become obsolete once all our hosts use version 7.6.9 or higher.
+        """
+    regex = re.compile(r"([0-9]{1,2})")
+    version_numbers = regex.findall(get_current_redcap_version())
+    major = int(version_numbers[0])
+    minor = int(version_numbers[1])
+    patch = int(version_numbers[2])
+
+    if major < 7 or (major == 7 and minor == 6 and patch < 6):
+        local("echo 'version=%s, major=%s, minor=%s, patch=%s'" %(get_current_redcap_version(),major,minor,patch) )
+        absolute_path_to_install_sql = '/'.join([env.live_project_full_path, relative_path_to_install_sql])
+        utility.apply_remote_sql_to_db(absolute_path_to_install_sql)
