@@ -1,0 +1,8 @@
+<Location /<instance_name>/plugins/autonotify3/index.php>
+  Order Allow,Deny
+  Allow from 10.4.117.100 159.178.62.115
+  Satisfy Any   
+  AuthType shibboleth
+  ShibUseHeaders On
+  require shibboleth 
+</Location>
