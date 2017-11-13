@@ -18,4 +18,5 @@ def test(plugin_path):
     source_path = "/vagrant/" + plugin_path
     target_folder = "/".join([redcap_root, env.plugins_path])
 
-    run("ln -sf %s %s" % (source_path, target_folder))
+    with settings(user=env.deploy_user):
+            run("ln -sf %s %s" % (source_path, target_folder))
