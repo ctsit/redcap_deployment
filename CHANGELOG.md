@@ -4,13 +4,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 
 ## [1.3.0] - 2017-11-13
-## Added
+### Added
 - Add support for External Modules. (Tiago Bember Simeao)
 - Add support for installing External Modules
 - Add enable/disable module methods for redcap (marlycormar)
 - Provide example modules.json config file for module installation
 
-## Changed
+### Changed
 - Upgrade development environment to PHP7 (marlycormar, tbembersimeao)
 - Grant access to DATABASE_USER@% so the VM host can access mysql on port 3306 (Philip Chase)
 - Fixing composer installation. (Tiago Bember Simeao)
