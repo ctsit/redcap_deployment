@@ -1,8 +1,29 @@
 [
     {
         "name": "linear_data_entry_workflow",
-        "version": "2.0.0",
+        "version": "2.0",
         "repo": "https://github.com/ctsit/linear_data_entry_workflow.git",
+        "branch": "develop"
+    },
+
+    {
+        "name": "redcap_user_profile",
+        "version": "1.0",
+        "repo": "https://github.com/ctsit/redcap_user_profile.git",
+        "branch": "develop"
+    },
+
+    {
+        "name": "redcap-survey-link-lookup",
+        "version": "1.0",
+        "repo": "https://github.com/lsgs/redcap-survey-link-lookup.git",
+        "branch": "master"
+    },
+
+    {
+        "name": "auto_populate_fields",
+        "version": "2.0",
+        "repo": "https://github.com/ctsit/auto_populate_fields.git",
         "branch": "develop"
     }
 ]

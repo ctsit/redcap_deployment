@@ -32,6 +32,8 @@ SHARED_FOLDER=/vagrant
 # Pick a fast mirror...or at least one that works
 log "Picking a fast mirror in the US..."
 apt-get install -y netselect-apt
+# patch netselect-apt to avoid redirect failures
+sed -e 's#url="http://www.debian.org/mirror/mirrors_full"#url="https://www.debian.org/mirror/mirrors_full"#;' -i /usr/bin/netselect-apt
 cd /etc/apt/
 netselect-apt -c US > ~/netselect-apt.log 2>&1
 
