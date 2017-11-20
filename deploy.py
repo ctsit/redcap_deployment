@@ -4,7 +4,6 @@ import re
 import os
 import utility
 import utility_redcap
-import requests
 
 def update_redcap_connection(db_settings_file="database.php", salt="abc"):
     """
