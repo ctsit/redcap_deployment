@@ -128,6 +128,8 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         expected_string = 'redcap_ddp_demo_files.zip'
         if expected_string in self.weburl.get(self.fullpath):
             expected_string_found = True
+        else:
+            expected_string_found = False
         self.assertTrue(expected_string_found)
 
     def testSqlFolder(self):
