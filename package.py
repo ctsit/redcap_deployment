@@ -70,6 +70,19 @@ def deploy_third_party_dependencies_into_build_space(target_within_build_space="
     deploy_extension_to_build_space(source_dir, this_target)
 
 
+def get_version_number(redcap_zip, label='major'):
+    """
+    Return the requested version number, i.e., redcap[major].[minor].[patch].zip.
+    """
+    regex = re.compile(r"([0-9]{1,2})")
+    version_numbers = regex.findall(redcap_zip)
+
+    return {
+        'minor': version_numbers[1],
+        'patch': version_numbers[2]
+    }.get(label, version_numbers[0])
+
+
 def deploy_modules_framework_into_build_space(target_within_build_space="redcap/external_modules/"):
     """
     Deploy UF's REDCap modules framework
