@@ -216,7 +216,9 @@ def package(redcap_zip="."):
     redcap_version_and_package_type = extract_redcap(redcap_zip)
     deploy_plugins_into_build_space()
     deploy_modules_into_build_space()
-    deploy_modules_framework_into_build_space()
+    # Deploy modules framework only if redcap major version is greater or equal than 8
+    if (get_version_number(redcap_zip, 'major') >= '8'):
+        deploy_modules_framework_into_build_space()
     deploy_hooks_into_build_space()
     deploy_hooks_framework_into_build_space()
     deploy_language_to_build_space()
