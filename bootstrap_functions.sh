@@ -73,7 +73,7 @@ END
     log "Installing php7 and required dependencies..."
     apt-get -y install php7.0
     apt-get -y install php7.0-xml
-    apt-get -y install libapache2-mod-php7.0 php7.0-mysql php7.0-curl php7.0-json
+    apt-get -y install libapache2-mod-php7.0 php7.0-mysql php7.0-curl php7.0-json php7.0-gd php7.0-mbstring
     service apache2 restart
 
     # Configure mysqld to be more permissive
