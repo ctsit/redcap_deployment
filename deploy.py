@@ -5,7 +5,6 @@ import os
 import utility
 import utility_redcap
 
-
 def update_redcap_connection(db_settings_file="database.php", salt="abc"):
     """
     Update the database.php file with settings from the chosen environment
@@ -97,6 +96,19 @@ def configure_redcap_cron(deploy=False, force_deployment_of_redcap_cron=False):
         else:
             warn("Not deploying REDCap Cron. Set deploy_redcap_cron=True in instance's ini to deploy REDCap Cron.")
 
+def inlcude_go_prod_plugin(name):
+    """
+    Add go_prod plugin to redcap instance
+    """
+    file_name = name.split('.')[0]
+    plugins_folder = "/var/www/redcap/plugins"
+    with settings(warn_only=True):
+        if run("test -e /vagrant/%s" % name).succeeded:
+            run("unzip /vagrant/%s -d %s" % (name,plugins_folder))
+            run("mv %s/%s %s/go_prod/" % (plugins_folder,file_name,plugins_folder))
+            if run("test -e %s/__MACOSX" % plugins_folder).succeeded:
+                run("rm -r %s/__MACOSX" % plugins_folder)
+
 
 @task(default=True)
 def deploy(name,force=""):
@@ -114,8 +126,10 @@ def deploy(name,force=""):
     move_edocs_folder()
     utility_redcap.set_redcap_base_url()
     utility_redcap.set_hook_functions_file()
+    utility_redcap.deploy_external_modules()
     force_deployment_of_redcap_cron = utility.is_affirmative(force)
     configure_redcap_cron(env.deploy_redcap_cron, force_deployment_of_redcap_cron)
     utility_redcap.test()
+    inlcude_go_prod_plugin()
     utility.delete_remote_my_cnf()
 

@@ -51,8 +51,9 @@ def activate(hook_function, hook_name, redcap_root, pid):
         with settings(warn_only=True):
             if run(" test -e %s" % hook_source_path).failed:
                 abort("Check your parameters. The hook was not found at %s" % hook_source_path)
-        run("mkdir -p %s" % hook_target_folder)
-        run("ln -sf %s %s" % (hook_source_relative_path, hook_target_folder))
+        with settings(user=env.deploy_user):
+            run("mkdir -p %s" % hook_target_folder)
+            run("ln -sf %s %s" % (hook_source_relative_path, hook_target_folder))
 
 
 @task

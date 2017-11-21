@@ -32,7 +32,7 @@ function install_prereqs() {
     log "Executing ${FUNCNAME[0]}"
     REQUIRED_PARAMETER_COUNT=2
     if [ $# != $REQUIRED_PARAMETER_COUNT ]; then
-        echo "${FUNCNAME[0]} Installs and configures MySQL, Apache and php5"
+        echo "${FUNCNAME[0]} Installs and configures MySQL, Apache and php7"
         echo "${FUNCNAME[0]} requires these $REQUIRED_PARAMETER_COUNT parameters in this order:"
         echo "MYSQL_REPO           The MySQL Repo to install from.  E.g., mysql-5.6"
         echo "DATABASE_ROOT_PASS   Password of the MySQL root user."
@@ -45,12 +45,17 @@ function install_prereqs() {
 
     # Try two different keyservers to get the MySQL repository key
     gpg --keyserver pgp.mit.edu --recv-keys 5072E1F5 || gpg --keyserver sks-keyservers.net --recv-keys 5072E1F5
-    gpg -a --export 5072E1F5 | sudo apt-key add -
+    gpg -a --export 5072E1F5 | apt-key add -
 
 cat << END > /etc/apt/sources.list.d/mysql.list
 deb http://repo.mysql.com/apt//debian/ jessie $MYSQL_REPO
 deb-src http://repo.mysql.com/apt//debian/ jessie $MYSQL_REPO
 END
+
+    log "Adding php7 repo to prepare for installation..."
+    echo 'deb http://packages.dotdeb.org jessie all' >> /etc/apt/sources.list
+    echo 'deb-src http://packages.dotdeb.org jessie all' >> /etc/apt/sources.list
+    wget --no-check-certificate -q -O - https://www.dotdeb.org/dotdeb.gpg | apt-key add -
 
     apt-get update
 
@@ -64,7 +69,12 @@ END
 
     apt-get install -y apache2
     apt-get install -y mysql-community-server
-    apt-get install -y php5 php5-mysql php5-mcrypt php5-gd
+
+    log "Installing php7 and required dependencies..."
+    apt-get -y install php7.0
+    apt-get -y install php7.0-xml
+    apt-get -y install libapache2-mod-php7.0 php7.0-mysql php7.0-curl php7.0-json
+    service apache2 restart
 
     # Configure mysqld to be more permissive
     log "Configure mysqld to be more permissive..."
@@ -78,9 +88,9 @@ END
     update-rc.d mysql defaults
 
     # Increase the default upload size limit to allow ginormous files
-    sed -i 's/upload_max_filesize =.*/upload_max_filesize = 20M/' /etc/php5/apache2/php.ini
-    sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php5/apache2/php.ini
-    sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php5/cli/php.ini
+    sed -i 's/upload_max_filesize =.*/upload_max_filesize = 20M/' /etc/php/7.0/apache2/php.ini
+    sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php/7.0/apache2/php.ini
+    sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php/7.0/cli/php.ini
 
     log "Stop apache..."
     service apache2 stop
@@ -146,6 +156,18 @@ ON
     $DATABASE_NAME.*
 TO
     '$DATABASE_USER'@'$DATABASE_HOST'
+IDENTIFIED BY
+    '$DATABASE_PASSWORD';
+SQL
+
+    # grant access to $DATABASE_USER@% so the VM host can access mysql on port 3306
+    mysql -u root -p$DATABASE_ROOT_PASS mysql <<SQL
+GRANT
+    SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, EXECUTE, CREATE VIEW, SHOW VIEW
+ON
+    $DATABASE_NAME.*
+TO
+    '$DATABASE_USER'@'%'
 IDENTIFIED BY
     '$DATABASE_PASSWORD';
 SQL
@@ -291,7 +313,7 @@ function create_tables() {
 function install_xdebug() {
     # Install XDebug for enabling code coverage
     log "Executing: install_xdebug()"
-    apt-get install -y php5-xdebug
+    apt-get install php7.0-xdebug
 
     echo 'Restarting apache server'
     service apache2 restart
@@ -316,9 +338,9 @@ function install_composer_deps() {
         # silence the deprecation notice
         # The Composer\Package\LinkConstraint\VersionConstraint class is deprecated,
         # use Composer\Semver\Constraint\Constraint instead. in phar:///usr/local/bin/composer/src/Composer/Package/LinkConstraint/VersionConstraint.php:17
-        php5dismod xdebug
+        phpdismod xdebug
         composer install 2>&1 | tee ~/log_install_composer_deps
-        php5enmod xdebug
+        phpenmod xdebug
     popd
     log "Done with install_composer_deps()"
 }
@@ -403,8 +425,8 @@ service exim4 restart
 
 function configure_php_mail() {
     echo "Configuring php mail..."
-    sed -e "sX.*sendmail_path.*Xsendmail_path = /usr/sbin/sendmail -t -iX;" -i /etc/php5/apache2/php.ini
-    sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php5/apache2/php.ini
+    sed -e "sX.*sendmail_path.*Xsendmail_path = /usr/sbin/sendmail -t -iX;" -i /etc/php/7.0/apache2/php.ini
+    sed -e "sX.*mail.log.*Xmail.log = syslogX;" -i /etc/php/7.0/apache2/php.ini
 }
 
 function install_pdftk() {
@@ -412,3 +434,8 @@ function install_pdftk() {
     apt-get install -y pdftk
 }
 
+function install_composer() {
+  curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
+  mv /usr/local/bin/composer.phar /usr/local/bin/composer
+  chmod 755 /usr/local/bin/composer
+}

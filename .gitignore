@@ -8,4 +8,5 @@ build
 *.pyc
 .idea
 settings/*.ini
+deploy/modules.json
 v

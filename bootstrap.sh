@@ -51,7 +51,6 @@ install_utils
 
 log "Execute: install_prereqs..."
 install_prereqs $MYSQL_REPO $DB_ROOT_PASS
-apt-get install -y php-pear php5-curl
 
 # prep the /var/www directory
 log "Prep the /var/www file system"
@@ -77,3 +76,6 @@ configure_exim4
 
 # install pdf toolkit
 install_pdftk
+
+# install composer
+install_composer

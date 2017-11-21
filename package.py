@@ -60,6 +60,26 @@ def deploy_hooks_framework_into_build_space(target_within_build_space="redcap/ho
     deploy_extension_to_build_space(source_dir, this_target)
 
 
+def deploy_third_party_dependencies_into_build_space(target_within_build_space="redcap/"):
+    """
+    Deploy third-party dependencies with Composer
+    """
+    # make sure the target directory exists
+    source_dir = env.composer_deployment_source
+    this_target ='/'.join([env.builddir, target_within_build_space])
+    deploy_extension_to_build_space(source_dir, this_target)
+
+
+def deploy_modules_framework_into_build_space(target_within_build_space="redcap/external_modules/"):
+    """
+    Deploy UF's REDCap modules framework
+    """
+    # make sure the target directory exists
+    source_dir = env.module_framework_deployment_source
+    this_target ='/'.join([env.builddir, target_within_build_space])
+    deploy_extension_to_build_space(source_dir, this_target)
+
+
 def deploy_hooks_into_build_space(target_within_build_space="redcap/hooks/library"):
     """
     Deploy each extension into build space by running its own deploy.sh.
@@ -83,6 +103,21 @@ def deploy_hooks_into_build_space(target_within_build_space="redcap/hooks/librar
                 os.mkdir(feature_fp_in_target)
 
             deploy_extension_to_build_space(feature_fp_in_src, feature_fp_in_target)
+
+
+def deploy_modules_into_build_space():
+    """
+    Deploy each module into build space.
+    """
+    if not os.path.exists(env.modules_deployment_source):
+        return
+    with open(env.modules_deployment_source) as f:
+        for module in json.load(f):
+            tempdir = local("mktemp -d 2>&1", capture = True)
+            local("git clone -b %s %s %s" % (module['branch'],module['repo'],tempdir))
+            local("mkdir %s/redcap/modules/%s_v%s" % (env.builddir,module['name'],module['version']))
+            local("cp -r %s/* %s/redcap/modules/%s_v%s" % (tempdir,env.builddir,module['name'],module['version']))
+            local("rm -rf %s" % tempdir)
 
 
 def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins"):
@@ -167,9 +202,12 @@ def package(redcap_zip="."):
     make_builddir(env.builddir)
     redcap_version_and_package_type = extract_redcap(redcap_zip)
     deploy_plugins_into_build_space()
+    deploy_modules_into_build_space()
+    deploy_modules_framework_into_build_space()
     deploy_hooks_into_build_space()
     deploy_hooks_framework_into_build_space()
     deploy_language_to_build_space()
+    deploy_third_party_dependencies_into_build_space()
     apply_patches()
     add_db_upgrade_script()
 
