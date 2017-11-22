@@ -97,7 +97,6 @@ def configure_redcap_cron(deploy=False, force_deployment_of_redcap_cron=False):
         else:
             warn("Not deploying REDCap Cron. Set deploy_redcap_cron=True in instance's ini to deploy REDCap Cron.")
 
-
 @task(default=True)
 def deploy(name,force=""):
     """
