@@ -69,7 +69,6 @@ def deploy_third_party_dependencies_into_build_space(target_within_build_space="
     this_target ='/'.join([env.builddir, target_within_build_space])
     deploy_extension_to_build_space(source_dir, this_target)
 
-
 def get_version_number(redcap_zip, label='major'):
     """
     Return the requested version number, i.e., redcap[major].[minor].[patch].zip.
@@ -77,11 +76,13 @@ def get_version_number(redcap_zip, label='major'):
     regex = re.compile(r"([0-9]{1,2})")
     version_numbers = regex.findall(redcap_zip)
 
-    return {
-        'minor': version_numbers[1],
-        'patch': version_numbers[2]
-    }.get(label, version_numbers[0])
+    if len(version_numbers) != 3:
+        abort("The redcap version specified does not adhere to the semantic versioning system.")
 
+    return int({
+              'minor': version_numbers[1],
+              'patch': version_numbers[2]
+              }.get(label, version_numbers[0]))
 
 def deploy_modules_framework_into_build_space(target_within_build_space="redcap/external_modules/"):
     """
@@ -216,8 +217,8 @@ def package(redcap_zip="."):
     redcap_version_and_package_type = extract_redcap(redcap_zip)
     deploy_plugins_into_build_space()
     deploy_modules_into_build_space()
-    # Deploy modules framework only if redcap major version is greater or equal than 8
-    if (get_version_number(redcap_zip, 'major') >= '8'):
+    # Deploy modules framework only if redcap major version is less than 8
+    if (get_version_number(redcap_zip, 'major') < 8):
         deploy_modules_framework_into_build_space()
     deploy_hooks_into_build_space()
     deploy_hooks_framework_into_build_space()
