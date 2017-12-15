@@ -111,7 +111,7 @@ vagrant up
 
 The vagrant-hostsupdater plugin will make modifications to your hosts file as the VM starts.  If it prompts you for a password, provide the password you use to login to your computer.
 
-After about two minutes, the VM should be accessible at the value of the variable _URL\_OF\_DEPLOYED\_APP_ set in _.env_  By default this is [http://redcap.dev/redcap/](http://redcap.dev/redcap/)
+After about two minutes, the VM should be accessible at the value of the variable _URL\_OF\_DEPLOYED\_APP_ set in _.env_  By default this is [http://redcap.test/redcap/](http://redcap.test/redcap/)
 
 
 ## (Re)deploying REDCap with Fabric Tools
