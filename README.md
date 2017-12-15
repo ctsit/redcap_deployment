@@ -67,14 +67,14 @@ Mac OSX users might enjoy the functionality of the vagrant-triggers plugin.  CTS
 For more details about Vagrant software you can go to [why-vagrant](https://docs.vagrantup.com/v2/why-vagrant/) page.
 
 ### Install REDCap Modules
-REDCap Deployment supports [REDCap Modules](https://github.com/vanderbilt/redcap-external-modules). In order to deploy external modules, you need to set up `deploy/modules.json` file.
+REDCap Deployment supports [REDCap Modules](https://github.com/vanderbilt/redcap-external-modules). In order to deploy external modules, you need to set up `settings/modules.json` file and reference it in your instance's settings.
 
-This project provides an example file, which references a module provided by CTS-IT team. You may copy the file `deploy/modules.json.example` to the name `deploy/modules.json`, and customize it to your needs.
+This project provides an example file, which references a module provided by CTS-IT team. You may copy the file `settings/modules.json.example` to the name `settings/modules.json`, and customize it to your needs.
 ```bash
-cp deploy/modules.json.example deploy/modules.json
+cp settings/modules.json.example settings/modules.json
 ```
 
-Here is how `deploy/modules.json` should look like:
+Here is how `settings/modules.json` should look like:
 ```json
 [
     {
