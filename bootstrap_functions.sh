@@ -88,7 +88,8 @@ END
     update-rc.d mysql defaults
 
     # Increase the default upload size limit to allow ginormous files
-    sed -i 's/upload_max_filesize =.*/upload_max_filesize = 20M/' /etc/php/7.0/apache2/php.ini
+    sed -i 's/upload_max_filesize =.*/upload_max_filesize = 32M/' /etc/php/7.0/apache2/php.ini
+    sed -i 's/post_max_size =.*/post_max_size = 32M/' /etc/php/7.0/apache2/php.ini
     sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php/7.0/apache2/php.ini
     sed -i 's/;date.timezone =.*/date.timezone = America\/New_York/' /etc/php/7.0/cli/php.ini
 
