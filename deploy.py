@@ -118,7 +118,6 @@ def deploy(name,force=""):
     utility_redcap.move_software_to_live()
     move_edocs_folder()
     utility_redcap.set_redcap_base_url()
-    utility_redcap.set_hook_functions_file()
     force_deployment_of_redcap_cron = utility.is_affirmative(force)
     configure_redcap_cron(env.deploy_redcap_cron, force_deployment_of_redcap_cron)
     utility_redcap.test()
