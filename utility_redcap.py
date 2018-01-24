@@ -91,14 +91,6 @@ def set_redcap_config(field_name="", value=""):
         run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
 
 
-def set_hook_functions_file():
-    """
-    Sets the hook_functions_file
-    """
-    value = '%s/%s' % (env.live_project_full_path,env.hooks_framework_path)
-    set_redcap_config('hook_functions_file',value)
-
-
 def test(warn_only=False):
     """
     Run all tests against a running REDCap instance
