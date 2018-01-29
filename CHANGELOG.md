@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.0.0] - 2018-01-28
 ### Removed
-- Remove all support for hook deployment (Marly)
+- Remove all support for hook packaging, deployment and activation (Marly)
 - Remove plugins that have been replaced by modules (Marly)
 
 ### Added
