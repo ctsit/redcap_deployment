@@ -141,7 +141,7 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        sys.exit("ERROR: REDCap url and REDCap version directory parameters must be supplied for these tests. e.g.\n\npython tests/test.py http://redcap.dev/redcap/ redcap_v6.18.1/ ")
+        sys.exit("ERROR: REDCap url and REDCap version directory parameters must be supplied for these tests. e.g.\n\npython tests/test.py http://redcap.test/redcap/ redcap_v6.18.1/ ")
     redcap_url = sys.argv[1]
     redcap_version = sys.argv[2]
     del sys.argv[1:]

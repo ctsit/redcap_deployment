@@ -49,17 +49,6 @@ def extract_redcap(redcap_zip="."):
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
     return redcap_version_and_package_type
 
-
-def deploy_hooks_framework_into_build_space(target_within_build_space="redcap/hooks/"):
-    """
-    Deploy UF's REDCap hooks framework
-    """
-    # make sure the target directory exists
-    source_dir = env.hook_framework_deployment_source
-    this_target ='/'.join([env.builddir, target_within_build_space])
-    deploy_extension_to_build_space(source_dir, this_target)
-
-
 def deploy_third_party_dependencies_into_build_space(target_within_build_space="redcap/"):
     """
     Deploy third-party dependencies with Composer
@@ -69,6 +58,20 @@ def deploy_third_party_dependencies_into_build_space(target_within_build_space="
     this_target ='/'.join([env.builddir, target_within_build_space])
     deploy_extension_to_build_space(source_dir, this_target)
 
+def get_version_number(redcap_zip, label='major'):
+    """
+    Return the requested version number, i.e., redcap[major].[minor].[patch].zip.
+    """
+    regex = re.compile(r"([0-9]{1,2})")
+    version_numbers = regex.findall(redcap_zip)
+
+    if len(version_numbers) != 3:
+        abort("The redcap version specified does not adhere to the semantic versioning system.")
+
+    return int({
+              'minor': version_numbers[1],
+              'patch': version_numbers[2]
+              }.get(label, version_numbers[0]))
 
 def deploy_modules_framework_into_build_space(target_within_build_space="redcap/external_modules/"):
     """
@@ -78,31 +81,6 @@ def deploy_modules_framework_into_build_space(target_within_build_space="redcap/
     source_dir = env.module_framework_deployment_source
     this_target ='/'.join([env.builddir, target_within_build_space])
     deploy_extension_to_build_space(source_dir, this_target)
-
-
-def deploy_hooks_into_build_space(target_within_build_space="redcap/hooks/library"):
-    """
-    Deploy each extension into build space by running its own deploy.sh.
-    Lacking a deploy.sh, copy the extension files to the build space.
-    For each extension run test.sh if it exists.
-    """
-    # make sure the target directory exists
-    extension_dir_in_build_space='/'.join([env.builddir, target_within_build_space])
-    with settings(warn_only=True):
-        if local("test -d %s" % extension_dir_in_build_space).failed:
-            local("mkdir -p %s" % extension_dir_in_build_space)
-
-    # For each type of hook, make the target directory and deploy its children
-    for feature in os.listdir(env.hooks_deployment_source):
-        # make the target directory
-        feature_fp_in_src = '/'.join([env.hooks_deployment_source, feature])
-        if os.path.isdir(feature_fp_in_src):
-            # file is a hook type
-            feature_fp_in_target = extension_dir_in_build_space
-            if not os.path.exists(feature_fp_in_target):
-                os.mkdir(feature_fp_in_target)
-
-            deploy_extension_to_build_space(feature_fp_in_src, feature_fp_in_target)
 
 
 def deploy_modules_into_build_space():
@@ -203,9 +181,9 @@ def package(redcap_zip="."):
     redcap_version_and_package_type = extract_redcap(redcap_zip)
     deploy_plugins_into_build_space()
     deploy_modules_into_build_space()
-    deploy_modules_framework_into_build_space()
-    deploy_hooks_into_build_space()
-    deploy_hooks_framework_into_build_space()
+    # Deploy modules framework only if redcap major version is less than 8
+    if (get_version_number(redcap_zip, 'major') < 8):
+        deploy_modules_framework_into_build_space()
     deploy_language_to_build_space()
     deploy_third_party_dependencies_into_build_space()
     apply_patches()

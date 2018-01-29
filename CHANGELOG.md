@@ -2,15 +2,32 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.0] - 2018-01-28
+### Removed
+- Remove all support for hook packaging, deployment and activation (Marly)
+- Remove plugins that have been replaced by modules (Marly)
+
+### Added
+- Add a cron task to deploy.py (Philip Chase)
+- Add major version checking before deploying modules framework (Marly)
+- Add deployment script and related files for autonotify3 (marlycormar)
+- Add deployment script to include go_prod plugin in redcap instance (sreejakann)
+
+### Changed
+- Increase PHP's post_max_size and upload_max_filesize to 32mb in Dev VM (Philip Chase)
+- Change the domain name of the vagrant VM from redcap.dev to redcap.test (Philip Chase)
+- Recurse through REDCap temp space to make even subdirectories writeable (Philip Chase)
+- Fixing composer dependencies installation. (Tiago Bember Simeao)
+
 
 ## [1.3.0] - 2017-11-13
-## Added
+### Added
 - Add support for External Modules. (Tiago Bember Simeao)
 - Add support for installing External Modules
 - Add enable/disable module methods for redcap (marlycormar)
 - Provide example modules.json config file for module installation
 
-## Changed
+### Changed
 - Upgrade development environment to PHP7 (marlycormar, tbembersimeao)
 - Grant access to DATABASE_USER@% so the VM host can access mysql on port 3306 (Philip Chase)
 - Fixing composer installation. (Tiago Bember Simeao)

@@ -52,7 +52,7 @@ def upload_package_and_extract(name):
                 run('chmod ug+w %s/webtools2/pdf/font/unifont/*' % env.upload_target_backup_dir)
         run('rsync -rc %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
         # make sure the temp file directory in redcap web space will be writeable
-        run('chmod g+w %s/temp' % env.upload_target_backup_dir)
+        run('chmod -R g+w %s/temp' % env.upload_target_backup_dir)
         # Remove the temp directories
         run('rm -rf %s %s' % (temp1, temp2))
 
@@ -89,14 +89,6 @@ def set_redcap_config(field_name="", value=""):
     """
     with settings(user=env.deploy_user):
         run('echo "update redcap_config set value=\'%s\' where field_name = \'%s\';" | mysql' % (value, field_name))
-
-
-def set_hook_functions_file():
-    """
-    Sets the hook_functions_file
-    """
-    value = '%s/%s' % (env.live_project_full_path,env.hooks_framework_path)
-    set_redcap_config('hook_functions_file',value)
 
 
 def test(warn_only=False):
