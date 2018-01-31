@@ -2,6 +2,11 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.1] - 2018-01-31
+### Changed
+- Rename autonotify3 example file for shib environments (Philip Chase)
+
+
 ## [2.0.0] - 2018-01-28
 ### Removed
 - Remove all support for hook packaging, deployment and activation (Marly)
