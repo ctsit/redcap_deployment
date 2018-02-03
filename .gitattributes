@@ -1,0 +1,3 @@
+*.sh crlf=input
+.env crlf=input
+*.txt crlf=input
