@@ -74,6 +74,9 @@ def move_software_to_live():
         # now switch the new code to live
         run('ln -s %s %s' % (env.upload_target_backup_dir,env.live_project_full_path))
 
+        # update directory permissions
+        run('chmod 775 %s/modules' %env.upload_target_backup_dir)
+
 
 def set_redcap_base_url():
     """
