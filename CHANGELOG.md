@@ -2,6 +2,15 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.2] - 2018-02-15
+### Added
+- Add .gitattributes file to manage line ending configuration. (Matthew Koch)
+
+### Changed
+- Change modules directory permissions (Marly Cormar)
+- Update autonotify repo in deploy.sh (Marly Cormar)
+
+
 ## [2.0.1] - 2018-01-31
 ### Changed
 - Rename autonotify3 example file for shib environments (Philip Chase)
