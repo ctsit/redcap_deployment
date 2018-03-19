@@ -8,7 +8,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # get source files
 TEMPDIR=`mktemp -d`
-git clone https://github.com/123andy/redcap-plugin-autonotify.git $TEMPDIR
+git clone https://github.com/pbchase/redcap-plugin-autonotify.git $TEMPDIR
 
 # copy files to the correct target locations
 mkdir -p $MYTARGETDIR

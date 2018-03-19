@@ -85,6 +85,12 @@ def move_edocs_folder():
                     if file_name == "index.html":
                         run('rm -r %s' % default_edoc_path)
 
+@task()
+def cron(deploy=True, force_deployment_of_redcap_cron= True):
+    """
+    Deploy the REDCap Cron task.
+    """
+    configure_redcap_cron(deploy, force_deployment_of_redcap_cron)
 
 def configure_redcap_cron(deploy=False, force_deployment_of_redcap_cron=False):
     crond_for_redcap = '/etc/cron.d/%s' % env.project_path
@@ -96,7 +102,6 @@ def configure_redcap_cron(deploy=False, force_deployment_of_redcap_cron=False):
                     % (env.live_project_full_path, crond_for_redcap))
         else:
             warn("Not deploying REDCap Cron. Set deploy_redcap_cron=True in instance's ini to deploy REDCap Cron.")
-
 
 @task(default=True)
 def deploy(name,force=""):
@@ -113,7 +118,6 @@ def deploy(name,force=""):
     utility_redcap.move_software_to_live()
     move_edocs_folder()
     utility_redcap.set_redcap_base_url()
-    utility_redcap.set_hook_functions_file()
     force_deployment_of_redcap_cron = utility.is_affirmative(force)
     configure_redcap_cron(env.deploy_redcap_cron, force_deployment_of_redcap_cron)
     utility_redcap.test()

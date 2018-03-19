@@ -53,7 +53,6 @@ import deploy
 import upgrade
 import utility
 import utility_redcap
-import hook
 import plugins
 import module
 
@@ -107,34 +106,6 @@ def online():
     """
 
     upgrade.online()
-
-
-@task
-def activate_hook(hook_function="", hook_name="", pid=""):
-    """
-    Activate the hook `hook_name` as type of `hook_function` for the project named by `pid`.
-
-    If PID is omitted, the hook will be activated globally.
-
-    :param hook_function: one of the 13 named REDCap 'hook functions'
-    :param hook_name: the name of the hook file with or without the .php extension
-    :param pid: the ID of the project on which this hook should be activated. If left blank the hook will be activated globally
-    :return:
-    """
-    redcap_root = env.live_project_full_path
-    hook.activate(hook_function, hook_name, redcap_root, pid)
-
-
-@task
-def test_hook(hook_function="", hook_path=""):
-    """
-    Symbolically link a host file that contains a redcap hook into the hooks library space and activate that hook globally
-
-    :param hook_function: one of the 13 named REDCap 'hook functions'
-    :param hook_path: path to hook file relative to VagrantFile
-    :return:
-    """
-    hook.test(hook_function, hook_path)
 
 
 @task
