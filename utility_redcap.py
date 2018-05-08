@@ -30,7 +30,7 @@ def make_upload_target():
         run("mkdir -p %(upload_target_backup_dir)s" % env)
 
 
-def upload_package_and_extract(name):
+def upload_package_and_extract(name, upgrade=False):
     """
     Upload the redcap package and extract it into the directory from which new
     software will be deployed, e.g., /var/www.backup/redcap-20160117T1543/
@@ -50,7 +50,13 @@ def upload_package_and_extract(name):
         with settings(warn_only=True):
             if run('test -d %s/webtools2/pdf/font/unifont' % env.upload_target_backup_dir).succeeded:
                 run('chmod ug+w %s/webtools2/pdf/font/unifont/*' % env.upload_target_backup_dir)
-        run('rsync -rc %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
+        # Write the new code on top of the existing code
+        if upgrade == False:
+            run('rsync -rc %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
+        else:
+            # exclude some files during upgrades
+            exclusions = "--exclude=database.php"
+            run('rsync -rc %s %s/redcap/* %s' % (exclusions, temp2, env.upload_target_backup_dir))
         # make sure the temp file directory in redcap web space will be writeable
         run('chmod -R g+w %s/temp' % env.upload_target_backup_dir)
         # Remove the temp directories
@@ -111,5 +117,3 @@ def test(warn_only=False):
                 abort("One or more tests failed.")
         else:
             return(True)
-
-

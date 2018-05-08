@@ -15,9 +15,10 @@ def upgrade(name):
     as packaged by this fabfile
     """
 
+    upgrade = True
     utility_redcap.make_upload_target()
     copy_running_code_to_backup_dir()
-    utility_redcap.upload_package_and_extract(name)
+    utility_redcap.upload_package_and_extract(name, upgrade)
     utility.write_remote_my_cnf()
     offline()
     utility_redcap.move_software_to_live()
