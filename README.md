@@ -127,7 +127,7 @@ pip3 install fabric3
 pip3 install pycurl
 ```
 
-If you have problems install or using these libraries, you might be well-served to setup a Python _virtual environment_. For more information on that see [Virtual Environment Notes](docs/virtual_env_notes.md)
+If you have problems install or using these libraries, you might be well-served to setup a Python _virtual environment_. For more information on that see [Virtual Environment Notes](docs/virtual_env_notes.md)  On Mac OSX, issues with PyCurl can be addressed with the procedures described at [Installing PycURL on macOS High Sierra](https://cscheng.info/2018/01/26/installing-pycurl-on-macos-high-sierra.html)
 
 
 ### Configure Fabric for the Virtual Machine
