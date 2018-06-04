@@ -66,7 +66,7 @@ def create_redcap_tables(resource_path = "Resources/sql"):
 
         files = run('ls -v1 %s/create_demo_db*.sql' % redcap_sql_dir)
         for file in files.splitlines():
-            print("Executing sql file %s" % file)
+            print(("Executing sql file %s" % file))
             run('mysql < %s' % file)
 
 

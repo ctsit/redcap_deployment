@@ -1,7 +1,7 @@
 import unittest
 import pycurl
 import sys
-from StringIO import StringIO
+from io import BytesIO
 import re
 
 class Weburl():
@@ -11,14 +11,14 @@ class Weburl():
 
     def get(self, URL, FOLLOWLOCATION = False):
         self.URL = URL
-        buffer = StringIO()
+        buffer = BytesIO()
         c = pycurl.Curl()
         c.setopt(c.URL, URL)
         c.setopt(c.WRITEDATA, buffer)
         c.setopt(pycurl.FOLLOWLOCATION, FOLLOWLOCATION)
         c.perform()
         c.close()
-        return buffer.getvalue().replace('\r\n', '').replace('\n', '')
+        return buffer.getvalue().decode('UTF-8').replace('\r\n', '').replace('\n', '')
 
 class UnauthenticatedAccessTestCase(unittest.TestCase):
 

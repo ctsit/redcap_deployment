@@ -58,7 +58,7 @@ def delete_all_tables(confirm=""):
                 % (env.database_name, env.database_name))
         delete_remote_my_cnf()
     else:
-        print "\nProvide a confirmation string (e.g. 'y', 'yes') if you want to delete all MySQL tables for this instance."
+        print("\nProvide a confirmation string (e.g. 'y', 'yes') if you want to delete all MySQL tables for this instance.")
 
 
 def apply_local_sql_to_db(sql_file=""):

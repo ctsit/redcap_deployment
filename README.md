@@ -23,7 +23,7 @@ This project provides a virtual machine wherein it hosts the local REDCap instan
 
 ### Packaging and Deployment
 
-The packaging and deployment tools are designed to deploy REDCap to Debian Linux hosts. They may or may not work with non-Debian REDCap hosts.  They cannot deploy REDCap to Windows hosts. The packaging and deployment tools are written using the [Fabric](http://www.fabfile.org/) system. Fabric is written in Python, so both Python 2.7 and Fabric must be installed to do packaging and deployment.
+The packaging and deployment tools are designed to deploy REDCap to Debian Linux hosts. They may or may not work with non-Debian REDCap hosts.  They cannot deploy REDCap to Windows hosts. The packaging and deployment tools are written using the [Fabric](http://www.fabfile.org/) system. Fabric is written in Python3, so both Python 3 and Fabric3 must be installed to do packaging and deployment.
 
 
 ## Installing dependencies
@@ -123,13 +123,11 @@ In addition to the REDCap deployed by the Vagrant provisioning scripts, this rep
 The Fabric tools require a few python libraries that might not be installed on your computer.  To install them run these commands:
 
 ```bash
-pip install fabric
-pip install configparser
-pip install pycurl
-pip install cryptography
+pip3 install fabric3
+pip3 install pycurl
 ```
 
-If you have problems install or using these libraries, you might be well-served to setup a Python _virtual environment_. For more information on that see [Virtual Environment Notes](docs/virtual_env_notes.md)
+If you have problems install or using these libraries, you might be well-served to setup a Python _virtual environment_. For more information on that see [Virtual Environment Notes](docs/virtual_env_notes.md)  On Mac OSX, issues with PyCurl can be addressed with the procedures described at [Installing PycURL on macOS High Sierra](https://cscheng.info/2018/01/26/installing-pycurl-on-macos-high-sierra.html)
 
 
 ### Configure Fabric for the Virtual Machine

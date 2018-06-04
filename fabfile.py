@@ -147,7 +147,7 @@ def define_default_env(settings_file_path="settings/defaults.ini"):
     if os.path.exists(settings_file_path):
         config.read(settings_file_path)
     else:
-        print("The secrets file path cannot be found. It is set to: %s" % settings_file_path)
+        print(("The secrets file path cannot be found. It is set to: %s" % settings_file_path))
         abort("Secrets File not set")
 
     section="DEFAULT"
@@ -167,7 +167,7 @@ def define_env(settings_file_path=""):
     if os.path.exists(settings_file_path):
         config.read(settings_file_path)
     else:
-        print("The secrets file path cannot be found. It is set to: %s" % settings_file_path)
+        print(("The secrets file path cannot be found. It is set to: %s" % settings_file_path))
         abort("Secrets File not set")
 
     utility.get_config('deploy_user', settings_file_path)
