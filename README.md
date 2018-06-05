@@ -158,11 +158,13 @@ fab vagrant delete_all_tables deploy:redcap-7.2.2.tgz
 Any upgrade to 7.3.0 would be as simple as
 
 ```bash
-fab vagrant package:redcap7.3.0_upgrade.zip
-fab vagrant upgrade:redcap-7.3.0_upgrade.tgz
+fab vagrant package:redcap7.3.0.zip
+fab vagrant upgrade:redcap-7.3.0.tgz
 ```
 
-If the tests fail and the server is offline, you can put it back online with
+Note that you do not have to use REDCap's _upgrade_ zip files. The `upgrade` method of the Fabric tools knows to not deploy the few files that would be hazardous to an existing REDCap instance.
+
+If the tests fail and the server is left offline, you can put it back online with
 
 ```bash
 fab vagrant online
