@@ -15,9 +15,10 @@ def upgrade(name):
     as packaged by this fabfile
     """
 
+    upgrade = True
     utility_redcap.make_upload_target()
     copy_running_code_to_backup_dir()
-    utility_redcap.upload_package_and_extract(name)
+    utility_redcap.upload_package_and_extract(name, upgrade)
     utility.write_remote_my_cnf()
     offline()
     utility_redcap.move_software_to_live()
@@ -66,11 +67,11 @@ def apply_incremental_db_changes(old, new):
         version = utility.convert_version_to_int(version)
         if version > old and version <= new_as_an_int:
             if fnmatch.fnmatch(file, "*.php"):
-                print (file + " is a php file!\n")
+                print((file + " is a php file!\n"))
                 with settings(user=env.deploy_user):
                     run('php %s %s | mysql' % (path_to_sql_generation,file))
             else:
-                print("Executing sql file %s" % file)
+                print(("Executing sql file %s" % file))
                 with settings(user=env.deploy_user):
                     run('mysql < %s' % file)
     # Finalize upgrade

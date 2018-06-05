@@ -15,7 +15,7 @@ def make_builddir(builddir="build"):
         if local("test -e %s" % builddir).failed:
             local("mkdir %s" % builddir)
         else:
-            print ("Directory %s already exists!" % builddir)
+            print(("Directory %s already exists!" % builddir))
 
 
 @task
@@ -43,7 +43,7 @@ def extract_redcap(redcap_zip="."):
             abort("The redcap version specified is neither a zip file nor a path.")
     print (redcap_path)
     match = re.search(r"(redcap)(\d+.\d+.\d+)(|_upgrade)(.zip)", redcap_path)
-    print(match.group(2))
+    print((match.group(2)))
     env.redcap_version = match.group(2)
     redcap_version_and_package_type = match.group(2) + match.group(3)
     local("unzip -qo %s -d %s" % (redcap_path, env.builddir))
@@ -163,7 +163,7 @@ def apply_patches():
 
 def add_db_upgrade_script():
     target_dir = '/'.join([env.builddir, "redcap", "redcap_v%s" % env.redcap_version])
-    print target_dir
+    print(target_dir)
     local('cp deploy/files/generate_upgrade_sql_from_php.php %s' % target_dir)
 
 
