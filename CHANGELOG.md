@@ -2,6 +2,16 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.0] - 2018-06-05
+### Changed
+- Upgrade to Python3 and Fabric3 (Philip Chase)
+
+### Added
+- Provide support for using REDCap's non-upgrade packages during upgrades (Philip Chase)
+- Add reference to 'Installing PycURL on macOS High Sierra' for PyCurl help (Philip Chase)
+- Add PHP Zip extension and SOAP package in Dev VM. (Tiago Bember Simeao)
+
+
 ## [2.0.2] - 2018-02-15
 ### Added
 - Add .gitattributes file to manage line ending configuration. (Matthew Koch)
