@@ -2,6 +2,12 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.1] - 2018-06-05
+### Changed
+- Turn off mysql's secure-file-priv in the dev VM (Philip Chase)
+- Exclude hook_functions.php from deployment during upgrade processes (Philip Chase)
+
+
 ## [3.0.0] - 2018-06-05
 ### Changed
 - Upgrade to Python3 and Fabric3 (Philip Chase)

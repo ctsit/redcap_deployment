@@ -55,7 +55,7 @@ def upload_package_and_extract(name, upgrade=False):
             run('rsync -rc %s/redcap/* %s' % (temp2, env.upload_target_backup_dir))
         else:
             # exclude some files during upgrades
-            exclusions = "--exclude=database.php"
+            exclusions = "--exclude=database.php --exclude=hook_functions.php"
             run('rsync -rc %s %s/redcap/* %s' % (exclusions, temp2, env.upload_target_backup_dir))
         # make sure the temp file directory in redcap web space will be writeable
         run('chmod -R g+w %s/temp' % env.upload_target_backup_dir)
