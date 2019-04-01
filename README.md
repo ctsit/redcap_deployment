@@ -60,10 +60,6 @@ vagrant plugin install vagrant-hostsupdater
 vagrant plugin install vagrant-env
 ```
 
-Mac OSX users might enjoy the functionality of the vagrant-triggers plugin.  CTS-IT uses it to open the Chrome browser to the root of the web site. Run this command at a shell to install it.
-
-    vagrant plugin install vagrant-triggers
-
 For more details about Vagrant software you can go to [why-vagrant](https://docs.vagrantup.com/v2/why-vagrant/) page.
 
 ### Install REDCap Modules
