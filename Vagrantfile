@@ -44,10 +44,8 @@ Vagrant.configure(2) do |config|
   config.vm.provision "shell", run: "always", inline: "service apache2 restart"
 
   # Help the developer to find the app :)
-  if Vagrant.has_plugin?('vagrant-triggers')
-    config.trigger.after [:up] do
-      system("open -a 'Google Chrome.app' #{ENV['URL_OF_DEPLOYED_APP']}")
-    end
+  config.trigger.after [:up] do
+    system("open -a 'Google Chrome.app' #{ENV['URL_OF_DEPLOYED_APP']}")
   end
 
 end
