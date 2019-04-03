@@ -2,6 +2,13 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.2] - 2019-04-03
+### Changed
+- Remove vagrant-triggers installation instructions. (Marly Cormar)
+- Use Vagrant's built-in triggers functionality (Philip Chase)
+- Update vm to php7.2. (Marly Cormar)
+
+
 ## [3.0.1] - 2018-06-05
 ### Changed
 - Turn off mysql's secure-file-priv in the dev VM (Philip Chase)
