@@ -42,18 +42,19 @@ function install_prereqs() {
         DATABASE_ROOT_PASS=$2
     fi
 
+    sudo apt-get -y install dirmngr --install-recommends
 
     # Try two different keyservers to get the MySQL repository key
     gpg --keyserver pgp.mit.edu --recv-keys 5072E1F5 || gpg --keyserver sks-keyservers.net --recv-keys 5072E1F5
     gpg -a --export 5072E1F5 | apt-key add -
 
 cat << END > /etc/apt/sources.list.d/mysql.list
-deb http://repo.mysql.com/apt//debian/ jessie $MYSQL_REPO
-deb-src http://repo.mysql.com/apt//debian/ jessie $MYSQL_REPO
+deb http://repo.mysql.com/apt/debian/ stretch $MYSQL_REPO
+deb-src http://repo.mysql.com/apt/debian/ stretch $MYSQL_REPO
 END
 
     log "Adding php7.2 repo to prepare for installation..."
-    sudo apt-get install apt-transport-https lsb-release ca-certificates
+    sudo apt-get -y install apt-transport-https lsb-release ca-certificates
     sudo wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
     echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list
 
