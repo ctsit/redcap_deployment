@@ -388,7 +388,7 @@ function reset_db {
 
 function configure_exim4() {
     echo "Installing and configuring exim4..."
-    sudo apt-get -y install exim4
+    apt-get install -y exim4
 cat << EOF > /etc/exim4/update-exim4.conf.conf
 dc_eximconfig_configtype='satellite'
 dc_other_hostnames='localhost'
