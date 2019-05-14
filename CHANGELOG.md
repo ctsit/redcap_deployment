@@ -2,6 +2,15 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [3.1.0] - 2019-05-14
+### Changed
+- Change base os to debian stretch in the env file. (Marly Cormar)
+- Installing exim4 as some packages are not by default installed. (Marly Cormar)
+- Install dirmngr and update the source repos. (Marly Cormar)
+- Remove obsolete hooks config. (Marly Cormar)
+
+
 ## [3.0.2] - 2019-04-03
 ### Changed
 - Remove vagrant-triggers installation instructions. (Marly Cormar)
