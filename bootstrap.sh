@@ -38,10 +38,10 @@ cd /etc/apt/
 netselect-apt -c US > ~/netselect-apt.log 2>&1
 
 # Setting oldstable debian repository
-echo "deb http://debian.gtisc.gatech.edu/debian/ oldstable main contrib" > /etc/apt/sources.list
-echo "deb-src http://debian.gtisc.gatech.edu/debian/ oldstable main contrib" >> /etc/apt/sources.list
-echo "deb http://security.debian.org/ oldstable/updates main contrib" >> /etc/apt/sources.list
-echo "deb-src http://security.debian.org/ oldstable/updates main contrib" >> /etc/apt/sources.list
+echo "deb http://deb.debian.org/debian stretch main contrib" > /etc/apt/sources.list
+echo "deb-src http://deb.debian.org/debian stretch main contrib" >> /etc/apt/sources.list
+echo "deb http://deb.debian.org/debian stretch-updates main contrib" >> /etc/apt/sources.list
+echo "deb-src http://deb.debian.org/debian stretch-updates main contrib" >> /etc/apt/sources.list
 
 # Update our repos
 log "Updating apt package indicies..."
