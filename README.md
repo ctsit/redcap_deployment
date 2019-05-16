@@ -60,7 +60,7 @@ vagrant plugin install vagrant-hostsupdater
 vagrant plugin install vagrant-env
 ```
 
-For more details about Vagrant software you can go to [why-vagrant](https://docs.vagrantup.com/v2/why-vagrant/) page.
+For more details about Vagrant software you can go to [why-vagrant](https://www.vagrantup.com/intro/index.html#why-vagrant-) page.
 
 ### Install REDCap Modules
 REDCap Deployment supports [REDCap Modules](https://github.com/vanderbilt/redcap-external-modules). In order to deploy external modules, you need to set up `settings/modules.json` file and reference it in your instance's settings.
@@ -91,10 +91,14 @@ You must provide a copy of the REDCap software from <https://projectredcap.org/>
 ## Configure the Virtual Machine
 
 The development environment needs to be configured before it can be started.
-Copy the file _example.env.txt_ to the name _.env_ and customize it for your
+Copy the file `example.env.txt` to the name `.env` and customize it for your
 use. Minimally, you will need to set _smtp\_smarthost_ to the dns name of a mail
 server your development host can use to deliver mail.  This will allow you to
 better test features that send email.
+
+```bash
+cp example.env.txt .env
+```
 
 
 ## Using the testing and development environment
@@ -107,7 +111,7 @@ vagrant up
 
 The vagrant-hostsupdater plugin will make modifications to your hosts file as the VM starts.  If it prompts you for a password, provide the password you use to login to your computer.
 
-After about two minutes, the VM should be accessible at the value of the variable _URL\_OF\_DEPLOYED\_APP_ set in _.env_  By default this is [http://redcap.test/redcap/](http://redcap.test/redcap/)
+After about two minutes, the VM should be accessible at the value of the variable `URL_OF_DEPLOYED_APP` set in `.env`. By default this is [http://redcap.test/redcap/](http://redcap.test/redcap/)
 
 
 ## (Re)deploying REDCap with Fabric Tools
@@ -123,7 +127,13 @@ pip3 install fabric3
 pip3 install pycurl
 ```
 
-On Mac OSX, issues with PyCurl can be addressed with the procedures described at [Installing PycURL on macOS High Sierra](https://cscheng.info/2018/01/26/installing-pycurl-on-macos-high-sierra.html)
+On macOSX, you will also need pycurl - and therefore, pip  - for python2 on macOSX, it is reccomended not to use system python2 for this. Homebrew's python2 comes with `pip` preinstalled.
+
+```bash
+brew install python@2
+```
+
+On Mac OSX, issues with PyCurl can be addressed with the procedures described at [Installing PycURL on macOS High Sierra](https://cscheng.info/2018/01/26/installing-pycurl-on-macos-high-sierra.html), this affects both `python2` and `python3` so run with both `pip` and `pip3`.
 
 
 ### Configure Fabric for the Virtual Machine
@@ -148,6 +158,14 @@ fab vagrant package:redcap7.2.2.zip
 fab vagrant delete_all_tables deploy:redcap-7.2.2.tgz
 ```
 
+If running `fab vagrant delete_all_tables deploy:redcap-7.2.2.tgz` fails with the error  
+`libcurl link-time ssl backend (none/other) is different from compile-time ssl backend (openssl)`  
+try reinstalling pycurl with the following command and retrying.
+
+```bash
+PYCURL_SSL_LIBRARY=openssl LDFLAGS="-L/usr/local/opt/openssl/lib" CPPFLAGS="-I/usr/local/opt/openssl/include" pip install --no-cache-dir --compile --ignore-installed --install-option="--with-openssl" --global-option="--with-openssl" pycurl
+```
+
 
 ### REDCap upgrade
 
@@ -165,6 +183,7 @@ If the tests fail and the server is left offline, you can put it back online wit
 ```bash
 fab vagrant online
 ```
+
 
 ## Language Configuration
 
