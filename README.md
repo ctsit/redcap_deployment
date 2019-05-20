@@ -58,6 +58,7 @@ Vagrant will need a few plugins for this VM. On any platform, run these commands
 ```bash
 vagrant plugin install vagrant-hostsupdater
 vagrant plugin install vagrant-env
+vagrant plugin install vagrant-vbguest
 ```
 
 For more details about Vagrant software you can go to [why-vagrant](https://www.vagrantup.com/intro/index.html#why-vagrant-) page.
