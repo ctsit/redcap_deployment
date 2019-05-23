@@ -1,8 +1,11 @@
 import unittest
-import pycurl
 import sys
-from io import BytesIO
 import re
+
+try:
+    from urllib.request import urlopen # Python3
+except ImportError:
+    from urllib2 import urlopen # Python2
 
 class Weburl():
 
@@ -11,14 +14,9 @@ class Weburl():
 
     def get(self, URL, FOLLOWLOCATION = False):
         self.URL = URL
-        buffer = BytesIO()
-        c = pycurl.Curl()
-        c.setopt(c.URL, URL)
-        c.setopt(c.WRITEDATA, buffer)
-        c.setopt(pycurl.FOLLOWLOCATION, FOLLOWLOCATION)
-        c.perform()
-        c.close()
-        return buffer.getvalue().decode('UTF-8').replace('\r\n', '').replace('\n', '')
+        response = urlopen(URL)
+        return response.read().decode('UTF-8').replace('\r\n', '').replace('\n', '')
+
 
 class UnauthenticatedAccessTestCase(unittest.TestCase):
 

@@ -125,16 +125,7 @@ The Fabric tools require a few python libraries that might not be installed on y
 
 ```bash
 pip3 install fabric3
-pip3 install pycurl
 ```
-
-On macOSX, you will also need pycurl - and therefore, pip  - for python2 on macOSX, it is reccomended not to use system python2 for this. Homebrew's python2 comes with `pip` preinstalled.
-
-```bash
-brew install python@2
-```
-
-On Mac OSX, issues with PyCurl can be addressed with the procedures described at [Installing PycURL on macOS High Sierra](https://cscheng.info/2018/01/26/installing-pycurl-on-macos-high-sierra.html), this affects both `python2` and `python3` so run with both `pip` and `pip3`.
 
 
 ### Configure Fabric for the Virtual Machine
@@ -157,14 +148,6 @@ If you have a REDCap zip file, say redcap7.2.2.zip, you can deploy it to the loc
 fab vagrant server_setup
 fab vagrant package:redcap7.2.2.zip
 fab vagrant delete_all_tables deploy:redcap-7.2.2.tgz
-```
-
-If running `fab vagrant delete_all_tables deploy:redcap-7.2.2.tgz` fails with the error  
-`libcurl link-time ssl backend (none/other) is different from compile-time ssl backend (openssl)`  
-try reinstalling pycurl with the following command and retrying.
-
-```bash
-PYCURL_SSL_LIBRARY=openssl LDFLAGS="-L/usr/local/opt/openssl/lib" CPPFLAGS="-I/usr/local/opt/openssl/include" pip install --no-cache-dir --compile --ignore-installed --install-option="--with-openssl" --global-option="--with-openssl" pycurl
 ```
 
 
