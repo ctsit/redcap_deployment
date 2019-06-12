@@ -10,8 +10,8 @@ redcap_deployment_root_dir="/Users/kyle.chesney/projects/redcap_deployment"
 
 # Suggested use:
 # 1 make callable anywhere:
-# 1.1 chmod +x vague_rant.sh
-# 1.2 cp vague_rant.sh /usr/local/bin/vt
+# 1.1 chmod +x vt
+# 1.2 cp vt /usr/local/bin/vt
 # 2 vt path/to/module_to_test/
 
 args=("$@")
