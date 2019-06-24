@@ -26,6 +26,9 @@ function install_utils() {
         tree colordiff libxml2-utils xmlstarlet nmap
 
     chown -R vagrant.vagrant /home/vagrant
+
+    cat /vagrant/files/bashrc >> /root/.bashrc
+    cat /vagrant/files/bashrc >> /home/vagrant/.bashrc
 }
 
 function install_prereqs() {
