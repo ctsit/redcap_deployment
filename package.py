@@ -157,6 +157,7 @@ def apply_patches():
     for repo in json.loads(env.patch_repos):
         tempdir = local('mktemp -d 2>&1', capture = True)
         local('git clone %s %s' % (repo,tempdir))
+        local('chmod 755 %s/deploy.sh' % (tempdir))
         local('%s/deploy.sh %s/redcap %s' % (tempdir, env.builddir, env.redcap_version))
         local('rm -rf %s' % tempdir)
 
