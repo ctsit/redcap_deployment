@@ -15,4 +15,11 @@ This command will create the 'deploy' user, add your ssh public to the list of a
 ## Adding ssh_keys
 This architecture allows an authorized user to add more ssh keys to the list of authorized keys. Given a file `jdoe.pub` that belongs to user `jdoe`, you could authorize John Doe to to deployments with the command
 
-    fab add_ssh_key:jdoe.pub,jdoe
+    fab instance:prod add_ssh_key:jdoe.pub,jdoe
+
+## Removing ssh_keys
+This architecture allows an authorized user to remove an ssh key from the list of authorized keys. provide a username, say `jdoe` to the command:
+
+    fab instance:prod rm_ssh_key:jdoe
+
+

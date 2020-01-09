@@ -115,6 +115,18 @@ def add_ssh_key(path, name):
     update_ssh_permissions()
 
 
+@task
+def rm_ssh_key(name):
+    """
+    Remove an ssh key for the named user by providing <name>
+
+    name: the name of the user the key is tied to.
+    """
+    rm_ssh_key_from_host(name)
+    rebuild_authorized_keys()
+    update_ssh_permissions()
+
+
 def copy_ssh_key_to_host(ssh_key, name):
     """
     Creates a new pub file with the name provided and
@@ -129,6 +141,16 @@ def copy_ssh_key_to_host(ssh_key, name):
         pub_file.write(ssh_key)
         pub_file.close()
         put('%s.pub' % name, '/home/%s/.ssh/keys/' % env.user)
+
+
+def rm_ssh_key_from_host(name):
+    """
+    Removes an ssh keyfile from a host
+
+    name: the name of the user this key is tied to
+    """
+    with settings(user=env.deploy_user):
+        run('rm /home/%s/.ssh/keys/%s.pub' % (env.user,name))
 
 
 def rebuild_authorized_keys():
