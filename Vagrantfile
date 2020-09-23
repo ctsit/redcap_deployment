@@ -45,7 +45,7 @@ Vagrant.configure(2) do |config|
 
   # Help the developer to find the app :)
   config.trigger.after [:up] do
-    system("open -a 'Google Chrome.app' #{ENV['URL_OF_DEPLOYED_APP']}")
+    system("open #{ENV['URL_OF_DEPLOYED_APP']}")
   end
 
 end
