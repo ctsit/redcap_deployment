@@ -35,7 +35,7 @@ def create_database():
     CREATE DATABASE %(database_name)s;
 
     GRANT
-        SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, EXECUTE, CREATE VIEW, SHOW VIEW
+        SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, EXECUTE, CREATE VIEW, SHOW VIEW, REFERENCES
     ON
         %(database_name)s.*
     TO
