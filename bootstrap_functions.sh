@@ -336,7 +336,8 @@ function install_composer_deps() {
         DEPLOY_DIR=$1
     fi
 
-    curl -sS https://getcomposer.org/installer | php
+    # pin to version 1.latest due to 2.x conflict: https://github.com/wikimedia/composer-merge-plugin/issues/184
+    curl -sS https://getcomposer.org/installer | php -- --1
     mv composer.phar /usr/local/bin/composer
 
     pushd $DEPLOY_DIR/app
@@ -441,7 +442,8 @@ function install_pdftk() {
 }
 
 function install_composer() {
-  curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
+  # pin to version 1.latest due to 2.x conflict: https://github.com/wikimedia/composer-merge-plugin/issues/184
+  curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --1
   mv /usr/local/bin/composer.phar /usr/local/bin/composer
   chmod 755 /usr/local/bin/composer
 }
