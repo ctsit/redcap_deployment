@@ -169,6 +169,11 @@ fab vagrant online
 ```
 
 
+## Developer notes
+
+For tips on developing in this environment, see [Development tools](docs/development_tools.md).
+
+
 ## Language Configuration
 
 REDCap languages can be provided by modifying the _languages_ variable accordingly:
