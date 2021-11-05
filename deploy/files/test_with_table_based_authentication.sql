@@ -197,6 +197,7 @@ REPLACE INTO `redcap_user_information`
 VALUES (6,'dan','dan.user@projectredcap.org','','',NULL,NULL,'Dan','User','',0,0,'2017-02-02 14:20:20','2017-02-02 14:28:33','2017-02-02 14:28:24','2017-02-02 14:28:33','2017-02-02 14:28:24',NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,'M/D/Y_12','.',',','5OMDTXHZYMX62IQJ',1,1,2,NULL,'NONE',1,NULL);
 
 UPDATE redcap_user_information SET
+account_manager = 1,
 access_system_config=1,
 access_system_upgrade=1,
 access_external_module_install=1,
