@@ -195,3 +195,11 @@ VALUES (5,'carol','carol.user@projectredcap.org','','',NULL,NULL,'Carol','User',
 REPLACE INTO `redcap_user_information`
 (ui_id,username,user_email,user_email2,user_email3,user_phone,user_phone_sms,user_firstname,user_lastname,user_inst_id,super_user,account_manager,user_creation,user_firstvisit,user_firstactivity,user_lastactivity,user_lastlogin,user_suspended_time,user_expiration,user_access_dashboard_view,user_access_dashboard_email_queued,user_sponsor,user_comments,allow_create_db,email_verify_code,email2_verify_code,email3_verify_code,datetime_format,number_format_decimal,number_format_thousands_sep,two_factor_auth_secret,display_on_email_users,two_factor_auth_twilio_prompt_phone,two_factor_auth_code_expiration,api_token,messaging_email_preference,messaging_email_urgent_all,messaging_email_ts)
 VALUES (6,'dan','dan.user@projectredcap.org','','',NULL,NULL,'Dan','User','',0,0,'2017-02-02 14:20:20','2017-02-02 14:28:33','2017-02-02 14:28:24','2017-02-02 14:28:33','2017-02-02 14:28:24',NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,'M/D/Y_12','.',',','5OMDTXHZYMX62IQJ',1,1,2,NULL,'NONE',1,NULL);
+
+UPDATE redcap_user_information SET
+access_system_config=1,
+access_system_upgrade=1,
+access_external_module_install=1,
+admin_rights=1,
+access_admin_dashboards=1
+WHERE username='admin';
