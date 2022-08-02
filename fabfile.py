@@ -67,7 +67,7 @@ def backup_database(options=""):
     utility.write_remote_my_cnf()
     now = utility.timestamp()
     with settings(user=env.deploy_user):
-        run("mysqldump --skip-lock-tables %s -u %s -h %s %s | gzip > redcap-%s-%s.sql.gz" % \
+        run("mysqldump --no-tablespaces --skip-lock-tables %s -u %s -h %s %s | gzip > redcap-%s-%s.sql.gz" % \
             (options, env.database_user, env.database_host, env.database_name, env.instance_name, now))
         run("ln -sf redcap-%s-%s.sql.gz redcap-%s-latest.sql.gz" % (env.instance_name, now, env.instance_name))
     utility.delete_remote_my_cnf()
