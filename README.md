@@ -173,21 +173,25 @@ fab vagrant online
 
 While the deployment scripts in this repo manage the the PHP file upload size for te local VM, they do not do the same for a remote host. To do that use commands much like these to increase the upload file size limits:
 
-  cd /etc/php
-  grep -lr upload_max_filesize * | sudo xargs -i sed "s/upload_max_filesize.*/upload_max_filesize = 256M/;" -i {}
-  grep -lr post_max_size * | sudo xargs -i sed "s/post_max_size.*/post_max_size = 256M/;" -i {}
-  grep -lr max_input_vars * | sudo xargs -i sed "s/.*max_input_vars.*/max_input_vars = 100000/;" -i {}
-  grep -lr session.cookie_secure * | sudo xargs -i sed "s/.*session.cookie_secure.*/session.cookie_secure = On/;" -i {}
-  
-  sudo apt-get install php7.4-zip
-  sudo apt-get  install -y php7.4-mbstring
+```bash
+cd /etc/php
+grep -lr upload_max_filesize * | sudo xargs -i sed "s/upload_max_filesize.*/upload_max_filesize = 256M/;" -i {}
+grep -lr post_max_size * | sudo xargs -i sed "s/post_max_size.*/post_max_size = 256M/;" -i {}
+grep -lr max_input_vars * | sudo xargs -i sed "s/.*max_input_vars.*/max_input_vars = 100000/;" -i {}
+grep -lr session.cookie_secure * | sudo xargs -i sed "s/.*session.cookie_secure.*/session.cookie_secure = On/;" -i {}
 
-  # Run these steps in the current redcap Libraries directory as user deploy
-  sudo su - deploy
-  cd /var/https/stage_c/redcap_v12.4.2/Libraries/
-  composer update
+sudo apt-get install php7.4-zip
+sudo apt-get  install -y php7.4-mbstring
+```
 
-  sudo service apache2 restart
+### Run these steps in the current redcap Libraries directory as user deploy
+```bash
+sudo su - deploy
+cd /var/https/stage_c/redcap_v12.4.2/Libraries/
+composer update
+
+sudo service apache2 restart
+```
 
 
 ## Developer notes
