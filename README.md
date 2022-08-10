@@ -195,11 +195,19 @@ sudo a2dismod php7.2
 sudo a2enmod php7.4
 sudo systemctl restart apache2
 
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Commit PHP upgrades and other files"
+
 cd /etc/php
 grep -lr upload_max_filesize * | sudo xargs -i sed "s/upload_max_filesize.*/upload_max_filesize = 256M/;" -i {}
 grep -lr post_max_size * | sudo xargs -i sed "s/post_max_size.*/post_max_size = 256M/;" -i {}
 grep -lr max_input_vars * | sudo xargs -i sed "s/.*max_input_vars.*/max_input_vars = 100000/;" -i {}
 grep -lr session.cookie_secure * | sudo xargs -i sed "s/.*session.cookie_secure.*/session.cookie_secure = On/;" -i {}
+
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Commit PHP configuration changes"
 
 # install composer
 cd /tmp
