@@ -121,10 +121,10 @@ In addition to the REDCap deployed by the Vagrant provisioning scripts, this rep
 
 ### Fabric Prerequisites
 
-The Fabric tools require a few python libraries that might not be installed on your computer.  To install them run these commands:
+This tool is written in Python 3 and uses Fabric 1.x methods. To use it, make sure you install the latest Fabric 1.x.  See https://www.fabfile.org/installing-1.x.html for details, the TL;DR version is
 
 ```bash
-pip3 install fabric3
+pip install 'fabric<2.0'
 ```
 
 
