@@ -194,6 +194,6 @@ def package(redcap_zip="."):
     env.package_name = '%s-%s.tgz' % (env.project_name, redcap_version_and_package_type)
     cwd = os.getcwd()
     # create the package
-    local("cd %s && tar -cz --exclude='.DS_Store' \
+    local("cd %s && tar -cz --no-xattrs --exclude='.DS_Store' \
     -f %s/%s \
     redcap" % (env.builddir, cwd, env.package_name))
