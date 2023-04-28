@@ -261,7 +261,13 @@ sudo -E git commit -m "Commit PHP configuration changes"
 sudo a2dismod php7.4
 sudo a2enmod php8.1
 sudo systemctl restart apache2
+```
 
+### Install specific PHP packages
+
+On some hosts, you might need to install a specific packages. At UF, we have one host we call "warrior" that needs the `mpdf` package. To install a custom package, first, install `composer`
+
+```sh
 # install composer
 cd /tmp
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -272,15 +278,24 @@ php -r "unlink('composer-setup.php');"
 sudo mv composer.phar /usr/local/bin/composer
 ```
 
+Then run these steps in the current redcap Libraries directory as user deploy
 
-### Run these steps in the current redcap Libraries directory as user deploy
 ```bash
 sudo su - deploy
-#cd /var/https/stage_c/redcap_v12.4.2/Libraries/
-cd /var/www/prod/redcap_v12.4.2/Libraries/
-composer update
-exit
+#cd /var/https/stage_c/redcap_v13.4.11/Libraries/
+cd /var/www/prod/redcap_v13.4.11/Libraries/
+```
 
+Then run `composer require` with the package you need install:
+
+```sh
+composer require mpdf/mpdf:^8
+exit
+```
+
+Restart apache when you are done
+
+```sh
 sudo service apache2 restart
 ```
 
