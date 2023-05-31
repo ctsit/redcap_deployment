@@ -26,7 +26,7 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         self.redcap_root = re.sub('//$', '/', str(redcap_url))
         self.redcap_version_path = str(redcap_version)
         self.weburl = Weburl()
-        self.rc_forbidden = '''<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+        self.rc_forbidden = '''<!DOCTYPE HTML>
 <html><head>
 <title>403 Forbidden</title>
 </head><body>
@@ -121,9 +121,9 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
 
     def testMiscFolder(self):
         """Verify that we can access the REDCap Resources/misc/ folder"""
-        localpath = "Resources/misc/"
+        localpath = "Resources/misc/shib_table_auth_documentation/shib_table_readme.md"
         self.fullpath=self.redcap_root + self.redcap_version_path + localpath
-        expected_string = 'redcap_ddp_demo_files.zip'
+        expected_string = 'Shibboleth & Table Authentication for REDCap'
         if expected_string in self.weburl.get(self.fullpath):
             expected_string_found = True
         else:
