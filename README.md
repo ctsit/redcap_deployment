@@ -168,6 +168,20 @@ If the tests fail and the server is left offline, you can put it back online wit
 fab vagrant online
 ```
 
+## Database errors
+
+Sometimes the upgrade fails in the late stages with a SQL error. When this happens, the system is left offline and the database is in an inconsistent state. You will need to note the error message, review the database upgrade `.SQL` or `.PHP` file it was processing, determine the fault and correct it. Once it is corrected, you will need to re-apply the database changes the upgrade command was trying to apply when it failed and then reapply the rest of the changes. To do that, run the task `upgrade_apply_incremental_db_changes_only`. e.g.
+
+```bash
+# This command failed
+fab instance:warrior upgrade:redcap-13.11.4.tgz
+
+# ... so now run this
+fab instance:warrior upgrade.upgrade_apply_incremental_db_changes_only:redcap-13.11.4.tgz
+```
+
+It's a long ugly task name, but it gets the job done. It will assure redcap instance is offline, apply the incremental changes, bump the redcap version, log the upgrade, and bring REDCap back online.
+
 
 ## PHP Configuration
 
