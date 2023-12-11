@@ -2,6 +2,43 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.2.0] - 2023-12-11
+### Added
+- Add upgrade_apply_incremental_db_changes_only task (@pbchase)
+- Add PHP 7.4-to-8.1 upgrade instructions (@pbchase)
+- Add PHP Configuration section to README (@pbchase)
+- Add 'Development tools' documentation (@pbchase)
+- Add database dump commands for root and vagrant users (@pbchase)
+
+### Changed
+- Update post deployment tests (@pbchase)
+- Exclude MacOSX's ._* files from the packaged REDCap code (@pbchase)
+- Improve docs for installing custom PHP packages (@pbchase)
+- Fix BSD tar bug in package.py (@pbchase)
+- Replace Fabric3 installation instructions with Fabric 1.x instructions (@pbchase)
+- Add commits to /etc during the php upgrade steps (@pbchase)
+- Install PHP 7.4, all PHP modules, and composer in README (@pbchase)
+- Add code fences, update header depth (@ChemiKyle)
+- Suppress warning during mysqldump (@pbchase)
+- Set modern permissions on the admin user (@pbchase)
+- Update example.env.txt (@mbentz-uf)
+- Update CONFIG_VM_BOX to generic/debian (@mbentz-uf)
+- Add group write permission to module directory (@mbentz-uf)
+- force composer version to 1.x in all scripts where composer is installed needed due to incompatibility with wikimedia/composer-merge-plugin deploy/composer/deploy.sh affects fab instance package (@ChemiKyle)
+- update vagrant mysql, 5.6 -> 5.7 required to use redcap_v10.3.0 (@ChemiKyle)
+- update gpg servers for mysql (@ChemiKyle)
+- recreate the definition of constants from upgrade.php in generate_upgrade_sql_from_php.php (@ChemiKyle)
+- use default browser when auto-opening site (@ChemiKyle)
+- Add rm_ssh_key task to server_setup.py (@pbchase)
+- Make patch deploy scripts executable in package.py (@pbchase)
+- relocate and rename vt (@ChemiKyle)
+- Removed README references to pycurl after confirming it is not needed (@ChemiKyle)
+- pycurl replaced with urllib, BytesIO no longer needed (@ChemiKyle)
+- Update for vboxsf fileshare (@ChemiKyle)
+- Change sync type to nsf as nsf causes other issues. (Marly Cormar)
+- Use nfs to keep shared folder syncronized. (Marly Cormar)
+- Update links, wrap commands in blocks, additional osx pycurl help (@ChemiKyle)
+
 
 ## [3.1.0] - 2019-05-14
 ### Changed

@@ -24,7 +24,7 @@ Vagrant.configure(2) do |config|
   config.hostsupdater.remove_on_suspend = false
   config.hostsupdater.aliases = [ENV["HOSTNAME_IN_HOST"]]
 
-  config.vm.synced_folder ".", "/vagrant",
+  config.vm.synced_folder ".", "/vagrant", type: "virtualbox",
     owner: "vagrant",
     group: "www-data",
     mount_options: ["dmode=775,fmode=774"]
@@ -45,7 +45,7 @@ Vagrant.configure(2) do |config|
 
   # Help the developer to find the app :)
   config.trigger.after [:up] do
-    system("open -a 'Google Chrome.app' #{ENV['URL_OF_DEPLOYED_APP']}")
+    system("open #{ENV['URL_OF_DEPLOYED_APP']}")
   end
 
 end

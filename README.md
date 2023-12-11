@@ -58,9 +58,10 @@ Vagrant will need a few plugins for this VM. On any platform, run these commands
 ```bash
 vagrant plugin install vagrant-hostsupdater
 vagrant plugin install vagrant-env
+vagrant plugin install vagrant-vbguest
 ```
 
-For more details about Vagrant software you can go to [why-vagrant](https://docs.vagrantup.com/v2/why-vagrant/) page.
+For more details about Vagrant software you can go to [why-vagrant](https://www.vagrantup.com/intro/index.html#why-vagrant-) page.
 
 ### Install REDCap Modules
 REDCap Deployment supports [REDCap Modules](https://github.com/vanderbilt/redcap-external-modules). In order to deploy external modules, you need to set up `settings/modules.json` file and reference it in your instance's settings.
@@ -91,10 +92,14 @@ You must provide a copy of the REDCap software from <https://projectredcap.org/>
 ## Configure the Virtual Machine
 
 The development environment needs to be configured before it can be started.
-Copy the file _example.env.txt_ to the name _.env_ and customize it for your
+Copy the file `example.env.txt` to the name `.env` and customize it for your
 use. Minimally, you will need to set _smtp\_smarthost_ to the dns name of a mail
 server your development host can use to deliver mail.  This will allow you to
 better test features that send email.
+
+```bash
+cp example.env.txt .env
+```
 
 
 ## Using the testing and development environment
@@ -107,7 +112,7 @@ vagrant up
 
 The vagrant-hostsupdater plugin will make modifications to your hosts file as the VM starts.  If it prompts you for a password, provide the password you use to login to your computer.
 
-After about two minutes, the VM should be accessible at the value of the variable _URL\_OF\_DEPLOYED\_APP_ set in _.env_  By default this is [http://redcap.test/redcap/](http://redcap.test/redcap/)
+After about two minutes, the VM should be accessible at the value of the variable `URL_OF_DEPLOYED_APP` set in `.env`. By default this is [http://redcap.test/redcap/](http://redcap.test/redcap/)
 
 
 ## (Re)deploying REDCap with Fabric Tools
@@ -116,14 +121,11 @@ In addition to the REDCap deployed by the Vagrant provisioning scripts, this rep
 
 ### Fabric Prerequisites
 
-The Fabric tools require a few python libraries that might not be installed on your computer.  To install them run these commands:
+This tool is written in Python 3 and uses Fabric 1.x methods. To use it, make sure you install the latest Fabric 1.x.  See https://www.fabfile.org/installing-1.x.html for details, the TL;DR version is
 
 ```bash
-pip3 install fabric3
-pip3 install pycurl
+pip install 'fabric<2.0'
 ```
-
-On Mac OSX, issues with PyCurl can be addressed with the procedures described at [Installing PycURL on macOS High Sierra](https://cscheng.info/2018/01/26/installing-pycurl-on-macos-high-sierra.html)
 
 
 ### Configure Fabric for the Virtual Machine
@@ -165,6 +167,157 @@ If the tests fail and the server is left offline, you can put it back online wit
 ```bash
 fab vagrant online
 ```
+
+## Database errors
+
+Sometimes the upgrade fails in the late stages with a SQL error. When this happens, the system is left offline and the database is in an inconsistent state. You will need to note the error message, review the database upgrade `.SQL` or `.PHP` file it was processing, determine the fault and correct it. Once it is corrected, you will need to re-apply the database changes the upgrade command was trying to apply when it failed and then reapply the rest of the changes. To do that, run the task `upgrade_apply_incremental_db_changes_only`. e.g.
+
+```bash
+# This command failed
+fab instance:warrior upgrade:redcap-13.11.4.tgz
+
+# ... so now run this
+fab instance:warrior upgrade.upgrade_apply_incremental_db_changes_only:redcap-13.11.4.tgz
+```
+
+It's a long ugly task name, but it gets the job done. It will assure redcap instance is offline, apply the incremental changes, bump the redcap version, log the upgrade, and bring REDCap back online.
+
+
+## PHP Configuration
+
+While the deployment scripts in this repo manage the PHP file upload size for the local VM, they do not do the same for a remote host. To do that use commands much like these to increase the upload file size limits
+
+### Upgrade PHP from 7.2 to 7.4
+
+```bash
+# Upgrade PHP from 7.2 to 7.4
+sudo apt install -y libapache2-mod-php7.4 \
+  php7.4 \
+  php7.4-cli \
+  php7.4-common \
+  php7.4-curl \
+  php7.4-gd \
+  php7.4-imap \
+  php7.4-json \
+  php7.4-mbstring \
+  php7.4-mysql \
+  php7.4-odbc \
+  php7.4-opcache \
+  php7.4-readline \
+  php7.4-soap \
+  php7.4-xml \
+  php7.4-zip
+
+sudo a2dismod php7.2
+sudo a2enmod php7.4
+sudo systemctl restart apache2
+
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Commit PHP upgrades and other files"
+
+cd /etc/php
+grep -lr upload_max_filesize * | sudo xargs -i sed "s/upload_max_filesize.*/upload_max_filesize = 256M/;" -i {}
+grep -lr post_max_size * | sudo xargs -i sed "s/post_max_size.*/post_max_size = 256M/;" -i {}
+grep -lr max_input_vars * | sudo xargs -i sed "s/.*max_input_vars.*/max_input_vars = 100000/;" -i {}
+grep -lr session.cookie_secure * | sudo xargs -i sed "s/.*session.cookie_secure.*/session.cookie_secure = On/;" -i {}
+
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Commit PHP configuration changes"
+
+# install composer
+cd /tmp
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+# safety not guaranteed
+# php -r "if (hash_file('sha384', 'composer-setup.php') === '906a84df04cea2aa72f40b5f787e49f22d4c2f19492ac310e8cba5b96ac8b64115ac402c8cd292b8a03482574915d1a8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+sudo mv composer.phar /usr/local/bin/composer
+```
+
+### Upgrade PHP from 7.4 to 8.1
+
+```bash
+# Upgrade PHP from 7.4 to 8.0
+sudo apt install -y libapache2-mod-php8.1 \
+  php8.1 \
+  php8.1-cli \
+  php8.1-common \
+  php8.1-curl \
+  php8.1-gd \
+  php8.1-imap \
+  php8.1-json \
+  php8.1-mbstring \
+  php8.1-mysql \
+  php8.1-odbc \
+  php8.1-opcache \
+  php8.1-readline \
+  php8.1-soap \
+  php8.1-xml \
+  php8.1-zip
+
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Commit PHP upgrades and other files"
+
+cd /etc/php
+grep -lr upload_max_filesize * | sudo xargs -i sed "s/upload_max_filesize.*/upload_max_filesize = 256M/;" -i {}
+grep -lr post_max_size * | sudo xargs -i sed "s/post_max_size.*/post_max_size = 256M/;" -i {}
+grep -lr max_input_vars * | sudo xargs -i sed "s/.*max_input_vars.*/max_input_vars = 100000/;" -i {}
+grep -lr session.cookie_secure * | sudo xargs -i sed "s/.*session.cookie_secure.*/session.cookie_secure = On/;" -i {}
+
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Commit PHP configuration changes"
+
+# Switch to new PHP in Apache
+sudo a2dismod php7.4
+sudo a2enmod php8.1
+sudo systemctl restart apache2
+```
+
+### Install specific PHP packages
+
+On some hosts, you might need to install a specific packages. At UF, we have one host we call "warrior" that needs the `mpdf` package. To install a custom package, first, install `composer`
+
+```sh
+# install composer
+cd /tmp
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+# safety not guaranteed
+# php -r "if (hash_file('sha384', 'composer-setup.php') === '906a84df04cea2aa72f40b5f787e49f22d4c2f19492ac310e8cba5b96ac8b64115ac402c8cd292b8a03482574915d1a8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+sudo mv composer.phar /usr/local/bin/composer
+```
+
+Then run these steps in the current redcap Libraries directory as user deploy
+
+```bash
+sudo su - deploy
+#cd /var/https/stage_c/redcap_v13.4.11/Libraries/
+cd /var/www/prod/redcap_v13.4.11/Libraries/
+```
+
+Then run `composer require` with the package you need install:
+
+```sh
+composer require mpdf/mpdf:^8
+exit
+```
+
+Restart apache when you are done
+
+```sh
+sudo service apache2 restart
+```
+
+
+## Developer notes
+
+For tips on developing in this environment, see [Development tools](docs/development_tools.md).
+
 
 ## Language Configuration
 

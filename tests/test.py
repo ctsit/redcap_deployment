@@ -1,8 +1,11 @@
 import unittest
-import pycurl
 import sys
-from io import BytesIO
 import re
+
+try:
+    from urllib.request import urlopen # Python3
+except ImportError:
+    from urllib2 import urlopen # Python2
 
 class Weburl():
 
@@ -11,14 +14,9 @@ class Weburl():
 
     def get(self, URL, FOLLOWLOCATION = False):
         self.URL = URL
-        buffer = BytesIO()
-        c = pycurl.Curl()
-        c.setopt(c.URL, URL)
-        c.setopt(c.WRITEDATA, buffer)
-        c.setopt(pycurl.FOLLOWLOCATION, FOLLOWLOCATION)
-        c.perform()
-        c.close()
-        return buffer.getvalue().decode('UTF-8').replace('\r\n', '').replace('\n', '')
+        response = urlopen(URL)
+        return response.read().decode('UTF-8').replace('\r\n', '').replace('\n', '')
+
 
 class UnauthenticatedAccessTestCase(unittest.TestCase):
 
@@ -28,7 +26,7 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         self.redcap_root = re.sub('//$', '/', str(redcap_url))
         self.redcap_version_path = str(redcap_version)
         self.weburl = Weburl()
-        self.rc_forbidden = '''<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+        self.rc_forbidden = '''<!DOCTYPE HTML>
 <html><head>
 <title>403 Forbidden</title>
 </head><body>
@@ -123,9 +121,9 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
 
     def testMiscFolder(self):
         """Verify that we can access the REDCap Resources/misc/ folder"""
-        localpath = "Resources/misc/"
+        localpath = "Resources/misc/shib_table_auth_documentation/shib_table_readme.md"
         self.fullpath=self.redcap_root + self.redcap_version_path + localpath
-        expected_string = 'redcap_ddp_demo_files.zip'
+        expected_string = 'Shibboleth & Table Authentication for REDCap'
         if expected_string in self.weburl.get(self.fullpath):
             expected_string_found = True
         else:

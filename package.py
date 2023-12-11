@@ -157,6 +157,7 @@ def apply_patches():
     for repo in json.loads(env.patch_repos):
         tempdir = local('mktemp -d 2>&1', capture = True)
         local('git clone %s %s' % (repo,tempdir))
+        local('chmod 755 %s/deploy.sh' % (tempdir))
         local('%s/deploy.sh %s/redcap %s' % (tempdir, env.builddir, env.redcap_version))
         local('rm -rf %s' % tempdir)
 
@@ -193,6 +194,6 @@ def package(redcap_zip="."):
     env.package_name = '%s-%s.tgz' % (env.project_name, redcap_version_and_package_type)
     cwd = os.getcwd()
     # create the package
-    local("cd %s && tar -cz --exclude='.DS_Store' \
+    local("cd %s && COPYFILE_DISABLE=1 tar -cz --no-xattrs --exclude='.DS_Store' \
     -f %s/%s \
     redcap" % (env.builddir, cwd, env.package_name))

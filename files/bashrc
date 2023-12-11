@@ -1,0 +1,5 @@
+#!/bin/bash
+
+alias dump_schema='mysqldump --no-data --skip-lock-tables --triggers --routines --events --skip-add-locks --skip-comments redcap | sed -e "s/AUTO_INCREMENT=[[:digit:]]* //" | sed "/50013 DEFINER=/d" > schema.sql'
+
+alias dump_data='mysqldump --no-create-info --skip-lock-tables --skip-add-locks --skip-comments --skip-extended-insert --no-create-db --max_allowed_packet=512M redcap > data.sql'

@@ -26,6 +26,9 @@ function install_utils() {
         tree colordiff libxml2-utils xmlstarlet nmap
 
     chown -R vagrant.vagrant /home/vagrant
+
+    cat /vagrant/files/bashrc >> /root/.bashrc
+    cat /vagrant/files/bashrc >> /home/vagrant/.bashrc
 }
 
 function install_prereqs() {
@@ -44,8 +47,8 @@ function install_prereqs() {
 
     apt-get install -y dirmngr --install-recommends
 
-    # Try two different keyservers to get the MySQL repository key
-    gpg --keyserver pgp.mit.edu --recv-keys 5072E1F5 || gpg --keyserver sks-keyservers.net --recv-keys 5072E1F5
+    # Try different keyservers to get the MySQL repository key
+    gpg  --keyserver-options timeout=10000 --keyserver keyserver.ubuntu.com --recv-keys 5072E1F5 || gpg --keyserver-options timeout=10000 --keyserver pgp.mit.edu --recv-keys 5072E1F5 || gpg  --keyserver-options timeout=10000 --keyserver pool.sks-keyservers.net --recv-keys 5072E1F5 || gpg --keyserver sks-keyservers.net --recv-keys 5072E1F5
     gpg -a --export 5072E1F5 | apt-key add -
 
 cat << END > /etc/apt/sources.list.d/mysql.list
@@ -168,7 +171,7 @@ SQL
     # grant access to $DATABASE_USER@% so the VM host can access mysql on port 3306
     mysql -u root -p$DATABASE_ROOT_PASS mysql <<SQL
 GRANT
-    SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, EXECUTE, CREATE VIEW, SHOW VIEW
+    SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, EXECUTE, CREATE VIEW, SHOW VIEW, REFERENCES
 ON
     $DATABASE_NAME.*
 TO
@@ -336,7 +339,8 @@ function install_composer_deps() {
         DEPLOY_DIR=$1
     fi
 
-    curl -sS https://getcomposer.org/installer | php
+    # pin to version 1.latest due to 2.x conflict: https://github.com/wikimedia/composer-merge-plugin/issues/184
+    curl -sS https://getcomposer.org/installer | php -- --1
     mv composer.phar /usr/local/bin/composer
 
     pushd $DEPLOY_DIR/app
@@ -441,7 +445,8 @@ function install_pdftk() {
 }
 
 function install_composer() {
-  curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
+  # pin to version 1.latest due to 2.x conflict: https://github.com/wikimedia/composer-merge-plugin/issues/184
+  curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --1
   mv /usr/local/bin/composer.phar /usr/local/bin/composer
   chmod 755 /usr/local/bin/composer
 }

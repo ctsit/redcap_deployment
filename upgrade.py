@@ -33,6 +33,31 @@ def upgrade(name):
         abort("One or more tests failed.  REDCap has been taken offline.")
     utility.delete_remote_my_cnf()
 
+@task(default=True)
+def upgrade_apply_incremental_db_changes_only(name):
+    """
+    Fix a failed upgrade of a redcap by re-running
+    apply_incremental_db_changes()
+
+    Presumably, you have fixed the issue that previously caused the DB
+    updates to fail.
+
+    This input file should be in the TGZ format as packaged by this
+    fabfile. That said, this task only reads the file name, not the file.
+    """
+
+    upgrade = True
+    utility.write_remote_my_cnf()
+    new = utility.extract_version_from_string(name)
+    old = utility_redcap.get_current_redcap_version()
+    apply_incremental_db_changes(old,new)
+    online()
+    # run the tests but take REDCap offline again and abort if they fail
+    if not utility_redcap.test(warn_only=True):
+        offline()
+        utility.delete_remote_my_cnf()
+        abort("One or more tests failed.  REDCap has been taken offline.")
+    utility.delete_remote_my_cnf()
 
 def copy_running_code_to_backup_dir():
     """

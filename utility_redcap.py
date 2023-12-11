@@ -59,6 +59,7 @@ def upload_package_and_extract(name, upgrade=False):
             run('rsync -rc %s %s/redcap/* %s' % (exclusions, temp2, env.upload_target_backup_dir))
         # make sure the temp file directory in redcap web space will be writeable
         run('chmod -R g+w %s/temp' % env.upload_target_backup_dir)
+        run('chmod -R g+w %s/modules' % env.upload_target_backup_dir)
         # Remove the temp directories
         run('rm -rf %s %s' % (temp1, temp2))
 
