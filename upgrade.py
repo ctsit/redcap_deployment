@@ -33,7 +33,7 @@ def upgrade(name):
         abort("One or more tests failed.  REDCap has been taken offline.")
     utility.delete_remote_my_cnf()
 
-@task(default=True)
+@task
 def upgrade_apply_incremental_db_changes_only(name):
     """
     Fix a failed upgrade of a redcap by re-running
