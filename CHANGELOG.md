@@ -2,6 +2,12 @@
 All notable changes to the REDCap Deployment project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [3.2.1] - 2023-12-12
+### Changed
+- Make upgrade_apply_incremental_db_changes_only non-default (@pbchase)
+
+
 ## [3.2.0] - 2023-12-11
 ### Added
 - Add upgrade_apply_incremental_db_changes_only task (@pbchase)
