@@ -313,6 +313,36 @@ Restart apache when you are done
 sudo service apache2 restart
 ```
 
+## Failed SQL upgrades
+
+If an upgrade operation fails on a `.php` or a `.sql` file, the code will die like this:
+
+```
+[redcap.ctsi.ufl.edu] run: php /var/https/redcap/redcap_v14.1.3/generate_upgrade_sql_from_php.php /var/https/redcap/redcap_v14.1.3/Resources/sql/upgrade_14.01.01.php | mysql
+[redcap.ctsi.ufl.edu] out: ERROR 1553 (HY000) at line 5: Cannot drop index 'redcap_userid': needed in a foreign key constraint
+[redcap.ctsi.ufl.edu] out: 
+
+
+Fatal error: run() received nonzero return code 1 while executing!
+
+Requested: php /var/https/redcap/redcap_v14.1.3/generate_upgrade_sql_from_php.php /var/https/redcap/redcap_v14.1.3/Resources/sql/upgrade_14.01.01.php | mysql
+Executed: /bin/bash -l -c "php /var/https/redcap/redcap_v14.1.3/generate_upgrade_sql_from_php.php /var/https/redcap/redcap_v14.1.3/Resources/sql/upgrade_14.01.01.php | mysql"
+
+Aborting.
+Disconnecting from deploy@redcap.ctsi.ufl.edu... done.
+```
+
+To fix this, you need to run that last PHP command to get the SQL statements that caused the issue. e.g.,
+
+```bash
+php /var/https/redcap/redcap_v14.1.3/generate_upgrade_sql_from_php.php /var/https/redcap/redcap_v14.1.3/Resources/sql/upgrade_14.01.01.php
+```
+
+You could all generate all of the SQL upgrade commands by access the Upgrade page in the Control Center.
+
+However you do it, paste that SQL upgrade commands into a MySQL Workbench window connected to the right database and run the lines one-by-one to debug the failure. If the fix is not obvious, check the REDCap community. Finish by running the last three statements from the Upgrade page in the Control Center.
+
+Put the host back online via the Control Center _General Configuration_ page. Then check the Control Center _Configuration Check_ age for any SQL commands that still need to be applied.
 
 ## Developer notes
 
