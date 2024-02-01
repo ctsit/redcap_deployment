@@ -88,17 +88,17 @@ def apply_incremental_db_changes(old, new):
     path_to_sql_generation = '/'.join([env.live_pre_path, env.project_path, 'redcap_v' + new, 'generate_upgrade_sql_from_php.php'])
     for file in files.splitlines():
         match = re.search(r"(upgrade_)(\d+.\d+.\d+)(.)(php|sql)", file)
-        version = match.group(2)
-        version = utility.convert_version_to_int(version)
-        if version > old and version <= new_as_an_int:
-            if fnmatch.fnmatch(file, "*.php"):
-                print((file + " is a php file!\n"))
-                with settings(user=env.deploy_user):
-                    run('php %s %s | mysql' % (path_to_sql_generation,file))
-            else:
-                print(("Executing sql file %s" % file))
-                with settings(user=env.deploy_user):
-                    run('mysql < %s' % file)
+        if match is not None:
+            version = utility.convert_version_to_int(match.group(2))
+            if version > old and version <= new_as_an_int:
+                if fnmatch.fnmatch(file, "*.php"):
+                    print((file + " is a php file!\n"))
+                    with settings(user=env.deploy_user):
+                        run('php %s %s | mysql' % (path_to_sql_generation,file))
+                else:
+                    print(("Executing sql file %s" % file))
+                    with settings(user=env.deploy_user):
+                        run('mysql < %s' % file)
     # Finalize upgrade
     utility_redcap.set_redcap_config('redcap_last_install_date', datetime.now().strftime("%Y-%m-%d"))
     utility_redcap.set_redcap_config('redcap_version', new)
