@@ -332,7 +332,7 @@ Aborting.
 Disconnecting from deploy@redcap.ctsi.ufl.edu... done.
 ```
 
-At this point things get messy and you will have to get creative in your problem solving. What follows is not a recipe. It's more like a pile of ingredients from which you could make an omlete. It's still your responsbility cook them right and not burn the omlete, because your gonna have to eat it.
+At this point things get messy and you will have to get creative in your problem solving. What follows is not a recipe. It's more like a pile of ingredients from which you could make an omelette. It's still your responsibility cook them right and not burn the omelette, because you're gonna have to eat it.
 
 ### Debugging
 
@@ -342,14 +342,14 @@ You can see the output of the script/SQl file that caused the by running that PH
 php /var/https/redcap/redcap_v14.1.3/generate_upgrade_sql_from_php.php /var/https/redcap/redcap_v14.1.3/Resources/sql/upgrade_14.01.01.php
 ```
 
-Running the SQL lines in that file one by one might help you understand which one failed. It's challenging because some of those commands will fail because they _did_ run successfully the first time, but they will error the second time. This often happens when a SQL command added an object that cannot be "re-added". Think carefully about the responses you see when running each command. Read the REDCap commuunity forum to see if others have experienced the errors you see and have a solution.
+Running the SQL lines in that file one by one might help you understand which one failed. It's challenging because some of those commands will fail because they _did_ run successfully the first time, but they will error the second time. This often happens when a SQL command added an object that cannot be "re-added". Think carefully about the responses you see when running each command. Read the REDCap community forum to see if others have experienced the errors you see and have a solution.
 
-Even if that task goes well and you can apply the file that failed there might be more files to run after that one. You can locate those by enumerating the files in the redcap_vN.M.O/Resources/sql/" directory. Look for versioned file names that are higher than the version number on which the script failed. If this seems tedious, you might want to try the next procedure.
+Even if that task goes well and you can apply the file that failed there might be more files to run after that one. You can locate those by enumerating the files in the `redcap_vN.M.O/Resources/sql/` directory. Look for versioned file names that are higher than the version number on which the script failed. If this seems tedious, you might want to try the next procedure.
 
 
 ### Ask REDCap to help you
 
-Another approach is to generate all of the SQL upgrade commands between the version you are at and the version you are upgrading to by accessing the Upgrade page in the Control Center. It will make the whole blob, running the PHP scripts, concatenating their output with the SQL files and appending the lines that document the upgrade. All that's pretty useful. Do be aware that every SQL line that succeeded will still be in the blob of SQL the Control Center Upgrade page generates for you. It's more content to to wade through, but it's all in one file with the last three "upgrade event" statements. 
+Another approach is to generate all of the SQL upgrade commands between the version you are at and the version you are upgrading to by accessing the Upgrade page in the Control Center. It will make the whole blob, running the PHP scripts, concatenating their output with the SQL files and appending the lines that document the upgrade. All that's pretty useful. Do be aware that every SQL line that succeeded will still be in the blob of SQL the Control Center Upgrade page generates for you. It's more content to wade through, but it's all in one file with the last three "upgrade event" statements.
 
 If you think you are done with the upgrade process, put the host back online via the Control Center _General Configuration_ page. Then check the Control Center _Configuration Check_ age for any SQL commands that still need to be applied. 
 
