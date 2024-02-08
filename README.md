@@ -297,9 +297,6 @@ sudo apt install -y libapache2-mod-php8.2 \
   php8.2-xml \
   php8.2-zip
 
-# fix imagick
-sudo apt install -y php-imagick imagick
-
 cd /etc
 sudo -E git add .
 sudo -E git commit -m "Commit PHP upgrades and other files"
@@ -313,6 +310,13 @@ grep -lr session.cookie_secure * | sudo xargs -i sed "s/.*session.cookie_secure.
 cd /etc
 sudo -E git add .
 sudo -E git commit -m "Commit PHP configuration changes"
+
+# fix imagick
+sudo apt install -y php-imagick
+sudo sed -i 's/policy domain="coder" rights="none" pattern="PDF"/policy domain="coder" rights="read" pattern="PDF"/;' /etc/ImageMagick-6/policy.xml
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Install php-imagick and adjust policy to REDCap requirements"
 
 # Switch to new PHP in Apache
 sudo a2dismod php7.4
