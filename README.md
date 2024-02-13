@@ -312,7 +312,7 @@ sudo -E git add .
 sudo -E git commit -m "Commit PHP configuration changes"
 
 # fix imagick
-sudo apt install -y php-imagick
+sudo apt install -y php-imagick imagick
 sudo sed -i 's/policy domain="coder" rights="none" pattern="PDF"/policy domain="coder" rights="read" pattern="PDF"/;' /etc/ImageMagick-6/policy.xml
 cd /etc
 sudo -E git add .
