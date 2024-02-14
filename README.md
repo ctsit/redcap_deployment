@@ -277,6 +277,53 @@ sudo a2enmod php8.1
 sudo systemctl restart apache2
 ```
 
+### Upgrade PHP from 7.4 to 8.2
+
+```bash
+# Upgrade PHP from 7.4 to 8.2
+sudo apt install -y libapache2-mod-php8.2 \
+  php8.2 \
+  php8.2-cli \
+  php8.2-common \
+  php8.2-curl \
+  php8.2-gd \
+  php8.2-imap \
+  php8.2-mbstring \
+  php8.2-mysql \
+  php8.2-odbc \
+  php8.2-opcache \
+  php8.2-readline \
+  php8.2-soap \
+  php8.2-xml \
+  php8.2-zip
+
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Commit PHP upgrades and other files"
+
+cd /etc/php
+grep -lr upload_max_filesize * | sudo xargs -i sed "s/upload_max_filesize.*/upload_max_filesize = 256M/;" -i {}
+grep -lr post_max_size * | sudo xargs -i sed "s/post_max_size.*/post_max_size = 256M/;" -i {}
+grep -lr max_input_vars * | sudo xargs -i sed "s/.*max_input_vars.*/max_input_vars = 100000/;" -i {}
+grep -lr session.cookie_secure * | sudo xargs -i sed "s/.*session.cookie_secure.*/session.cookie_secure = On/;" -i {}
+
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Commit PHP configuration changes"
+
+# fix imagick
+sudo apt install -y php-imagick imagick
+sudo sed -i 's/policy domain="coder" rights="none" pattern="PDF"/policy domain="coder" rights="read" pattern="PDF"/;' /etc/ImageMagick-6/policy.xml
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Install php-imagick and adjust policy to REDCap requirements"
+
+# Switch to new PHP in Apache
+sudo a2dismod php7.4
+sudo a2enmod php8.2
+sudo systemctl restart apache2
+```
+
 ### Install specific PHP packages
 
 On some hosts, you might need to install a specific packages. At UF, we have one host we call "warrior" that needs the `mpdf` package. To install a custom package, first, install `composer`
