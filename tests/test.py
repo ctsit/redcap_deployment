@@ -136,6 +136,35 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         self.fullpath=self.redcap_root + self.redcap_version_path + localpath
         self.assertEqual (self.weburl.get(self.fullpath), self.rc_forbidden)
 
+class HostAccessibilityTestCase(unittest.TestCase):
+    hosts = [
+        ("NIH RePORTER", "https://api.reporter.nih.gov"),
+        ("PubMed", "https://eutils.ncbi.nlm.nih.gov"),
+        ("PubMed Central Converter", "https://www.ncbi.nlm.nih.gov"),
+        ("iCite", "https://icite.od.nih.gov"),
+        ("ORCID", "https://pub.orcid.org"),
+        ("Statistics Reporting", "https://redcap.vanderbilt.edu"),
+        ("Altmetric", "https://api.altmetric.com"),
+        ("Patents View (US Patent Office)", "https://api.patentsview.org"),
+        ("NSF Grants", "https://api.nsf.gov"),
+        ("ERIC", "https://api.ies.ed.gov"),
+        ("Dept. of Ed. Grants", "https://ies.ed.gov"),
+        ("TAGGS (HHS)", "https://taggs.hhs.gov"),
+        ("Scopus (API)", "https://api.elsevier.com"),
+        ("Scopus (Dev)", "https://dev.elsevier.com"),
+        ("Web of Science", "https://ws.isiknowledge.com"),
+    ]
+
+    def testHostAccessibility(self):
+        """Test if specified hosts are accessible."""
+        for name, url in self.hosts:
+            with self.subTest(name=name):
+                try:
+                    response = urlopen(url).getcode()
+                    self.assertEqual(response, 200)
+                except Exception as e:
+                    self.fail(msg=f"{name}: {e}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
