@@ -97,6 +97,14 @@ def deploy_modules_into_build_space():
             local("cp -r %s/* %s/redcap/modules/%s_v%s" % (tempdir,env.builddir,module['name'],module['version']))
             local("rm -rf %s" % tempdir)
 
+def deploy_redcap_redirect_into_build_space():
+    """
+    Deploy redcap_redirect into build space
+    """
+    tempdir = local("mktemp -d 2>&1", capture = True)
+    local("git clone %s %s" % ("https://github.com/susom/redcap-redirect.git",tempdir))
+    local("cp -r %s/redcap_redirect.php %s/redcap/" % (tempdir,env.builddir))
+    local("rm -rf %s" % tempdir)
 
 def deploy_plugins_into_build_space(target_within_build_space="/redcap/plugins"):
     """
@@ -180,6 +188,7 @@ def package(redcap_zip="."):
     clean(env.builddir)
     make_builddir(env.builddir)
     redcap_version_and_package_type = extract_redcap(redcap_zip)
+    deploy_redcap_redirect_into_build_space()
     deploy_plugins_into_build_space()
     deploy_modules_into_build_space()
     # Deploy modules framework only if redcap major version is less than 8
