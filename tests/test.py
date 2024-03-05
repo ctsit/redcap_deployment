@@ -136,6 +136,7 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         self.fullpath=self.redcap_root + self.redcap_version_path + localpath
         self.assertEqual (self.weburl.get(self.fullpath), self.rc_forbidden)
 
+
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         sys.exit("ERROR: REDCap url and REDCap version directory parameters must be supplied for these tests. e.g.\n\npython tests/test.py http://redcap.test/redcap/ redcap_v6.18.1/ ")
