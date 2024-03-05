@@ -158,7 +158,7 @@ class HostAccessibilityTestCase(unittest.TestCase):
 
     def test_HostAccessibility(self):
         """Check accessibility of defined hosts."""
-        for host in hosts:
+        for host in self.hosts:
             result = run(f"curl -s -o /dev/null -w '%{{http_code}}' {host}", hide='both')
             http_code = result.stdout
             if http_code == "200":
