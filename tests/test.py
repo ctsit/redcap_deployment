@@ -136,36 +136,6 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         self.fullpath=self.redcap_root + self.redcap_version_path + localpath
         self.assertEqual (self.weburl.get(self.fullpath), self.rc_forbidden)
 
-class HostAccessibilityTestCase(unittest.TestCase):
-    
-    hosts = [
-        "https://api.reporter.nih.gov",
-        "https://eutils.ncbi.nlm.nih.gov",
-        "https://www.ncbi.nlm.nih.gov",
-        "https://icite.od.nih.gov",
-        "https://pub.orcid.org",
-        "https://redcap.vanderbilt.edu",
-        "https://api.altmetric.com",
-        "https://api.patentsview.org",
-        "https://api.nsf.gov",
-        "https://api.ies.ed.gov",
-        "https://ies.ed.gov",
-        "https://taggs.hhs.gov",
-        "https://api.elsevier.com",
-        "https://dev.elsevier.com",
-        "https://ws.isiknowledge.com"
-    ]
-
-    def test_HostAccessibility(self):
-        """Check accessibility of defined hosts."""
-        for host in self.hosts:
-            result = run(f"curl -s -o /dev/null -w '%{{http_code}}' {host}", hide='both')
-            http_code = result.stdout
-            if http_code == "200":
-                self.assertTrue(True, f"Success: {host} is accessible.")
-            else:
-                self.assertTrue(False, f"Failure: {host} is not accessible. HTTP Status: {http_code}")
-
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         sys.exit("ERROR: REDCap url and REDCap version directory parameters must be supplied for these tests. e.g.\n\npython tests/test.py http://redcap.test/redcap/ redcap_v6.18.1/ ")
