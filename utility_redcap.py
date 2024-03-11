@@ -109,7 +109,7 @@ def test(warn_only=False):
     utility.write_remote_my_cnf()
     version = get_current_redcap_version()
     utility.delete_remote_my_cnf()
-    utility_test.check_host_accessibility()
+    utility_test.main()
     local("python tests/test.py %s/ redcap_v%s/" % (env.url_of_deployed_app,version))
     with settings(warn_only=True):
         if local("python tests/test.py %s/ redcap_v%s/" % (env.url_of_deployed_app,version)).failed:
