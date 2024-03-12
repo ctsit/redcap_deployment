@@ -28,7 +28,7 @@ class CheckHostAccessibility(unittest.TestCase):
             http_code = result.stdout.strip()
             return http_code
 
-    def test_hosts(self):
+    def runTest(self):
         for host in self.hosts:
             http_code = self.check_host_accessibility(host)
             if http_code != "200":
