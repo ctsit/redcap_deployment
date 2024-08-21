@@ -312,7 +312,7 @@ sudo -E git add .
 sudo -E git commit -m "Commit PHP configuration changes"
 
 # fix imagick
-sudo apt install -y php-imagick imagick
+sudo apt install -y php-imagick
 sudo sed -i 's/policy domain="coder" rights="none" pattern="PDF"/policy domain="coder" rights="read" pattern="PDF"/;' /etc/ImageMagick-6/policy.xml
 cd /etc
 sudo -E git add .
@@ -343,8 +343,8 @@ Then run these steps in the current redcap Libraries directory as user deploy
 
 ```bash
 sudo su - deploy
-#cd /var/https/stage_c/redcap_v13.4.11/Libraries/
-cd /var/www/prod/redcap_v13.4.11/Libraries/
+#cd /var/https/stage_c/redcap_v14.3.14/Libraries/
+cd /var/www/prod/redcap_v14.6.2/Libraries/
 ```
 
 Then run `composer require` with the package you need install:
