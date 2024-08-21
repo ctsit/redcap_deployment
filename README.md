@@ -306,6 +306,7 @@ grep -lr upload_max_filesize * | sudo xargs -i sed "s/upload_max_filesize.*/uplo
 grep -lr post_max_size * | sudo xargs -i sed "s/post_max_size.*/post_max_size = 256M/;" -i {}
 grep -lr max_input_vars * | sudo xargs -i sed "s/.*max_input_vars.*/max_input_vars = 100000/;" -i {}
 grep -lr session.cookie_secure * | sudo xargs -i sed "s/.*session.cookie_secure.*/session.cookie_secure = On/;" -i {}
+grep -lr date.timezone * | sudo xargs -i sed "s/.*date.timezone.*=.*/date.timezone = 'America\/New_York'/;" -i {}
 
 cd /etc
 sudo -E git add .
