@@ -23,7 +23,7 @@ This project provides a virtual machine wherein it hosts the local REDCap instan
 
 ### Packaging and Deployment
 
-The packaging and deployment tools are designed to deploy REDCap to Debian Linux hosts. They may or may not work with non-Debian REDCap hosts.  They cannot deploy REDCap to Windows hosts. The packaging and deployment tools are written using the [Fabric](http://www.fabfile.org/) system. Fabric is written in Python3, so both Python 3 and Fabric3 must be installed to do packaging and deployment.
+The packaging and deployment tools are designed to deploy REDCap to Debian Linux hosts. They may or may not work with non-Debian REDCap hosts.  They cannot deploy REDCap to Windows hosts. The packaging and deployment tools are written using the [Fabric](http://www.fabfile.org/) system. The tools use Fabric 1.x
 
 
 ## Installing dependencies
@@ -117,13 +117,21 @@ After about two minutes, the VM should be accessible at the value of the variabl
 
 ## (Re)deploying REDCap with Fabric Tools
 
-In addition to the REDCap deployed by the Vagrant provisioning scripts, this repository includes a suite of deployment and upgrade tools that can configure a host for deployment, package REDCap with numerous extensions, deploy a new REDCap instance and upgrade an existing one.  You can use these commands any host where you have sufficient privileges or against this vagrant-deployed VM.
+In addition to the REDCap deployed by the Vagrant provisioning scripts, this repository includes a suite of deployment and upgrade tools that can configure a host for deployment, package REDCap with numerous extensions, deploy a new REDCap instance and upgrade an existing one.  You can use these commands on any Linux host where you have sufficient privileges or against this vagrant-deployed VM.
 
 ### Fabric Prerequisites
 
 This tool is written in Python 3 and uses Fabric 1.x methods. To use it, make sure you install the latest Fabric 1.x.  See https://www.fabfile.org/installing-1.x.html for details, the TL;DR version is
 
 ```bash
+pip install 'fabric<2.0'
+```
+
+If you make a mess of things before you get it right, you might have to uninstall the mess like this:
+
+```bash
+brew uninstall fabric
+pip uninstall 'fabric<2.0'
 pip install 'fabric<2.0'
 ```
 
