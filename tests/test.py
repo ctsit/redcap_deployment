@@ -4,7 +4,9 @@ import re
 
 try:
     from urllib.request import urlopen # Python3
+    from urllib.error import HTTPError
 except ImportError:
+    # TODO: deprecate Python2 support entirely
     from urllib2 import urlopen # Python2
 
 class Weburl():
@@ -68,14 +70,22 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         localpath = "index.php?route=SendItController:download&abcdef"
         self.fullpath=self.redcap_root + self.redcap_version_path + localpath
         expected_string = 'Send-It:'
-        self.assertIn(expected_string, self.weburl.get(self.fullpath, True))
+        try:
+            response_string = self.weburl.get(self.fullpath, True)
+        except HTTPError:
+            response_string = ""
+        self.assertIn(expected_string, response_string)
 
     def testApiFolder(self):
         """Verify that we can access the REDCap api/ folder"""
         localpath = "api/"
         self.fullpath=self.redcap_root + localpath
         expected_string = 'The requested method is not implemented.'
-        self.assertIn(expected_string, self.weburl.get(self.fullpath))
+        try:
+            response_string = self.weburl.get(self.fullpath)
+        except HTTPError:
+            response_string = ""
+        self.assertIn(expected_string, response_string)
 
     # deactivate the API Help tests as they are failing routinely in Shib and probably not relevant.
     # def testApiHelpFolder(self):
