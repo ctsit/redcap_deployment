@@ -10,8 +10,7 @@ cd $MYTARGETDIR
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 
 # install composer
-# pin to version 1.latest due to 2.x conflict: https://github.com/wikimedia/composer-merge-plugin/issues/184
-php composer-setup.php --1
+php composer-setup.php
 
 # install dependencies
 php composer.phar install
