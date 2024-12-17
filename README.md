@@ -23,7 +23,7 @@ This project provides a virtual machine wherein it hosts the local REDCap instan
 
 ### Packaging and Deployment
 
-The packaging and deployment tools are designed to deploy REDCap to Debian Linux hosts. They may or may not work with non-Debian REDCap hosts.  They cannot deploy REDCap to Windows hosts. The packaging and deployment tools are written using the [Fabric](http://www.fabfile.org/) system. Fabric is written in Python3, so both Python 3 and Fabric3 must be installed to do packaging and deployment.
+The packaging and deployment tools are designed to deploy REDCap to Debian Linux hosts. They may or may not work with non-Debian REDCap hosts.  They cannot deploy REDCap to Windows hosts. The packaging and deployment tools are written using the [Fabric](http://www.fabfile.org/) system. The tools use Fabric 1.x
 
 
 ## Installing dependencies
@@ -117,13 +117,21 @@ After about two minutes, the VM should be accessible at the value of the variabl
 
 ## (Re)deploying REDCap with Fabric Tools
 
-In addition to the REDCap deployed by the Vagrant provisioning scripts, this repository includes a suite of deployment and upgrade tools that can configure a host for deployment, package REDCap with numerous extensions, deploy a new REDCap instance and upgrade an existing one.  You can use these commands any host where you have sufficient privileges or against this vagrant-deployed VM.
+In addition to the REDCap deployed by the Vagrant provisioning scripts, this repository includes a suite of deployment and upgrade tools that can configure a host for deployment, package REDCap with numerous extensions, deploy a new REDCap instance and upgrade an existing one.  You can use these commands on any Linux host where you have sufficient privileges or against this vagrant-deployed VM.
 
 ### Fabric Prerequisites
 
 This tool is written in Python 3 and uses Fabric 1.x methods. To use it, make sure you install the latest Fabric 1.x.  See https://www.fabfile.org/installing-1.x.html for details, the TL;DR version is
 
 ```bash
+pip install 'fabric<2.0'
+```
+
+If you make a mess of things before you get it right, you might have to uninstall the mess like this:
+
+```bash
+brew uninstall fabric
+pip uninstall 'fabric<2.0'
 pip install 'fabric<2.0'
 ```
 
@@ -277,6 +285,54 @@ sudo a2enmod php8.1
 sudo systemctl restart apache2
 ```
 
+### Upgrade PHP from 7.4 to 8.2
+
+```bash
+# Upgrade PHP from 7.4 to 8.2
+sudo apt install -y libapache2-mod-php8.2 \
+  php8.2 \
+  php8.2-cli \
+  php8.2-common \
+  php8.2-curl \
+  php8.2-gd \
+  php8.2-imap \
+  php8.2-mbstring \
+  php8.2-mysql \
+  php8.2-odbc \
+  php8.2-opcache \
+  php8.2-readline \
+  php8.2-soap \
+  php8.2-xml \
+  php8.2-zip
+
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Commit PHP upgrades and other files"
+
+cd /etc/php
+grep -lr upload_max_filesize * | sudo xargs -i sed "s/upload_max_filesize.*/upload_max_filesize = 256M/;" -i {}
+grep -lr post_max_size * | sudo xargs -i sed "s/post_max_size.*/post_max_size = 256M/;" -i {}
+grep -lr max_input_vars * | sudo xargs -i sed "s/.*max_input_vars.*/max_input_vars = 100000/;" -i {}
+grep -lr session.cookie_secure * | sudo xargs -i sed "s/.*session.cookie_secure.*/session.cookie_secure = On/;" -i {}
+grep -lr date.timezone * | sudo xargs -i sed "s/.*date.timezone.*=.*/date.timezone = 'America\/New_York'/;" -i {}
+
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Commit PHP configuration changes"
+
+# fix imagick
+sudo apt install -y php-imagick
+sudo sed -i 's/policy domain="coder" rights="none" pattern="PDF"/policy domain="coder" rights="read" pattern="PDF"/;' /etc/ImageMagick-6/policy.xml
+cd /etc
+sudo -E git add .
+sudo -E git commit -m "Install php-imagick and adjust policy to REDCap requirements"
+
+# Switch to new PHP in Apache
+sudo a2dismod php7.4
+sudo a2enmod php8.2
+sudo systemctl restart apache2
+```
+
 ### Install specific PHP packages
 
 On some hosts, you might need to install a specific packages. At UF, we have one host we call "warrior" that needs the `mpdf` package. To install a custom package, first, install `composer`
@@ -296,8 +352,8 @@ Then run these steps in the current redcap Libraries directory as user deploy
 
 ```bash
 sudo su - deploy
-#cd /var/https/stage_c/redcap_v13.4.11/Libraries/
-cd /var/www/prod/redcap_v13.4.11/Libraries/
+#cd /var/https/stage_c/redcap_v14.3.14/Libraries/
+cd /var/www/prod/redcap_v14.6.2/Libraries/
 ```
 
 Then run `composer require` with the package you need install:
@@ -313,6 +369,45 @@ Restart apache when you are done
 sudo service apache2 restart
 ```
 
+## Failed SQL upgrades
+
+If an upgrade operation fails on a `.php` or a `.sql` file, the code will die like this:
+
+```
+[redcap.ctsi.ufl.edu] run: php /var/https/redcap/redcap_v14.1.3/generate_upgrade_sql_from_php.php /var/https/redcap/redcap_v14.1.3/Resources/sql/upgrade_14.01.01.php | mysql
+[redcap.ctsi.ufl.edu] out: ERROR 1553 (HY000) at line 5: Cannot drop index 'redcap_userid': needed in a foreign key constraint
+[redcap.ctsi.ufl.edu] out: 
+
+
+Fatal error: run() received nonzero return code 1 while executing!
+
+Requested: php /var/https/redcap/redcap_v14.1.3/generate_upgrade_sql_from_php.php /var/https/redcap/redcap_v14.1.3/Resources/sql/upgrade_14.01.01.php | mysql
+Executed: /bin/bash -l -c "php /var/https/redcap/redcap_v14.1.3/generate_upgrade_sql_from_php.php /var/https/redcap/redcap_v14.1.3/Resources/sql/upgrade_14.01.01.php | mysql"
+
+Aborting.
+Disconnecting from deploy@redcap.ctsi.ufl.edu... done.
+```
+
+At this point things get messy and you will have to get creative in your problem solving. What follows is not a recipe. It's more like a pile of ingredients from which you could make an omelette. It's still your responsibility cook them right and not burn the omelette, because you're gonna have to eat it.
+
+### Debugging
+
+You can see the output of the script/SQl file that caused the by running that PHP command or catting out that SQL file that failed. e.g.,
+
+```bash
+php /var/https/redcap/redcap_v14.1.3/generate_upgrade_sql_from_php.php /var/https/redcap/redcap_v14.1.3/Resources/sql/upgrade_14.01.01.php
+```
+
+Running the SQL lines in that file one by one might help you understand which one failed. It's challenging because some of those commands will fail because they _did_ run successfully the first time, but they will error the second time. This often happens when a SQL command added an object that cannot be "re-added". Think carefully about the responses you see when running each command. Read the REDCap community forum to see if others have experienced the errors you see and have a solution.
+
+Even if that task goes well and you can apply the file that failed there might be more files to run after that one. You can locate those by enumerating the files in the `redcap_vN.M.O/Resources/sql/` directory. Look for versioned file names that are higher than the version number on which the script failed. If this seems tedious, you might want to try the next procedure.
+
+
+### Ask REDCap to help you
+
+Another approach is to generate all of the SQL upgrade commands between the version you are at and the version you are upgrading to by accessing the Upgrade page in the Control Center. It will make the whole blob, running the PHP scripts, concatenating their output with the SQL files and appending the lines that document the upgrade. All that's pretty useful. Do be aware that every SQL line that succeeded will still be in the blob of SQL the Control Center Upgrade page generates for you. It's more content to wade through, but it's all in one file with the last three "upgrade event" statements.
+
+If you think you are done with the upgrade process, put the host back online via the Control Center _General Configuration_ page. Then check the Control Center _Configuration Check_ age for any SQL commands that still need to be applied. 
 
 ## Developer notes
 
