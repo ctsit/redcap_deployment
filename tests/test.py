@@ -1,6 +1,7 @@
 import unittest
 import sys
 import re
+import urllib.error
 
 try:
     from urllib.request import urlopen # Python3
@@ -75,7 +76,8 @@ class UnauthenticatedAccessTestCase(unittest.TestCase):
         localpath = "api/"
         self.fullpath=self.redcap_root + localpath
         expected_string = 'The requested method is not implemented.'
-        self.assertIn(expected_string, self.weburl.get(self.fullpath))
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            self.weburl.get(self.fullpath)
 
     # deactivate the API Help tests as they are failing routinely in Shib and probably not relevant.
     # def testApiHelpFolder(self):
