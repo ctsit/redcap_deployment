@@ -315,6 +315,7 @@ grep -lr post_max_size * | sudo xargs -i sed "s/post_max_size.*/post_max_size = 
 grep -lr max_input_vars * | sudo xargs -i sed "s/.*max_input_vars.*/max_input_vars = 100000/;" -i {}
 grep -lr session.cookie_secure * | sudo xargs -i sed "s/.*session.cookie_secure.*/session.cookie_secure = On/;" -i {}
 grep -lr date.timezone * | sudo xargs -i sed "s/.*date.timezone.*=.*/date.timezone = 'America\/New_York'/;" -i {}
+grep -lr disable_functions *  | sudo xargs -i sed "s/.*disable_functions.*=.*/disable_functions = exec,passthru,system,proc_open,popen,shell_exec/;" -i {}
 
 cd /etc
 sudo -E git add .
